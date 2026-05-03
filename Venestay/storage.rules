@@ -1,0 +1,84 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // =========================================================================
+    // Funciones de utilidad para validaciones comunes
+    // =========================================================================
+
+    // Verifica que el usuario haya iniciado sesión
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verifica que el archivo entrante sea una imagen (mime type image/*) 
+    // y que su tamaño sea menor o igual a 5 MB (5 * 1024 * 1024 bytes)
+    function isValidImage() {
+      return request.resource.size <= 5 * 1024 * 1024
+             && request.resource.contentType.matches('image/.*');
+    }
+
+    // =========================================================================
+    // 1. DIRECTORIO DE PERFILES Y KYC
+    // =========================================================================
+    // Se aplican a 'users' (requerido) y 'profiles' (usado en la app actual)
+    match /users/{userId}/{fileName} {
+      // Lectura: Pública (necesaria para mostrar avatares en reseñas o a anfitriones)
+      allow read: if true;
+      // Escritura (crear/actualizar): El usuario debe estar autenticado, 
+      // modificar su propio directorio y el archivo debe ser una imagen válida (< 5MB)
+      allow create, update: if isAuthenticated() 
+                           && request.auth.uid == userId 
+                           && isValidImage();
+      // Solo el propietario puede eliminar sus imágenes
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /profiles/{userId}/{fileName} {
+      allow read: if true;
+      allow create, update: if isAuthenticated() 
+                           && request.auth.uid == userId 
+                           && isValidImage();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // =========================================================================
+    // 2. DIRECTORIO DE COMPROBANTES DE PAGO
+    // =========================================================================
+    // Se aplican a 'receipts' y a 'bookings/{bookingId}/payments' (rutas app)
+    match /receipts/{bookingId}/{fileName} {
+      // Lectura: Restringida a cualquier usuario autenticado 
+      // (por coste no comprobamos si es el dueño de la reserva desde Storage)
+      allow read: if isAuthenticated();
+      // Escritura: Solo usuarios autenticados subiendo imágenes de máximo 5MB
+      allow create, update: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    match /bookings/{bookingId}/payments/{fileName} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // 3. DIRECTORIO DE PROPIEDADES (Listings)
+    // =========================================================================
+    match /listings/{listingId}/{fileName} {
+      // Lectura: Pública (necesario para la landing page e invitados)
+      allow read: if true;
+      // Escritura: Requiere autenticación y validar la imagen
+      // (Futura mejora: Restringir a custom claims de host o buscar rol de anfitrión)
+      allow create, update: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // REGLA POR DEFECTO: DENEGAR CUALQUIER ACCESO NO ESPECIFICADO
+    // =========================================================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

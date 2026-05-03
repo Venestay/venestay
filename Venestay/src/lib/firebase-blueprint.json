@@ -1,0 +1,187 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user profile information for Vene-Stay users.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "phoneNumber": { "type": "string" },
+        "about": { "type": "string" },
+        "interests": { "type": "string" },
+        "languages": { "type": "string" },
+        "location": { "type": "string" },
+        "responseTime": { "type": "string" },
+        "responseRate": { "type": "string" }
+      },
+      "required": ["uid", "email", "displayName", "createdAt", "role"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Stores booking information and P2P payment status. Implements 20% advance payment system.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "listingId": { "type": "string" },
+        "listingTitle": { "type": "string" },
+        "guestId": { "type": "string" },
+        "guestName": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "agreedPercentage": { "type": "number" },
+        "status": {
+          "type": "string",
+          "enum": [
+            "NEGOTIATING",
+            "PENDING_PAYMENT",
+            "AWAITING_VERIFICATION",
+            "CONFIRMED",
+            "REJECTED",
+            "CANCELLED"
+          ]
+        },
+        "proofUrl": { "type": "string" },
+        "paymentReference": { "type": "string" },
+        "paymentSubmittedAt": { "type": "string" },
+        "paymentInstructions": { "type": "string" },
+        "verifiedAt": { "type": "string" },
+        "rejectionReason": { "type": "string" },
+        "guests": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "statusHistory": { "type": "array", "items": { "type": "object" } }
+      },
+      "required": [
+        "id",
+        "listingId",
+        "guestId",
+        "ownerId",
+        "startDate",
+        "endDate",
+        "totalAmount",
+        "status",
+        "createdAt"
+      ]
+    },
+    "PaymentLog": {
+      "title": "Payment Log",
+      "description": "Sub-collection of /bookings/{bookingId}/payments to track transaction records.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bookingId": { "type": "string" },
+        "amount": { "type": "number" },
+        "reference": { "type": "string" },
+        "proofUrl": { "type": "string" },
+        "method": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "VERIFIED", "REJECTED"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "bookingId",
+        "amount",
+        "reference",
+        "proofUrl",
+        "method",
+        "status",
+        "createdAt"
+      ]
+    },
+    "Listing": {
+      "title": "Property Listing",
+      "description": "Stores property listing details available for booking.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "city": { "type": "string" },
+        "location": { "type": "string" },
+        "pricePerNight": { "type": "number" },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "isPetFriendly": { "type": "boolean" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "amenities": { "type": "array", "items": { "type": "string" } },
+        "maxGuests": { "type": "number" },
+        "bedrooms": { "type": "number" },
+        "beds": { "type": "number" },
+        "baths": { "type": "number" },
+        "hostName": { "type": "string" },
+        "hostAvatar": { "type": "string" },
+        "hostId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "city",
+        "location",
+        "pricePerNight",
+        "images",
+        "maxGuests",
+        "hostId"
+      ]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Stores chat messages between guests and owners/admins for a specific booking.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bookingId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bookingId", "senderId", "senderName", "text", "createdAt"]
+    },
+    "System": {
+      "title": "System Meta",
+      "description": "Internal system metadata and connectivity checks.",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/system/{docId}": {
+      "schema": "System",
+      "description": "System metadata collection for diagnostic purposes."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profile documents, keyed by their Auth UID."
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Collection of booking documents for P2P negotiation and payment."
+    },
+    "/bookings/{bookingId}/payments/{paymentId}": {
+      "schema": "PaymentLog",
+      "description": "Sub-collection to track payment submissions for a booking."
+    },
+    "/listings/{listingId}": {
+      "schema": "Listing",
+      "description": "Collection of property listings managed by admins or hosts."
+    },
+    "/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Collection of chat messages linked to bookings."
+    }
+  }
+}

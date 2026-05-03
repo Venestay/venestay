@@ -1,0 +1,5 @@
+{
+  "name": "VeneStay - Alquileres en Venezuela",
+  "description": "Una plataforma premium de alquileres vacacionales en Venezuela con un flujo de reserva unificado, carga directa de comprobantes de pago y chat en tiempo real con anfitriones.",
+  "requestFramePermissions": ["geolocation"]
+}

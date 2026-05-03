@@ -1,0 +1,202 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.matches('(?i)rodriguezzcarlose@gmail.com') || 
+        request.auth.token.email.matches('(?i)zabalareduardoc@gmail.com') ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isOwnerOfListing(listingId) {
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/listings/$(listingId)) && 
+         get(/databases/$(database)/documents/listings/$(listingId)).data.hostId == request.auth.uid)
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.email is string && data.email.size() <= 200 &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             data.role in ['user', 'admin'];
+    }
+
+    function isValidListing(data) {
+      return data.keys().hasAll(['id', 'title', 'description', 'city', 'location', 'pricePerNight', 'images', 'maxGuests', 'hostId']) &&
+             (data.hostId == request.auth.uid || isAdmin());
+    }
+
+    function isValidBooking(data) {
+      return data.keys().hasAll(['listingId', 'listingTitle', 'guestId', 'guestName', 'ownerId', 'startDate', 'endDate', 'totalAmount', 'agreedPercentage', 'status', 'paymentInstructions', 'createdAt', 'updatedAt', 'guests', 'statusHistory']) &&
+             data.guestId == request.auth.uid && // Identity Integrity
+             data.listingId is string && data.listingId.size() <= 128 &&
+             data.listingTitle is string && data.listingTitle.size() <= 200 &&
+             data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED'] &&
+             data.totalAmount is number && 
+             data.guests is number &&
+             data.statusHistory is list && data.statusHistory.size() <= 20;
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['bookingId', 'senderId', 'senderName', 'type', 'status', 'createdAt']) &&
+             (data.keys().hasAny(['text', 'imageUrl'])) &&
+             data.senderId == request.auth.uid &&
+             data.bookingId is string &&
+             data.type in ['text', 'image'] &&
+             data.status in ['sent', 'read'];
+    }
+
+    function isValidPayment(data) {
+      return data.keys().hasAll(['bookingId', 'amount', 'reference', 'proofUrl', 'method', 'methodLabel', 'status', 'createdAt']) &&
+             data.bookingId is string &&
+             data.amount is number &&
+             data.reference is string && data.reference.size() <= 100 &&
+             data.proofUrl is string && data.proofUrl.size() <= 1000 &&
+             data.method is string &&
+             data.methodLabel is string &&
+             data.status == 'PENDING';
+    }
+
+    // --- match Blocks ---
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId && 
+                    isValidUser(incoming()) && 
+                    incoming().role == 'user'; // Prevent self-escalation
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Property Listings
+    match /listings/{listingId} {
+      allow read, list: if true;
+      allow create: if isSignedIn() && 
+                    (incoming().hostId == request.auth.uid || isAdmin()) && 
+                    isValidListing(incoming());
+      allow update: if (isAdmin() || isOwnerOfListing(listingId)) && isValidListing(incoming());
+      allow delete: if isAdmin() || isOwnerOfListing(listingId);
+    }
+
+    // System Diagnostic
+    match /system/{docId} {
+      allow read: if true; // Public read for connection check
+      allow write: if isAdmin();
+    }
+
+    // Bookings
+    match /bookings/{bookingId} {
+      // Admin Access
+      allow get, list: if isAdmin();
+      
+      // User Access (Own Bookings)
+      allow list: if isSignedIn() && (
+        resource.data.guestId == request.auth.uid || 
+        resource.data.ownerId == request.auth.uid
+      );
+
+      // Public Availability Check (Crucial fix for ListingDetail)
+      // Enforce the query uses a where filter on status to avoid leaking all bookings
+      allow list: if resource.data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED'];
+
+      allow get: if isSignedIn() && (
+        request.auth.uid == resource.data.guestId || 
+        request.auth.uid == resource.data.ownerId || 
+        isAdmin()
+      );
+
+      allow create: if isSignedIn() && isValidBooking(incoming());
+      
+      // Payments sub-collection
+      match /payments/{paymentId} {
+        allow list, get: if isSignedIn() && (
+          get(/databases/$(database)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+          get(/databases/$(database)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+          isAdmin()
+        );
+        allow create: if isSignedIn() && 
+                      get(/databases/$(database)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid &&
+                      isValidPayment(incoming());
+        allow update, delete: if isAdmin();
+      }
+
+      allow update: if isSignedIn() && (
+        // Admin Override
+        isAdmin() ||
+        // Guest Actions
+        (request.auth.uid == resource.data.guestId && (
+          // Action: Modify Booking Details (Dates, Guests)
+          (existing().status == 'PENDING_PAYMENT' && incoming().status == 'PENDING_PAYMENT' &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['guests', 'startDate', 'endDate', 'totalAmount', 'updatedAt', 'statusHistory'])) ||
+          // Action: Submit Payment info
+          (incoming().status == 'AWAITING_VERIFICATION' && 
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'proofUrl', 'paymentReference', 'paymentSubmittedAt', 'updatedAt', 'statusHistory'])) ||
+          // Action: Cancel
+          (incoming().status == 'CANCELLED' &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']))
+        )) ||
+        // Owner Actions
+        (request.auth.uid == resource.data.ownerId && (
+          // Action: Confirm/Reject
+          (incoming().status in ['CONFIRMED', 'REJECTED'] &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'verifiedAt', 'verifiedBy', 'rejectionReason', 'updatedAt', 'statusHistory']))
+        ))
+      );
+      
+      allow delete: if isAdmin();
+    }
+
+    // Messages
+    match /messages/{messageId} {
+      // Messages are only accessible if you are part of the booking
+      function canAccessBooking(bid) {
+        return get(/databases/$(database)/documents/bookings/$(bid)).data.guestId == request.auth.uid ||
+               get(/databases/$(database)/documents/bookings/$(bid)).data.ownerId == request.auth.uid ||
+               isAdmin();
+      }
+
+      allow list: if isSignedIn() && canAccessBooking(resource.data.bookingId);
+      allow get: if isSignedIn() && canAccessBooking(resource.data.bookingId);
+      allow create: if isSignedIn() && isValidMessage(incoming()) && canAccessBooking(incoming().bookingId);
+      allow update: if isSignedIn() && (
+        // Mark as read
+        (incoming().status == 'read' && incoming().diff(existing()).affectedKeys().hasOnly(['status'])) ||
+        isAdmin()
+      );
+    }
+  }
+}

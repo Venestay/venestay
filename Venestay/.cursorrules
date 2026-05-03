@@ -1,0 +1,23 @@
+# Proyecto: VeneStay
+**Descripción:** Alquileres P2P en Venezuela.
+
+## Stack Tecnológico
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS v4
+- Firebase (Auth, Firestore, Storage)
+
+## Reglas de Negocio Críticas
+- **Modelo de pagos 20/80**: 20% de anticipo en plataforma / 80% en persona al anfitrión.
+
+## Identidad Visual
+- **Estética**: "Premium Dark".
+- **Fondos oscuros**: `bg-slate-900` / `bg-[#0B1120]`
+- **Acentos dorados/ámbar**: `text-amber-500`
+
+## Arquitectura y Navegación
+- **Dashboard**: El `AdminDashboard` no es un componente incrustado, sino una página completa y dedicada accesible en la ruta `/dashboard`.
+
+## RBAC (Control de Acceso Basado en Roles)
+- Roles de usuario soportados: `admin`, `host`, y `user`.
