@@ -14,6 +14,9 @@ Esta documentación proporciona una visión técnica detallada del proyecto **Ve
 - **Tailwind CSS v4**: Motor de estilos de última generación para un diseño visual ágil y coherente.
 - **Motion (framer-motion)**: Para animaciones fluidas y transiciones de estado premium.
 - **Lucide React**: Librería de iconos vectoriales consistente.
+- **Identidad & Trust**: Centralizar reglas de validación de identidad para anfitriones "Verificados".
+- **Marketing Analytics**: Configurar trazas de eventos para medir el impacto de los Nudges conductuales.
+- **Estándar de Evidencia**: Cada cambio visual debe ser validado por el `Reality Auditor` con screenshots.
 - **Sonner**: Sistema de notificaciones (toasts) elegante.
 
 ### Backend & Servicios (Firebase)
@@ -82,7 +85,8 @@ VeneStay implementa una arquitectura **Feature-Sliced Design (FSD)** adaptada, l
 
 ### Gestión de Imágenes y Rendimiento
 
-- **Compresión Proactiva**: Uso de `browser-image-compression` para optimizar fotos antes de la subida (Quality 0.75, Max 0.6MB).
+- [ ] **Optimización de Imágenes**: Integrar `browser-image-compression` en el flujo de subida del host.
+- [ ] **Whimsy Injector**: Añadir animaciones de éxito y deleite en la confirmación de reserva.
 - **Carga Predictiva**: Implementación de **Skeleton Loaders** para mantener la jerarquía visual durante la descarga de datos.
 - **In-Place UI**: Los flujos complejos (como pagos P2P) ocurren dentro del flujo actual para evitar la fatiga por modales en móviles.
 
@@ -143,11 +147,22 @@ Si ves `ApiProjectMapError`:
 
 ---
 
-## 7. Alcance Funcional (v0.9.0)
+## 8. Arquitectura Agente-Nativa y Protocolo UCP
 
-VeneStay es una plataforma P2P adaptada al mercado venezolano:
+VeneStay está diseñado para ser operado y optimizado por agentes de IA mediante un sistema de habilidades (Skills) especializadas.
 
-1. **Descubrimiento**: Búsqueda inteligente por destino y filtros premium.
-2. **Reservas**: Flujo de calendario con protección contra solapamientos.
-3. **Pagos Dinámicos**: Sistema de anticipo del 20% para asegurar estancias, con liquidación del 80% offline. Soporte para **Zelle, Binance Pay y Pago Móvil** con tasa BCV automática.
-4. **Validación**: Dashboard para anfitriones con verificación manual de comprobantes de pago.
+### Universal Commerce Protocol (UCP)
+Implementamos el estándar **UCP** para asegurar que cada transacción (especialmente el modelo 20/80) sea transparente y verificable.
+- [ ] **Sincronización de Checkout (UCP)**: Asegurar que el estado del pago del 20% siga el protocolo UCP en Firestore.
+- [ ] **Nudges de Conversión**: Implementar disparadores de comportamiento en el flujo de reserva (B=MAP).
+- [ ] **Auditoría de Realidad**: Captura de evidencia visual para el flujo de Mobile Checkout.
+- **Sesión de Checkout**: Cada reserva genera un objeto `CheckoutSession` que desglosa el depósito y el saldo offline.
+- **Trazabilidad**: Uso de metadatos de auditoría en Firestore para cada cambio de estado.
+
+### Ecosistema de Agentes
+El desarrollo se rige por especialidades documentadas en `docs/ai-skills/`:
+- **Marketing Psychology**: Optimización de conversión basada en modelos mentales.
+- **Reality Auditor**: Validación estricta basada en evidencia visual.
+- **Trust Architect**: Infraestructura Zero-Trust para pagos P2P.
+- **Agile Planner**: Priorización basada en el framework RICE.
+
