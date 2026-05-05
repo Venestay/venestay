@@ -36,3 +36,10 @@ The project follows a refined FSD architecture. Code is organized into modules b
 - **Reality Check**: Every PR/Change requires **Visual Evidence** (screenshots) as defined in `SKILL_reality_auditor.md`.
 - **Whimsy**: Use subtle micro-animations for feedback to reduce user anxiety.
 - **Performance**: Use `lazy` and `Suspense` for heavy components.
+
+## 6. Quality Gates (No-Go Conditions)
+The following conditions must be met before any task is considered complete:
+1. **Compilation**: `npx tsc --noEmit` must pass without errors.
+2. **Linting**: `npm run lint` must pass without warnings in Shared or Features.
+3. **Evidence**: Visual evidence (screenshots/descriptions) must be provided by the `Reality Auditor`.
+4. **Security**: Payment changes must strictly adhere to `UCPTransactionPayload`.
