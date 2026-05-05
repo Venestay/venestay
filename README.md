@@ -17,7 +17,8 @@ La plataforma ofrece un ecosistema completo para la gestión de alquileres tempo
 - **Flujo Directo**: Proceso simplificado para seleccionar fechas, número de huéspedes y confirmación instantánea.
 - **Estado en Tiempo Real**: Seguimiento detallado desde la solicitud de reserva hasta el checkout final.
 
-### 💳 Sistema P2P de Pagos y Anticipos (Innovación Core)
+### 💳 Sistema P2P de Pagos y Anticipos (Protocolo UCP)
+- **Protocolo UCP (Universal Commerce Protocol)**: Transacciones estandarizadas y verificables para una seguridad total entre humanos e IA.
 - **Anticipo del 20%**: Para asegurar la estancia, el inquilino solo paga un avance del 20% mediante canales validados. El 80% restante se liquida directamente con el anfitrión.
 - **Checkout Multi-Moneda**: Integración de pagos mediante **Zelle, Binance Pay y Pago Móvil**.
 - **Conversión BCV**: Cálculo automático del monto del anticipo en Bolívares basado en la tasa oficial del día.
@@ -28,7 +29,17 @@ La plataforma ofrece un ecosistema completo para la gestión de alquileres tempo
 
 ---
 
-## 🏗️ Fase Actual: Refinamiento & Optimización (v0.9.0)
+## 🤖 Ecosistema de Inteligencia Agente
+
+VeneStay opera mediante un equipo de **Agentes Especializados (Skills)** que aseguran que cada píxel y cada byte cumplan con el estándar premium:
+- **Marketing Psychology**: Conversión optimizada mediante modelos mentales avanzados.
+- **Behavioral Nudge Engine**: Reducción de carga cognitiva y guía fluida del usuario.
+- **Trust & Identity Architect**: Seguridad Zero-Trust para la tranquilidad de anfitriones y huéspedes.
+- **Reality Auditor**: Control de calidad implacable basado en evidencia visual inmutable.
+
+---
+
+## 🏗️ Fase Actual: Agentic Intelligence & Optimization (v0.9.5)
 
 Nos encontramos en la fase de **madurez funcional**. El sistema ha sido optimizado para condiciones de uso reales en Venezuela (redes móviles y latencia variable), incorporando capas de ciberseguridad estrictas.
 
@@ -37,6 +48,7 @@ Nos encontramos en la fase de **madurez funcional**. El sistema ha sido optimiza
 - **Optimización Móvil Total**: Modales full-screen, gestos táctiles (swiping) y layouts adaptativos extremos.
 - **Modelado Zero-Trust**: Reglas de base de datos endurecidas en Firestore y Storage, protegiendo datos sensibles (PII) y previniendo fugas relacionales.
 - **UX de Transaccionalidad**: Sistema "In-place" para confirmación de pagos con "Tap-to-copy" y desgloses financieros transparentes.
+- **Whimsy & Nudges**: Inyección de micro-interacciones de deleite y disparadores psicológicos para aumentar la retención.
 - **Rendimiento**: Implementación de **Skeleton Loaders** para una experiencia fluida incluso en redes 4G/LTE.
 
 ### Próximos Pasos:
@@ -65,7 +77,7 @@ Si el mapa no carga, verifica:
 2. Que la API Key incluya este servicio y no tenga restricciones de dominio incompatibles.
 
 ### Carga de Imágenes
-- **CORS**: Si las imágenes fallan al subir, asegúrate de haber configurado el bucket de Storage con el archivo `cors.json` (ver `TECHNICAL_DOC.md`).
+- **CORS**: Si las imágenes fallan al subir, asegúrate de haber configurado el bucket de Storage con el archivo `cors.json` (ver `docs/TECHNICAL_DOC.md`).
 - **Seguridad**: El acceso está restringido por `storage.rules`. Solo usuarios autenticados pueden subir contenido a sus respectivos directorios.
 
 ---
