@@ -1,0 +1,49 @@
+========================================================================
+REPORTE DE CAMBIOS Y ESTABILIZACIÓN DEL SISTEMA - VENESTAY
+Fecha de compilación: 04 de Mayo de 2026
+========================================================================
+
+1. RESUMEN DEL PROBLEMA INICIAL
+------------------------------------------------------------------------
+El sistema presentaba múltiples fallas durante el flujo final de reservas (Checkout):
+- Error "Missing or insufficient permissions" al intentar guardar el pago en Firestore.
+- Problemas de contraste visual en la tarjeta de resumen de pago (20% y 80%).
+- Falta de validación fuerte que previniera clics accidentales sin adjuntar referencia.
+- Errores de consola relacionados con la API de Gemini por falta de Key.
+- Caída global de la aplicación (pantalla en blanco) por un error de sintaxis en el componente de protección.
+
+2. DETALLE DE IMPLEMENTACIONES Y CORRECCIONES
+------------------------------------------------------------------------
+
+A. Seguridad y Reglas de Base de Datos (Firestore)
+   - Archivo modificado: `firestore.rules`
+   - Acción: Se reescribió la función `isValidPayment`.
+   - Resultado: Las reglas ahora aceptan el nuevo esquema de datos enviado por el frontend (`UCPTransactionPayload`), validando correctamente el objeto `amounts`, el `transactionId` y los campos obligatorios de seguridad, eliminando el error de permisos denegados.
+
+B. Interfaz de Usuario y Experiencia de Usuario (Checkout)
+   - Archivo modificado: `src/features/bookings/components/checkout/CheckoutPage.tsx`
+   - Acción 1 (Contraste): Se aplicó la clase `text-brand-navy` al input de "Referencia de la Operación" para asegurar que los números ingresados por el usuario sean oscuros y legibles sobre el fondo claro.
+   - Acción 2 (Validación): Se añadió lógica para deshabilitar por completo (`disabled`) el botón principal y móvil de "Finalizar Reserva" hasta que el usuario suba una imagen válida Y escriba un número de referencia.
+
+C. Observabilidad y Estabilidad Global
+   - Archivo creado: `src/lib/logger.ts`
+     * Se implementó una clase estandarizada `Logger` para centralizar la salida de información, advertencias y errores (visible solo en entorno de desarrollo).
+   - Archivo creado: `src/components/ui/ErrorBoundary.tsx`
+     * Se creó un componente de protección (Error Boundary) con diseño "Premium Dark" que captura caídas críticas de la aplicación y ofrece un botón seguro de recarga.
+     * [Corrección Posterior]: Se solucionó un error crítico de sintaxis (`this.children` -> `this.props.children`) que causaba una pantalla blanca al envolver la app.
+   - Archivo modificado: `src/App.tsx`
+     * Se envolvió toda la ruta y componentes de la aplicación dentro del `ErrorBoundary`.
+
+D. Prevención de Errores de Terceros
+   - Archivo modificado: `src/features/listings/components/ListingDetail.tsx`
+   - Acción: Se comentó temporalmente el llamado a la API de Google Gemini (`fetchInsights`).
+   - Resultado: Se previno el quiebre de la vista de detalle de propiedades debido al error "API key is missing".
+
+E. Organización de Arquitectura Documental
+   - Acción: Se consolidó el conocimiento y los planes de acción del Agente IA.
+   - Resultado: Los archivos `TASKS.md`, `TECHNICAL_DOC.md`, `ROADMAP.md` y `PROYECTO_VENESTAY_CODIGO_COMPLETO.md` fueron movidos de la raíz al directorio `docs/ai-skills/`, manteniendo el proyecto limpio y adhiriéndose a la metodología FSD / modular.
+
+========================================================================
+ESTADO ACTUAL: ESTABLE
+Todos los cambios han sido verificados. El flujo de Checkout para confirmación de reservas mediante UCP/P2P debe procesar la carga y el guardado en base de datos sin fricción técnica.
+========================================================================

@@ -11,6 +11,7 @@ import Home from '@/pages/Home';
 import { Toaster } from 'sonner';
 import { useBookingManager } from '@/features/bookings/hooks/use-booking-manager';
 import { useDatabaseSeeder } from '@/lib/hooks/use-database-seeder';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 // 🚀 CODE SPLITTING: Lazy Load de componentes pesados
 const AdminDashboard = lazy(
@@ -43,8 +44,9 @@ const App: React.FC = () => {
   useDatabaseSeeder();
 
   return (
-    <BrowserRouter>
-      <ScrollToTop />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ScrollToTop />
       <Suspense
         fallback={
           <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -93,6 +95,7 @@ const App: React.FC = () => {
       </Suspense>
       <Toaster position="top-right" richColors />
     </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 

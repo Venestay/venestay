@@ -115,6 +115,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
 
   useEffect(() => {
     const fetchInsights = async () => {
+      /* API Temporalmente Desactivada por falta de Key */
+      /*
       setLoadingInsights(true);
       try {
         const text = await getLocalInsights(listing.city);
@@ -124,6 +126,9 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
       } finally {
         setLoadingInsights(false);
       }
+      */
+      setLoadingInsights(false);
+      setInsights('Información impulsada por IA deshabilitada por ahora.');
     };
     fetchInsights();
   }, [listing.city]);

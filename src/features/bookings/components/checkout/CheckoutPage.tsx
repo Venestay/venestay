@@ -1287,7 +1287,7 @@ const CheckoutPage: React.FC = () => {
                         value={reference}
                         onChange={(e) => setReference(e.target.value)}
                         placeholder="Introduce los números"
-                        className="focus:border-brand-500 w-full rounded-2xl border-2 border-transparent bg-gray-50 px-6 py-5 text-sm font-black transition-all outline-none focus:bg-white"
+                        className="focus:border-brand-500 text-brand-navy w-full rounded-2xl border-2 border-transparent bg-gray-50 px-6 py-5 text-sm font-black transition-all outline-none focus:bg-white"
                       />
                       <p className="mt-2 ml-1 text-[9px] font-bold tracking-widest text-gray-400 uppercase">
                         Revisamos esta referencia para validar el pago
@@ -1327,9 +1327,9 @@ const CheckoutPage: React.FC = () => {
                     </div>
                   )}
                   <button
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !reference.trim() || !file}
                     onClick={handleSubmitPayment}
-                    className="bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400 flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase shadow-2xl transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale"
+                    className="bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400 flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase shadow-2xl transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
@@ -1408,9 +1408,9 @@ const CheckoutPage: React.FC = () => {
       {!uploadSuccess && (
         <div className="pointer-events-none fixed right-0 bottom-16 left-0 z-[60] p-4 md:hidden">
           <button
-            disabled={isSubmitting}
+            disabled={isSubmitting || !reference.trim() || !file}
             onClick={handleSubmitPayment}
-            className="bg-brand-500 text-brand-navy shadow-brand-500/40 pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95"
+            className="bg-brand-500 text-brand-navy shadow-brand-500/40 pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin" />

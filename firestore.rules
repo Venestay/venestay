@@ -81,9 +81,10 @@ service cloud.firestore {
     }
 
     function isValidPayment(data) {
-      return data.keys().hasAll(['bookingId', 'amount', 'reference', 'proofUrl', 'method', 'methodLabel', 'status', 'createdAt']) &&
-             data.bookingId is string &&
-             data.amount is number &&
+      return data.keys().hasAll(['transactionId', 'amounts', 'reference', 'proofUrl', 'method', 'methodLabel', 'status', 'createdAt', 'currency', 'intent', 'metadata']) &&
+             data.transactionId is string &&
+             data.amounts is map &&
+             data.amounts.total is number &&
              data.reference is string && data.reference.size() <= 100 &&
              data.proofUrl is string && data.proofUrl.size() <= 1000 &&
              data.method is string &&
