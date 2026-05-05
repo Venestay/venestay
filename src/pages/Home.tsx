@@ -34,7 +34,6 @@ const Home: React.FC = () => {
   const [activeCity, setActiveCity] = useState<City>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
-  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [isMyTripsOpen, setIsMyTripsOpen] = useState(false);
   // isAdminDashboardOpen wasn't actually rendering a modal, we'll keep the state for compatibility
   // but it's better to navigate to /dashboard
@@ -88,10 +87,8 @@ const Home: React.FC = () => {
         const params = new URLSearchParams(location.search);
         const listingId = params.get('listingId');
         if (listingId) {
-          const listing = data.find((l) => l.id === listingId);
-          if (listing) {
-            setSelectedListing(listing);
-          }
+          // Backward compatibility: redirect old listingId query param to new route
+          navigate(`/listing/${listingId}`, { replace: true });
         }
       },
       (error) => {
@@ -106,8 +103,7 @@ const Home: React.FC = () => {
   }, [location.search]);
 
   const handleListingClick = (listing: Listing) => {
-    setSelectedListing(listing);
-    setSearchParams({ listingId: listing.id });
+    navigate(`/listing/${listing.id}`);
   };
 
   const openInfo = (tab: InfoKey) => {
@@ -184,16 +180,7 @@ const Home: React.FC = () => {
         }}
       />
 
-      {isPropertyView && !selectedListing ? (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
-          <div className="flex flex-col items-center gap-4">
-            <div className="border-brand-500 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent"></div>
-            <p className="text-brand-navy text-[10px] font-black tracking-[0.2em] uppercase opacity-40">
-              Cargando Propiedad Premium...
-            </p>
-          </div>
-        </div>
-      ) : !selectedListing ? (
+      {!isLoadingListings ? (
         <div className="animate-fade-in">
           <main className="mx-auto max-w-7xl px-4 pt-6 pb-20 sm:px-6 lg:px-8">
             {/* Gatillo de Autoridad */}
@@ -559,36 +546,13 @@ const Home: React.FC = () => {
           </footer>
         </div>
       ) : (
-        <div className="animate-fade-in">
-          <Suspense
-            fallback={
-              <div className="flex min-h-screen items-center justify-center bg-gray-50">
-                <div className="border-brand-500 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent"></div>
-              </div>
-            }
-          >
-            <ListingDetail
-              listing={selectedListing}
-              onClose={() => {
-                setSelectedListing(null);
-                setSearchParams({});
-              }}
-              onBooked={(details) => {
-                console.log('Booking created:', details.id);
-              }}
-              onViewTrips={() => setIsMyTripsOpen(true)}
-              onOpenAuth={(view: 'login' | 'register' = 'login') => {
-                setAuthModalView(view);
-                setIsAuthModalOpen(true);
-              }}
-              initialStartDate={startDate}
-              initialEndDate={endDate}
-              onDatesChange={(start, end) => {
-                setStartDate(start);
-                setEndDate(end);
-              }}
-            />
-          </Suspense>
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="flex flex-col items-center gap-4">
+            <div className="border-brand-500 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent"></div>
+            <p className="text-brand-navy text-[10px] font-black tracking-[0.2em] uppercase opacity-40">
+              Preparando Catálogo Exclusivo...
+            </p>
+          </div>
         </div>
       )}
 

@@ -15,7 +15,8 @@ Este documento define la visión estratégica y las fases de ejecución de VeneS
 ## 🚧 Fase 2: Motor de Confianza Lechería (MAYO 2026)
 *El objetivo es lograr un motor transaccional seguro y optimizado para el mercado local.*
 
-- [ ] **Flujo de Pago 20/80 + UCP**: Integración total en Firestore para el manejo de anticipos. (Prioridad 1)
+- [x] **Flujo de Pago 20/80 + UCP**: Integración total en Firestore para el manejo de anticipos. (Prioridad 1)
+- [x] **Reseñas Verificadas (Token de Trust)**: Implementación de ReviewSession y UI Premium Dark. (Prioridad 2)
 - [ ] **Gestión de Imágenes**: Subida real con compresión proactiva para optimizar el ancho de banda.
 - [ ] **SEO Local (Lechería)**: Optimización de metatags para búsquedas de alquileres en la zona.
 

@@ -51,16 +51,20 @@ import Skeleton from '@/components/ui/Skeleton';
 import { checkProfileCompletion } from '@/lib/user-utils';
 import { motion, AnimatePresence } from 'motion/react';
 import PaymentBanner from '@/features/bookings/components/checkout/PaymentBanner';
+import ReviewCard from '@/features/reviews/components/ReviewCard';
+import ReviewForm from '@/features/reviews/components/ReviewForm';
+import * as reviewService from '@/services/review-service';
+import * as listingService from '@/services/listing-service';
 
 interface ListingDetailProps {
-  listing: Listing;
-  onClose: () => void;
-  onBooked: (details: BookingDetails) => void;
+  listing?: Listing;
+  onClose?: () => void;
+  onBooked?: (details: BookingDetails) => void;
   onViewTrips?: () => void;
-  onOpenAuth?: () => void;
-  initialStartDate: Date | null;
-  initialEndDate: Date | null;
-  onDatesChange: (start: Date | null, end: Date | null) => void;
+  onOpenAuth?: (view?: 'login' | 'register') => void;
+  initialStartDate?: Date | null;
+  initialEndDate?: Date | null;
+  onDatesChange?: (start: Date | null, end: Date | null) => void;
 }
 
 const ListingDetail: React.FC<ListingDetailProps> = ({
@@ -69,10 +73,14 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
   onBooked,
   onViewTrips,
   onOpenAuth,
-  initialStartDate,
-  initialEndDate,
+  initialStartDate = null,
+  initialEndDate = null,
   onDatesChange,
 }) => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [currentListing, setCurrentListing] = useState<Listing | null>(listing || null);
+  const [isLoadingListing, setIsLoadingListing] = useState(!listing);
   const { user, profileData } = useAuth();
   const { isLoaded, loadError: scriptLoadError } = useLoadScript({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -85,7 +93,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
 
   const [insights, setInsights] = useState<string>('');
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
-  const [activeImage, setActiveImage] = useState<string>(listing.images[0]);
+  const [activeImage, setActiveImage] = useState<string>(currentListing.images[0]);
   const [startDate, setStartDate] = useState<Date | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -95,51 +103,94 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
     { start: Date; end: Date }[]
   >([]);
   const [hostProfile, setHostProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    async function fetchListing() {
+      if (!listing && id) {
+        setIsLoadingListing(true);
+        const data = await listingService.getListingById(id);
+        setCurrentListing(data);
+        setIsLoadingListing(false);
+      }
+    }
+    fetchListing();
+  }, [id, listing]);
+
+  useEffect(() => {
+    if (currentListing?.images?.length) {
+      setActiveImage(currentListing.images[0]);
+    }
+  }, [currentListing]);
   const [loadingHost, setLoadingHost] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [activeReviewSession, setActiveReviewSession] = useState<any>(null);
 
   useEffect(() => {
-    // Note: Fetching host profile directly from the 'users' collection violates PII
-    // isolation rules since 'users' contains private data (email, etc.) and is
-    // restricted to isOwner(). Relying on 'listing.hostName' and 'listing.hostAvatar' instead.
-    setLoadingHost(false);
-  }, [listing.hostId]);
+    const fetchReviews = async () => {
+      if (!currentListing?.id) {
+        setLoadingReviews(false);
+        return;
+      }
+      try {
+        const data = await reviewService.getListingReviews(currentListing.id);
+        setReviews(data);
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    fetchReviews();
+  }, [currentListing?.id]);
+
+  useEffect(() => {
+    if (currentListing) {
+      document.title = `${currentListing.title} | VeneStay Lechería`;
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', `Alquiler premium de ${currentListing.title} en ${currentListing.location}. Reserva segura con VeneStay.`);
+      }
+    }
+    return () => {
+      document.title = 'VeneStay | Alquileres Premium en Lechería & Venezuela';
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', 'VeneStay: La plataforma de alquileres vacacionales premium en Lechería. Reservas seguras con el protocolo UCP 20/80.');
+      }
+    };
+  }, [listing]);
 
   const totalNights =
     startDate && endDate ? differenceInDays(endDate, startDate) : 0;
   const totalPrice =
     totalNights > 0
-      ? listing.pricePerNight * totalNights
-      : listing.pricePerNight;
+      ? (currentListing?.pricePerNight || 0) * totalNights
+      : (currentListing?.pricePerNight || 0);
 
   useEffect(() => {
     const fetchInsights = async () => {
-      /* API Temporalmente Desactivada por falta de Key */
-      /*
-      setLoadingInsights(true);
-      try {
-        const text = await getLocalInsights(listing.city);
-        setInsights(text);
-      } catch (error) {
-        setInsights('No pudimos cargar los consejos locales en este momento.');
-      } finally {
+      if (!currentListing?.city) {
         setLoadingInsights(false);
+        return;
       }
-      */
+      /* API Temporalmente Desactivada por falta de Key */
       setLoadingInsights(false);
       setInsights('Información impulsada por IA deshabilitada por ahora.');
     };
     fetchInsights();
-  }, [listing.city]);
+  }, [currentListing?.city]);
 
   useEffect(() => {
     const fetchReservedDates = async () => {
+      if (!currentListing?.id) return;
       try {
-        const ranges = await bookingService.getReservedDates(listing.id);
+        const ranges = await bookingService.getReservedDates(currentListing.id);
 
-        if (listing.blockedDates && listing.blockedDates.length > 0) {
-          listing.blockedDates.forEach((dateStr) => {
+        if (currentListing.blockedDates && currentListing.blockedDates.length > 0) {
+          currentListing.blockedDates.forEach((dateStr) => {
             const date = parseISO(dateStr);
             ranges.push({ start: date, end: date });
           });
@@ -151,7 +202,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
       }
     };
     fetchReservedDates();
-  }, [listing.id]);
+  }, [currentListing?.id]);
 
   useEffect(() => {
     if (
@@ -162,7 +213,6 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
     }
   }, [user, bookingError]);
 
-  const navigate = useNavigate();
 
   const handleBooking = () => {
     try {
@@ -174,7 +224,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
       }
 
       const bookingData = {
-        listingId: listing.id,
+        listingId: currentListing.id,
         startDate: format(startDate, 'yyyy-MM-dd'),
         endDate: format(endDate, 'yyyy-MM-dd'),
         guests: guests,
@@ -189,21 +239,51 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
     }
   };
 
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="animate-fade-in relative min-h-screen bg-white pb-32">
-      {isRedirecting && (
-        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
-          <Loader2 className="text-brand-500 mb-4 h-12 w-12 animate-spin" />
-          <p className="text-brand-navy text-sm font-black tracking-widest uppercase">
-            Preparando tu resumen de reserva...
-          </p>
-        </div>
-      )}
 
-      {/* Sticky Mobile Header */}
+      {isLoadingListing ? (
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="text-brand-500 h-12 w-12 animate-spin" />
+            <p className="text-brand-navy text-[10px] font-black tracking-[0.2em] uppercase opacity-40">
+              Iniciando Experiencia Premium...
+            </p>
+          </div>
+        </div>
+      ) : !currentListing ? (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-white p-6 text-center">
+          <div className="bg-brand-navy text-brand-500 mb-8 flex h-24 w-24 items-center justify-center rounded-[40px] border border-white/10 text-4xl font-serif italic">
+            VS
+          </div>
+          <h2 className="text-brand-navy mb-4 text-3xl font-black">
+            Propiedad No Encontrada
+          </h2>
+          <p className="max-w-md text-sm font-medium text-gray-500">
+            Lo sentimos, el enlace que has seguido parece ser inválido o la
+            propiedad ya no está disponible en nuestro catálogo exclusivo.
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy mt-10 rounded-2xl px-10 py-5 text-xs font-black tracking-widest text-white uppercase shadow-2xl transition-all active:scale-95"
+          >
+            Explorar Catálogo
+          </button>
+        </div>
+      ) : (
+        <>
+
       <div className="sticky top-0 z-[60] flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-3 backdrop-blur-xl lg:hidden">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="rounded-full p-2 transition-colors hover:bg-gray-100"
         >
           <ArrowLeft className="text-brand-navy h-5 w-5" />
@@ -213,7 +293,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
             VeneStay Premium
           </span>
           <span className="text-brand-navy max-w-[150px] truncate text-xs font-black">
-            {listing.title}
+            {currentListing.title}
           </span>
         </div>
         <div className="w-9" /> {/* Spacer */}
@@ -223,7 +303,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
         {/* Navigation / Back Button (Desktop) */}
         <div className="mb-6 hidden px-4 sm:px-6 lg:block lg:px-8">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="group hover:bg-brand-navy text-brand-navy flex items-center space-x-3 rounded-2xl border border-gray-100 bg-white p-3 px-5 shadow-lg transition-all duration-300 hover:text-white"
           >
             <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
@@ -257,7 +337,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   onChange={(start, end) => {
                     setStartDate(start);
                     setEndDate(end);
-                    onDatesChange(start, end);
+                    onDatesChange?.(start, end);
                   }}
                   onClose={() => setIsCalendarOpen(false)}
                 />
@@ -275,14 +355,14 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
               onClick={() => setIsGalleryOpen(true)}
             >
               <img
-                src={listing.images[0]}
-                alt={listing.title}
+                src={currentListing.images[0]}
+                alt={currentListing.title}
                 loading="eager" /* First image should be eager */
                 decoding="async"
                 className="h-full w-full rounded-l-2xl object-cover transition-opacity duration-300 hover:opacity-90"
               />
             </div>
-            {listing.images.slice(1, 5).map((img, idx) => {
+            {currentListing.images.slice(1, 5).map((img, idx) => {
               const isTopRight = idx === 1;
               const isBottomRight = idx === 3;
               return (
@@ -317,11 +397,11 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                 </div>
               );
             })}
-            {listing.images.length < 5 &&
-              Array.from({ length: 4 - (listing.images.length - 1) }).map(
+            {currentListing.images.length < 5 &&
+              Array.from({ length: 4 - (currentListing.images.length - 1) }).map(
                 (_, i) => {
                   const isBottomRight =
-                    i === 4 - (listing.images.length - 1) - 1;
+                    i === 4 - (currentListing.images.length - 1) - 1;
                   return (
                     <div
                       key={`empty-${i}`}
@@ -355,14 +435,14 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
               onDragEnd={(_, info) => {
                 const swipe = info.offset.x;
                 if (swipe < -50) {
-                  const currentIndex = listing.images.indexOf(activeImage);
-                  if (currentIndex < listing.images.length - 1) {
-                    setActiveImage(listing.images[currentIndex + 1]);
+                  const currentIndex = currentListing.images.indexOf(activeImage);
+                  if (currentIndex < currentListing.images.length - 1) {
+                    setActiveImage(currentListing.images[currentIndex + 1]);
                   }
                 } else if (swipe > 50) {
-                  const currentIndex = listing.images.indexOf(activeImage);
+                  const currentIndex = currentListing.images.indexOf(activeImage);
                   if (currentIndex > 0) {
-                    setActiveImage(listing.images[currentIndex - 1]);
+                    setActiveImage(currentListing.images[currentIndex - 1]);
                   }
                 }
               }}
@@ -370,13 +450,13 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
             >
               <img
                 src={activeImage}
-                alt={listing.title}
+                alt={currentListing.title}
                 className="h-full w-full cursor-pointer object-cover select-none"
               />
             </motion.div>
 
             <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5 md:hidden">
-              {listing.images.map((img, idx) => (
+              {currentListing.images.map((img, idx) => (
                 <div
                   key={idx}
                   className={cn(
@@ -394,7 +474,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                 setIsGalleryOpen(true);
               }}
             >
-              <ImageIcon className="h-3 w-3" />1 / {listing.images.length}
+              <ImageIcon className="h-3 w-3" />1 / {currentListing.images.length}
             </button>
           </div>
 
@@ -407,32 +487,32 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     <div className="bg-brand-navy group flex items-center overflow-hidden rounded-2xl border border-white/10 px-4 py-2 text-white shadow-lg">
                       <Star className="text-brand-500 fill-brand-500 mr-2 h-4 w-4" />
                       <span className="text-sm font-black tracking-tight">
-                        {listing.rating}
+                        {currentListing.rating}
                       </span>
                       <div className="mx-2 h-4 w-[1px] bg-white/20" />
                       <span className="text-[11px] font-black tracking-wider text-white/70 uppercase">
-                        {listing.reviewsCount} reseñas
+                        {currentListing.reviewsCount} reseñas
                       </span>
                     </div>
-                    {listing.isVerified && (
+                    {currentListing.isVerified && (
                       <span className="text-brand-navy bg-brand-500/10 border-brand-500/20 flex items-center rounded-2xl border px-4 py-2 text-[10px] leading-none font-black tracking-widest uppercase">
                         <CheckCircle2 className="text-brand-500 mr-2 h-4 w-4" />{' '}
                         Publicación Verificada
                       </span>
                     )}
-                    {listing.isPetFriendly && (
+                    {currentListing.isPetFriendly && (
                       <span className="flex items-center rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[10px] font-black tracking-wider text-emerald-700 uppercase">
                         <PawPrint className="mr-1.5 h-3.5 w-3.5" /> Pet-friendly
                       </span>
                     )}
                   </div>
                   <h1 className="text-brand-navy mb-4 text-3xl leading-[1.1] font-black tracking-tight md:text-5xl">
-                    {listing.title}
+                    {currentListing.title}
                   </h1>
                   <div className="flex items-center font-bold text-gray-500">
                     <MapPin className="mr-2 h-4 w-4" />
                     <span className="decoration-brand-500/30 underline underline-offset-4">
-                      {listing.location}
+                      {currentListing.location}
                     </span>
                   </div>
                 </div>
@@ -441,7 +521,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   <div className="flex flex-col items-center rounded-2xl bg-gray-50 p-4">
                     <Users className="text-brand-500 mb-2 h-6 w-6" />
                     <span className="text-brand-navy text-sm font-black">
-                      {listing.maxGuests}
+                      {currentListing.maxGuests}
                     </span>
                     <span className="text-[10px] font-bold text-gray-400 uppercase">
                       Huéspedes
@@ -450,7 +530,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   <div className="flex flex-col items-center rounded-2xl bg-gray-50 p-4">
                     <DoorOpen className="text-brand-500 mb-2 h-6 w-6" />
                     <span className="text-brand-navy text-sm font-black">
-                      {listing.bedrooms}
+                      {currentListing.bedrooms}
                     </span>
                     <span className="text-[10px] font-bold text-gray-400 uppercase">
                       Habitaciones
@@ -459,7 +539,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   <div className="flex flex-col items-center rounded-2xl bg-gray-50 p-4">
                     <Bed className="text-brand-500 mb-2 h-6 w-6" />
                     <span className="text-brand-navy text-sm font-black">
-                      {listing.beds}
+                      {currentListing.beds}
                     </span>
                     <span className="text-[10px] font-bold text-gray-400 uppercase">
                       Camas
@@ -468,7 +548,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   <div className="flex flex-col items-center rounded-2xl bg-gray-50 p-4">
                     <Bath className="text-brand-500 mb-2 h-6 w-6" />
                     <span className="text-brand-navy text-sm font-black">
-                      {listing.baths}
+                      {currentListing.baths}
                     </span>
                     <span className="text-[10px] font-bold text-gray-400 uppercase">
                       Baños
@@ -489,8 +569,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                           <Skeleton className="h-full w-full rounded-none" />
                         ) : (
                           <img
-                            src={hostProfile?.photoURL || listing.hostAvatar}
-                            alt={hostProfile?.displayName || listing.hostName}
+                            src={hostProfile?.photoURL || currentListing.hostAvatar}
+                            alt={hostProfile?.displayName || currentListing.hostName}
                             className="h-full w-full object-cover"
                           />
                         )}
@@ -516,7 +596,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                               <h3 className="text-brand-navy text-3xl font-black tracking-tight">
                                 Conoce a{' '}
                                 {hostProfile?.displayName?.split(' ')[0] ||
-                                  listing.hostName.split(' ')[0]}
+                                  currentListing.hostName.split(' ')[0]}
                               </h3>
                               <span className="bg-brand-navy text-brand-500 border-brand-navy rounded-lg border px-3 py-1 text-[9px] font-black tracking-widest uppercase shadow-sm">
                                 Superanfitrión
@@ -602,7 +682,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     Descripción del espacio
                   </h3>
                   <p className="text-lg leading-relaxed font-medium whitespace-pre-line text-gray-600">
-                    {listing.description}
+                    {currentListing.description}
                   </p>
                 </div>
 
@@ -639,7 +719,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     Comodidades
                   </h3>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {listing.amenities.map((item) => (
+                    {currentListing.amenities.map((item) => (
                       <div
                         key={item}
                         className="hover:border-brand-100 hover:bg-brand-50 flex items-center space-x-4 rounded-2xl border border-transparent bg-gray-50 p-4 transition-all duration-300"
@@ -667,17 +747,17 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       <GoogleMap
                         mapContainerStyle={{ width: '100%', height: '100%' }}
                         center={{
-                          lat: listing.latitude || 10.2167,
-                          lng: listing.longitude || -67.95,
+                          lat: currentListing.latitude || 10.2167,
+                          lng: currentListing.longitude || -67.95,
                         }}
                         zoom={15}
                         options={DEFAULT_MAP_OPTIONS}
                       >
-                        {listing.latitude && listing.longitude && (
+                        {currentListing.latitude && currentListing.longitude && (
                           <Marker
                             position={{
-                              lat: listing.latitude,
-                              lng: listing.longitude,
+                              lat: currentListing.latitude,
+                              lng: currentListing.longitude,
                             }}
                           />
                         )}
@@ -710,7 +790,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                             <button
                               onClick={() =>
                                 window.open(
-                                  `https://www.google.com/maps?q=${listing.latitude},${listing.longitude}`,
+                                  `https://www.google.com/maps?q=${currentListing.latitude},${currentListing.longitude}`,
                                   '_blank'
                                 )
                               }
@@ -748,13 +828,13 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                             Dirección Exacta
                           </p>
                           <p className="text-brand-navy line-clamp-1 text-sm font-black">
-                            {listing.location}
+                            {currentListing.location}
                           </p>
                         </div>
                         <button
                           onClick={() =>
                             window.open(
-                              `https://www.google.com/maps?q=${listing.latitude},${listing.longitude}`,
+                              `https://www.google.com/maps?q=${currentListing.latitude},${currentListing.longitude}`,
                               '_blank'
                             )
                           }
@@ -766,6 +846,64 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Reviews Section */}
+                <div className="space-y-10 border-t border-gray-100 pt-12">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <h3 className="text-brand-navy flex items-center text-2xl font-black">
+                      <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
+                        04
+                      </span>
+                      Reseñas Verificadas
+                    </h3>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1.5 rounded-full bg-gray-100 px-4 py-2">
+                        <Star className="text-brand-500 fill-brand-500 h-4 w-4" />
+                        <span className="text-sm font-black text-brand-navy">{currentListing.rating}</span>
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                        {reviews.length || currentListing.reviewsCount} Reseñas Totales
+                      </span>
+                    </div>
+                  </div>
+
+                  {activeReviewSession && (
+                    <ReviewForm 
+                      listingId={currentListing.id}
+                      guestId={user?.uid || ''}
+                      guestName={profileData?.displayName || 'Huésped'}
+                      reviewSessionId={activeReviewSession.id}
+                      onSuccess={() => {
+                        setActiveReviewSession(null);
+                        reviewService.getListingReviews(currentListing.id).then(setReviews);
+                      }}
+                    />
+                  )}
+
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {loadingReviews ? (
+                      [...Array(2)].map((_, i) => (
+                        <div key={i} className="h-48 w-full animate-pulse rounded-3xl bg-gray-50" />
+                      ))
+                    ) : reviews.length > 0 ? (
+                      reviews.map((review) => (
+                        <ReviewCard 
+                          key={review.id}
+                          guestName={review.guestName}
+                          rating={review.rating}
+                          comment={review.comment}
+                          createdAt={review.createdAt}
+                        />
+                      ))
+                    ) : (
+                      <div className="col-span-full rounded-3xl border-2 border-dashed border-gray-100 p-12 text-center">
+                        <MessageCircle className="mx-auto mb-4 h-12 w-12 text-gray-200" />
+                        <p className="text-sm font-bold text-gray-400">Aún no hay reseñas verificadas para esta propiedad.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Desktop Booking Card (Visible on lg) */}
@@ -774,7 +912,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   <div className="mb-10 flex items-center justify-between">
                     <div>
                       <span className="text-brand-navy text-4xl font-black">
-                        ${listing.pricePerNight}
+                        ${currentListing.pricePerNight}
                       </span>
                       <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">
                         {' '}
@@ -784,7 +922,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     <div className="bg-brand-navy/5 border-brand-navy/5 flex items-center space-x-2 rounded-2xl border px-4 py-2">
                       <Star className="text-brand-500 fill-brand-500 h-4 w-4" />
                       <span className="text-brand-navy font-black">
-                        {listing.rating}
+                        {currentListing.rating}
                       </span>
                     </div>
                   </div>
@@ -925,7 +1063,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       basePriceUSD={
                         totalNights > 0
                           ? calculatePaymentBreakdown(totalPrice).depositAmount
-                          : calculatePaymentBreakdown(listing.pricePerNight)
+                          : calculatePaymentBreakdown(currentListing.pricePerNight)
                               .depositAmount
                       }
                     />
@@ -934,7 +1072,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       <p className="text-center text-[10px] font-black text-gray-400 uppercase">
                         Desglose: {totalNights}{' '}
                         {totalNights === 1 ? 'noche' : 'noches'} x $
-                        {listing.pricePerNight} = ${totalPrice}
+                        {currentListing.pricePerNight} = ${totalPrice}
                       </p>
                     )}
 
@@ -980,7 +1118,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
         <div>
           <div className="flex items-baseline gap-1">
             <span className="text-brand-navy text-lg font-black">
-              ${listing.pricePerNight}
+              ${currentListing.pricePerNight}
             </span>
             <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
               / noche
@@ -1025,11 +1163,11 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
 
             <div className="flex w-full flex-1 flex-col items-center overflow-y-auto">
               <div className="mx-auto w-full max-w-5xl space-y-8 px-4 py-20 lg:space-y-16">
-                {listing.images.map((img, idx) => (
+                {currentListing.images.map((img, idx) => (
                   <img
                     key={idx}
                     src={img}
-                    alt={`${listing.title} - ${idx + 1}`}
+                    alt={`${currentListing.title} - ${idx + 1}`}
                     className="h-auto w-full rounded-xl object-cover"
                   />
                 ))}
@@ -1038,6 +1176,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+      </>
+      )}
     </div>
   );
 };

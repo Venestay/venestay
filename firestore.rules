@@ -65,7 +65,7 @@ service cloud.firestore {
              data.guestId == request.auth.uid && // Identity Integrity
              data.listingId is string && data.listingId.size() <= 128 &&
              data.listingTitle is string && data.listingTitle.size() <= 200 &&
-             data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED'] &&
+             data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED'] &&
              data.totalAmount is number && 
              data.guests is number &&
              data.statusHistory is list && data.statusHistory.size() <= 20;
@@ -92,7 +92,44 @@ service cloud.firestore {
              data.status == 'PENDING';
     }
 
+    function isValidReviewSession(data) {
+      return data.keys().hasAll(['bookingId', 'guestId', 'propertyId', 'status', 'ucpVerified', 'expiresAt', 'createdAt']) &&
+             data.status in ['PENDING', 'SUBMITTED', 'EXPIRED'] &&
+             data.ucpVerified == true &&
+             data.guestId == request.auth.uid;
+    }
+
+    function isValidReview(data) {
+      return data.keys().hasAll(['listingId', 'guestId', 'guestName', 'rating', 'comment', 'createdAt', 'reviewSessionId']) &&
+             data.guestId == request.auth.uid &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() <= 2000;
+    }
+
     // --- match Blocks ---
+
+    // Review Sessions (Token of trust)
+    match /reviewSessions/{sessionId} {
+      allow read: if isSignedIn() && (resource.data.guestId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isAdmin(); // Only system/admin creates sessions
+      allow update: if isSignedIn() && (
+        (resource.data.guestId == request.auth.uid && incoming().status == 'SUBMITTED' && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['status'])) ||
+        isAdmin()
+      );
+    }
+
+    // Reviews (Publicly readable, restricted writing)
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && 
+                    isValidReview(incoming()) && 
+                    // Verify the session exists, is pending, and belongs to the user
+                    exists(/databases/$(database)/documents/reviewSessions/$(incoming().reviewSessionId)) &&
+                    get(/databases/$(database)/documents/reviewSessions/$(incoming().reviewSessionId)).data.status == 'PENDING' &&
+                    get(/databases/$(database)/documents/reviewSessions/$(incoming().reviewSessionId)).data.guestId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
 
     // User Profiles
     match /users/{userId} {
