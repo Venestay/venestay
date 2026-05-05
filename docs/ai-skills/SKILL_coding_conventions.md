@@ -30,7 +30,9 @@ The project follows a refined FSD architecture. Code is organized into modules b
 - **Types**: Use centralized types in `src/types/index.ts` for global interfaces, and feature-specific types in their respective folders.
 - **Strict Typing**: Ensure all props and function parameters are strictly typed.
 
-## 5. UI/UX Rules
+## 5. Agentic & UI/UX Rules
 - **Theme**: "Premium Dark" aesthetics.
-- **Colors**: Use CSS variables defined in `src/index.css` (`--color-premium-dark`, `--color-premium-accent`).
+- **Psychology First**: Every UI element must align with `SKILL_marketing_psychology.md` (e.g., scarcity indicators, social proof).
+- **Reality Check**: Every PR/Change requires **Visual Evidence** (screenshots) as defined in `SKILL_reality_auditor.md`.
+- **Whimsy**: Use subtle micro-animations for feedback to reduce user anxiety.
 - **Performance**: Use `lazy` and `Suspense` for heavy components.

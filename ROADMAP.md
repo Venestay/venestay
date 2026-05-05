@@ -15,25 +15,24 @@ Este documento define la visión a largo plazo y las fases de desarrollo del pro
 
 ---
 
-## 🚧 Fase 2: Funcionalidad Core (EN PROGRESO)
-*El objetivo es lograr un flujo de reserva y gestión de propiedades 100% operativo y libre de errores.*
+## 🚧 Fase 2: Funcionalidad Core & Conversión (EN PROGRESO)
+*El objetivo es lograr un flujo de reserva 100% operativo y optimizado para la conversión.*
 
-- [/] **Tipado Estricto**: Eliminación de `any` en modelos críticos (Listings, Bookings, Timestamps).
-- [/] **Validación de Datos**: Integración total de **Zod** en todos los formularios de entrada.
-- [ ] **Flujo de Pago 20/80**: Integración completa en el Checkout para el manejo de anticipos y saldo pendiente en Firestore.
-- [ ] **Gestión de Imágenes**: Implementación de subida real con optimización en cliente y manejo de errores CORS.
-- [ ] **Dashboard de Anfitrión**: Herramientas de edición de propiedades y validación manual de pagos.
+- [/] **Validación Estricta (Zod & TS)**: Blindar modelos de datos críticos (Listings/Bookings). (Mantenimiento)
+- [ ] **Flujo de Pago 20/80 + UCP**: Integración total en Firestore para el manejo de anticipos y saldo pendiente. (Prioridad 1)
+- [ ] **Optimización Psicológica (Nudges & Whimsy)**: Implementar micro-interacciones y disparadores de comportamiento en el Checkout. (Quick Win)
+- [ ] **SEO Dinámico**: Meta Tags dinámicos por propiedad para asegurar tráfico orgánico temprano. (Quick Win)
+- [ ] **Gestión de Imágenes**: Implementación de subida real con optimización y manejo de errores. (Prioridad 2)
 
 ---
 
-## ⏳ Fase 3: Optimización y Lanzamiento (PENDIENTE)
-*El objetivo es pulir la experiencia de usuario y preparar el sistema para tráfico real.*
+## ⏳ Fase 3: Operatividad del Anfitrión y PWA (PENDIENTE)
+*El objetivo es dotar al anfitrión de herramientas y mejorar la retención.*
 
-- [ ] **SEO Dinámico**: Implementación de Meta Tags dinámicos por propiedad para mejor posicionamiento.
-- [ ] **PWA (Progressive Web App)**: Soporte para instalación en móviles y funcionamiento offline básico.
-- [ ] **Auditoría de Performance**: Optimización de bundles, Lazy loading y reducción de CLS.
-- [ ] **Testing**: Pruebas unitarias para lógica de negocio y pruebas E2E para el flujo de reserva.
-- [ ] **Lanzamiento Beta**: Despliegue en entorno de producción para pruebas con usuarios reales.
+- [ ] **Dashboard de Anfitrión (MVP)**: Edición básica de propiedades y validación de pagos. (Estratégico)
+- [ ] **PWA (Progressive Web App)**: Soporte para instalación y offline básico.
+- [ ] **Auditoría de Performance & Real Evidence**: Verificación visual y técnica de cada flujo.
+- [ ] **Lanzamiento Beta**: Pruebas con usuarios reales.
 
 ---
 

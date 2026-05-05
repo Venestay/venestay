@@ -666,7 +666,7 @@ const CheckoutPage: React.FC = () => {
                 <CheckCircle2 className="h-10 w-10 text-white" />
               </div>
               <h2 className="text-brand-navy text-3xl font-black tracking-tight">
-                ¡Comprobante Recibido!
+                ¡Estancia Asegurada!
               </h2>
               <p className="mx-auto max-w-md leading-relaxed font-medium text-gray-600">
                 Hemos enviado tu comprobante al anfitrión. Recibirás una
@@ -863,7 +863,7 @@ const CheckoutPage: React.FC = () => {
                         aria-label="deposit-label"
                         className="text-xs font-bold tracking-wider text-yellow-500 uppercase"
                       >
-                        Anticipo de Reserva (20%)
+                        Costo de Aseguramiento (20%)
                       </h4>
                       <span className="text-xs font-medium text-gray-400">
                         A pagar ahora
@@ -900,14 +900,14 @@ const CheckoutPage: React.FC = () => {
 
                   <div className="mt-4 rounded-lg border border-gray-700 bg-gray-800/50 p-3">
                     <p className="text-sm text-gray-300">
-                      El saldo restante de{' '}
+                      El saldo restante o <span className="text-emerald-400">Saldo Protegido</span> de{' '}
                       <strong aria-label="offline-balance-amount">
                         $
                         {calculatePaymentBreakdown(
                           booking.totalAmount
                         ).remainingBalance.toFixed(2)}
                       </strong>{' '}
-                      se paga directamente al anfitrión al momento del Check-in.
+                      se liquida directamente con tu anfitrión al momento del Check-in.
                     </p>
                   </div>
                 </div>
@@ -1338,7 +1338,7 @@ const CheckoutPage: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <span>Finalizar Reserva Ahora</span>
+                        <span>Asegurar mi Estancia Ahora</span>
                         <ChevronRight className="h-5 w-5" />
                       </>
                     )}
@@ -1417,7 +1417,7 @@ const CheckoutPage: React.FC = () => {
             ) : (
               <ChevronRight className="h-5 w-5" />
             )}
-            Finalizar y Enviar Comprobante
+            Asegurar mi Estancia Ahora
           </button>
         </div>
       )}
