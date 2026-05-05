@@ -1,48 +1,48 @@
-# VeneStay - Roadmap Evolutivo 🗺️
+# VeneStay - Roadmap Evolutivo 🗺️ (Target: Lechería Beta Julio 2026)
 
-Este documento define la visión a largo plazo y las fases de desarrollo del proyecto VeneStay, asegurando que cada incremento de valor nos acerque al lanzamiento de una plataforma premium.
+Este documento define la visión estratégica y las fases de ejecución de VeneStay, optimizado para un lanzamiento controlado y premium en el mercado de Lechería.
 
 ---
 
 ## 🏗️ Fase 1: Cimientos y Arquitectura (COMPLETADO)
-*El objetivo fue establecer un entorno de desarrollo moderno, seguro y escalable.*
-
-- [x] **Core Tecnológico**: Migración a **React 19** y **Vite**.
-- [x] **Sistema de Estilos**: Implementación de **Tailwind CSS v4** con variables CSS centralizadas.
-- [x] **Refactorización FSD**: Reestructuración completa a **Feature-Sliced Design** (Shared, Features, Pages).
-- [x] **Infraestructura Firebase**: Configuración de Auth, Firestore y Storage con reglas de seguridad endurecidas.
-- [x] **Identidad Visual**: Definición del tema "Premium Dark" y componentes base.
+*Finalizado en Abril 2026.*
+- [x] **Core Tecnológico**: React 19 + Vite + Firebase.
+- [x] **Arquitectura FSD**: Estructura escalable y mantenible.
+- [x] **Identidad Visual**: Definición del tema "Premium Dark" y acento Dorado `#b8914d`.
 
 ---
 
-## 🚧 Fase 2: Funcionalidad Core & Conversión (EN PROGRESO)
-*El objetivo es lograr un flujo de reserva 100% operativo y optimizado para la conversión.*
+## 🚧 Fase 2: Motor de Confianza Lechería (MAYO 2026)
+*El objetivo es lograr un motor transaccional seguro y optimizado para el mercado local.*
 
-- [/] **Validación Estricta (Zod & TS)**: Blindar modelos de datos críticos (Listings/Bookings). (Mantenimiento)
-- [ ] **Flujo de Pago 20/80 + UCP**: Integración total en Firestore para el manejo de anticipos y saldo pendiente. (Prioridad 1)
-- [ ] **Optimización Psicológica (Nudges & Whimsy)**: Implementar micro-interacciones y disparadores de comportamiento en el Checkout. (Quick Win)
-- [ ] **SEO Dinámico**: Meta Tags dinámicos por propiedad para asegurar tráfico orgánico temprano. (Quick Win)
-- [ ] **Gestión de Imágenes**: Implementación de subida real con optimización y manejo de errores. (Prioridad 2)
+- [ ] **Flujo de Pago 20/80 + UCP**: Integración total en Firestore para el manejo de anticipos. (Prioridad 1)
+- [ ] **Gestión de Imágenes**: Subida real con compresión proactiva para optimizar el ancho de banda.
+- [ ] **SEO Local (Lechería)**: Optimización de metatags para búsquedas de alquileres en la zona.
 
 ---
 
-## ⏳ Fase 3: Operatividad del Anfitrión y PWA (PENDIENTE)
-*El objetivo es dotar al anfitrión de herramientas y mejorar la retención.*
+## ⏳ Fase 3: Ecosistema del Anfitrión (JUNIO 2026)
+*El objetivo es empoderar a los primeros 10 socios de Lechería.*
 
-- [ ] **Dashboard de Anfitrión (MVP)**: Edición básica de propiedades y validación de pagos. (Estratégico)
-- [ ] **PWA (Progressive Web App)**: Soporte para instalación y offline básico.
-- [ ] **Auditoría de Performance & Real Evidence**: Verificación visual y técnica de cada flujo.
-- [ ] **Lanzamiento Beta**: Pruebas con usuarios reales.
+- [ ] **Dashboard de Anfitrión (MVP)**: Panel para gestionar listings y validar pagos de forma intuitiva.
+- [ ] **Lógica de Comisiones (12/10/8%)**: Implementación del modelo de rentabilidad escalonada.
+- [ ] **PWA (Mobile Experience)**: Soporte para instalación y acceso rápido desde el celular.
+
+---
+
+## 🚀 Fase 4: Calidad & Lanzamiento Beta (JULIO 2026)
+*El objetivo es la excelencia operativa y el Onboarding de los 10 primeros hosts.*
+
+- [ ] **Auditoría de Realidad**: Validación de cada flujo por el Agente Auditor (QA Móvil).
+- [ ] **Whimsy & Nudges**: Inyección de micro-animaciones y disparadores psicológicos de conversión.
+- [ ] **Estabilización & Launch**: Onboarding de los 10 socios y resolución de imprevistos (Buffer).
 
 ---
 
-## 🚀 Fase 4: Escalamiento y Valor Añadido (FUTURO)
-*El objetivo es diferenciar a VeneStay mediante funcionalidades avanzadas e inteligencia de datos.*
-
-- [ ] **Chat Avanzado**: Notificaciones push en tiempo real y envío de archivos/comprobantes.
-- [ ] **Sistema de Reseñas**: Algoritmo de confianza y calificaciones verificadas.
-- [ ] **Analíticas para el Host**: Dashboard con métricas de ocupación, ingresos y tendencias.
-- [ ] **Integración IA**: Generación inteligente de descripciones y sugerencias de precios basadas en el mercado.
+## 🌌 Visión de Expansión (AGOSTO 2026+)
+- [ ] **Expansión Geográfica**: Escalado del modelo probado en Lechería a Caracas y Margarita.
+- [ ] **Agentic Trust Badges**: Insignias dinámicas de verificación por IA.
+- [ ] **Chat con IA**: Soporte automático para huéspedes basado en datos de la propiedad.
 
 ---
-*Última actualización: 2026-05-03*
+*Última actualización: 2026-05-05 (Lechería Strategic Update)*

@@ -47,31 +47,28 @@ VeneStay implementa una arquitectura **Feature-Sliced Design (FSD)** adaptada, l
 ## 3. Estructura del Proyecto
 
 ```text
-/
-├── src/
+├── src/                  # Código fuente de la aplicación
 │   ├── assets/           # Imágenes, fuentes y archivos estáticos
 │   ├── components/       # UI Kit compartido (Botones, Inputs, Modales)
 │   ├── constants/        # Enums y constantes globales (e.g. Tasas BCV)
 │   ├── features/         # Dominios funcionales (FSD)
-│   │   ├── auth/         # Autenticación (Login, Registro, AuthContext)
-│   │   ├── bookings/     # Ciclo de vida de reservas y calendario
-│   │   ├── dashboard/    # Panel de control del anfitrión
-│   │   ├── listings/     # Gestión de propiedades y búsqueda
-│   │   └── profile/      # Gestión de perfiles y configuración
-│   ├── hooks/            # Hooks de React compartidos (e.g. useMediaQuery)
+│   ├── hooks/            # Hooks de React compartidos
 │   ├── lib/              # Configuraciones de SDKs (Firebase, Google Maps)
-│   ├── pages/            # Vistas principales y rutas (Home, HostGuide)
-│   ├── services/         # Servicios de API centralizados (Firebase logic)
-│   ├── types/            # Definiciones de TypeScript globales e interfaces
-│   ├── utils/            # Funciones de ayuda (Fechas, Monedas, Parsing)
-│   ├── App.tsx           # Router principal y configuración de Providers
-│   ├── index.css         # Directivas de Tailwind v4 y variables CSS
-│   └── main.tsx          # Punto de entrada de la aplicación
-├── public/               # Activos servidos direc1tamente
-├── firestore.rules       # Reglas de seguridad para la base de datos
-├── storage.rules         # Reglas de seguridad para almacenamiento
-├── package.json          # Dependencias y scripts de npm
-└── tsconfig.json         # Configuración de TypeScript y Alias (@/*)
+│   ├── pages/            # Vistas principales y rutas
+│   ├── services/         # Servicios de API centralizados
+│   ├── types/            # Definiciones de TypeScript e interfaces
+│   ├── utils/            # Funciones de ayuda (Fechas, Monedas)
+│   ├── App.tsx           # Router principal y Providers
+│   └── main.tsx          # Punto de entrada
+├── docs/                 # Documentación técnica y estratégica
+│   ├── ai-skills/        # Ecosistema de Inteligencia Agente (Skills)
+│   ├── TASKS.md          # Registro de tareas técnicas
+│   └── TECHNICAL_DOC.md  # Este archivo
+├── public/               # Activos servidos directamente
+├── firestore.rules       # Reglas de seguridad de base de datos
+├── storage.rules         # Reglas de seguridad de almacenamiento
+├── package.json          # Dependencias y scripts
+└── tsconfig.json         # Configuración de TypeScript
 ```
 
 ---
@@ -98,7 +95,7 @@ VeneStay implementa una arquitectura **Feature-Sliced Design (FSD)** adaptada, l
 ### Diseño de Interfaz
 
 - **Mobile-First**: Optimización para dispositivos táctiles con áreas de contacto >44px y gestos de deslizamiento (swiping).
-- **Estética Premium**: Paleta de colores "Dark Premium" utilizando variables CSS para coherencia en todo el sitio.
+- **Estética Premium**: Paleta de colores "Dark Premium" utilizando variables CSS. El color de acento oficial para elementos de marca y confianza es el dorado `#b8914d`.
 
 ---
 
@@ -116,7 +113,7 @@ VeneStay implementa una arquitectura **Feature-Sliced Design (FSD)** adaptada, l
 
 - **Alias de Importación**: Usar `@/` para rutas absolutas desde `src/`.
 - **Componentes**: PascalCase para archivos y nombres.
-- **Estándares**: Documentados detalladamente en `src/CONVENTIONS.md`.
+- **Estándares**: Documentados detalladamente en `docs/ai-skills/SKILL_coding_conventions.md`.
 
 ---
 
@@ -147,15 +144,26 @@ Si ves `ApiProjectMapError`:
 
 ---
 
+## 7. Alcance Funcional (v0.9.5)
+
+VeneStay es una plataforma P2P adaptada al mercado venezolano:
+
+1. **Descubrimiento**: Búsqueda inteligente por destino y filtros premium.
+2. **Reservas**: Flujo de calendario con protección contra solapamientos.
+3. **Pagos Dinámicos**: Sistema de anticipo del 20% para asegurar estancias, con liquidación del 80% offline. Soporte para **Zelle, Binance Pay y Pago Móvil** con tasa BCV automática.
+4. **Validación**: Dashboard para anfitriones con verificación manual de comprobantes de pago.
+
+---
+
 ## 8. Arquitectura Agente-Nativa y Protocolo UCP
 
 VeneStay está diseñado para ser operado y optimizado por agentes de IA mediante un sistema de habilidades (Skills) especializadas.
 
 ### Universal Commerce Protocol (UCP)
 Implementamos el estándar **UCP** para asegurar que cada transacción (especialmente el modelo 20/80) sea transparente y verificable.
-- [ ] **Sincronización de Checkout (UCP)**: Asegurar que el estado del pago del 20% siga el protocolo UCP en Firestore.
-- [ ] **Nudges de Conversión**: Implementar disparadores de comportamiento en el flujo de reserva (B=MAP).
-- [ ] **Auditoría de Realidad**: Captura de evidencia visual para el flujo de Mobile Checkout.
+- **Protocolo de Pago**: Sincronización del estado del pago del 20% bajo el estándar UCP.
+- **Nudges de Conversión**: Implementación de disparadores de comportamiento (B=MAP).
+- **Auditoría de Realidad**: Validación de flujos críticos mediante evidencia visual inmutable.
 - **Sesión de Checkout**: Cada reserva genera un objeto `CheckoutSession` que desglosa el depósito y el saldo offline.
 - **Trazabilidad**: Uso de metadatos de auditoría en Firestore para cada cambio de estado.
 
