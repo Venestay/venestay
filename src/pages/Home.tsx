@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/ui/Navbar';
 import ListingCard from '@/features/listings/components/ListingCard';
 import { City, Listing } from '@/types';
@@ -27,7 +27,10 @@ import { motion, AnimatePresence } from 'motion/react';
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAdmin, loading } = useAuth();
+  const isPropertyView = searchParams.has('listingId');
+  const [isLoadingListings, setIsLoadingListings] = useState(true);
   const [activeCity, setActiveCity] = useState<City>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
@@ -79,6 +82,7 @@ const Home: React.FC = () => {
     const unsubscribe = listingService.subscribeToListings(
       (data) => {
         setListings(data);
+        setIsLoadingListings(false);
         setConnectionError(false);
 
         const params = new URLSearchParams(location.search);
@@ -103,10 +107,7 @@ const Home: React.FC = () => {
 
   const handleListingClick = (listing: Listing) => {
     setSelectedListing(listing);
-    // Update URL without reloading/new tab
-    const url = new URL(window.location.href);
-    url.searchParams.set('listingId', listing.id);
-    window.history.pushState({}, '', url.toString());
+    setSearchParams({ listingId: listing.id });
   };
 
   const openInfo = (tab: InfoKey) => {
@@ -183,7 +184,16 @@ const Home: React.FC = () => {
         }}
       />
 
-      {!selectedListing ? (
+      {isPropertyView && !selectedListing ? (
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="flex flex-col items-center gap-4">
+            <div className="border-brand-500 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent"></div>
+            <p className="text-brand-navy text-[10px] font-black tracking-[0.2em] uppercase opacity-40">
+              Cargando Propiedad Premium...
+            </p>
+          </div>
+        </div>
+      ) : !selectedListing ? (
         <div className="animate-fade-in">
           <main className="mx-auto max-w-7xl px-4 pt-6 pb-20 sm:px-6 lg:px-8">
             {/* Gatillo de Autoridad */}
@@ -193,7 +203,10 @@ const Home: React.FC = () => {
             </div>
 
             {/* Hero Section */}
-            {activeCity === 'All' && searchQuery === '' && (
+            {!isPropertyView &&
+              !isLoadingListings &&
+              activeCity === 'All' &&
+              searchQuery === '' && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -558,9 +571,7 @@ const Home: React.FC = () => {
               listing={selectedListing}
               onClose={() => {
                 setSelectedListing(null);
-                const url = new URL(window.location.href);
-                url.searchParams.delete('listingId');
-                window.history.pushState({}, '', url.toString());
+                setSearchParams({});
               }}
               onBooked={(details) => {
                 console.log('Booking created:', details.id);

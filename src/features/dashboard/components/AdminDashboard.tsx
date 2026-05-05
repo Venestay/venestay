@@ -49,7 +49,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker, StandaloneSearchBox } from '@react-google-maps/api';
 import {
   GOOGLE_MAPS_API_KEY,
   MAPS_LIBRARIES,
@@ -103,6 +103,7 @@ const AdminDashboard: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const searchBoxRef = React.useRef<google.maps.places.SearchBox | null>(null);
 
   const location = useLocation();
   const initialListing = location.state?.initialListing;
@@ -124,6 +125,32 @@ const AdminDashboard: React.FC = () => {
       setActiveTab('listings');
     }
   }, [initialListing]);
+
+  const onSearchBoxLoad = (ref: google.maps.places.SearchBox) => {
+    searchBoxRef.current = ref;
+  };
+
+  const onPlacesChanged = () => {
+    if (searchBoxRef.current) {
+      const places = searchBoxRef.current.getPlaces();
+      if (places && places.length > 0) {
+        const place = places[0];
+        const location = place.geometry?.location;
+        if (location) {
+          setEditingListing((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  latitude: location.lat(),
+                  longitude: location.lng(),
+                  location: place.formatted_address || prev.location,
+                }
+              : null
+          );
+        }
+      }
+    }
+  };
 
   // ELIMINADO: useEffect que forzaba setActiveTab('profile') agresivamente
 
@@ -1468,6 +1495,16 @@ const AdminDashboard: React.FC = () => {
                             }}
                             options={DEFAULT_MAP_OPTIONS}
                           >
+                            <StandaloneSearchBox
+                              onLoad={onSearchBoxLoad}
+                              onPlacesChanged={onPlacesChanged}
+                            >
+                              <input
+                                type="text"
+                                placeholder="🔍 Buscar dirección exacta (ej. Lechería, Anzoátegui)..."
+                                className="absolute top-4 left-1/2 z-10 w-3/4 -translate-x-1/2 rounded-2xl border border-white/20 bg-premium-dark/90 p-4 text-xs font-bold text-premium-text shadow-2xl backdrop-blur-md focus:border-premium-gold focus:outline-none"
+                              />
+                            </StandaloneSearchBox>
                             {editingListing.latitude &&
                               editingListing.longitude && (
                                 <Marker
