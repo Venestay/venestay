@@ -953,7 +953,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
               </div>
 
               {/* Desktop Booking Card (Visible on lg) */}
-              <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-[480px] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:scrollbar-thin">
+              <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-[480px] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto no-scrollbar pr-2">
                 <div className="glass-card rounded-[32px] border-gray-200/50 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.1)] md:p-10">
                   <div className="mb-10 flex items-center justify-between">
                     <div>
