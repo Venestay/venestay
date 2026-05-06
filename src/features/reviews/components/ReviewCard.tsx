@@ -2,7 +2,7 @@ import React from 'react';
 import { Star, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 interface ReviewCardProps {
   guestName: string;

@@ -50,7 +50,6 @@ import { cn, calculatePaymentBreakdown } from '@/lib/utils';
 import Skeleton from '@/components/ui/Skeleton';
 import { checkProfileCompletion } from '@/lib/user-utils';
 import { motion, AnimatePresence } from 'motion/react';
-import PaymentBanner from '@/features/bookings/components/checkout/PaymentBanner';
 import ReviewCard from '@/features/reviews/components/ReviewCard';
 import ReviewForm from '@/features/reviews/components/ReviewForm';
 import * as reviewService from '@/services/review-service';
@@ -93,7 +92,9 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
 
   const [insights, setInsights] = useState<string>('');
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
-  const [activeImage, setActiveImage] = useState<string>(currentListing.images[0]);
+  const [activeImage, setActiveImage] = useState<string>(
+    currentListing?.images?.[0] ?? ''
+  );
   const [startDate, setStartDate] = useState<Date | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -127,6 +128,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [activeReviewSession, setActiveReviewSession] = useState<any>(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [guideQuestion, setGuideQuestion] = useState('');
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -161,7 +164,27 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
         metaDescription.setAttribute('content', 'VeneStay: La plataforma de alquileres vacacionales premium en Lechería. Reservas seguras con el protocolo UCP 20/80.');
       }
     };
-  }, [listing]);
+  }, [currentListing]);
+
+  const AMENITY_CATEGORIES: Record<string, string[]> = {
+    'Esenciales': ['Wifi', 'A/A', 'Agua', 'Luz', 'Planta eléctrica', 'Pozo de agua'],
+    'Relax': ['Piscina', 'BBQ', 'Piscina infinita', 'Jacuzzi', 'Terraza'],
+    'Acceso y Seguridad': ['Estacionamiento', 'Seguridad privada', 'Seguridad 24/7', 'Muelle', 'Muelle Privado'],
+    'Cocina y Hogar': ['Cocina equipada', 'Desayuno incluido', 'Tv por cable'],
+    'Conectividad': ['Wifi Fibra', 'Gimnasio'],
+  };
+
+  function categorizeAmenities(amenities: string[]) {
+    const result: Record<string, string[]> = {};
+    const categorized = new Set<string>();
+    for (const [cat, keywords] of Object.entries(AMENITY_CATEGORIES)) {
+      const matches = amenities.filter(a => keywords.some(k => a.toLowerCase().includes(k.toLowerCase())));
+      if (matches.length) { result[cat] = matches; matches.forEach(m => categorized.add(m)); }
+    }
+    const uncategorized = amenities.filter(a => !categorized.has(a));
+    if (uncategorized.length) result['Otros'] = uncategorized;
+    return result;
+  }
 
   const totalNights =
     startDate && endDate ? differenceInDays(endDate, startDate) : 0;
@@ -681,9 +704,25 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     </span>
                     Descripción del espacio
                   </h3>
-                  <p className="text-lg leading-relaxed font-medium whitespace-pre-line text-gray-600">
-                    {currentListing.description}
-                  </p>
+                  <div className="relative">
+                    <p
+                      className={cn(
+                        'text-lg leading-relaxed font-medium text-gray-600 transition-all duration-500 whitespace-pre-line',
+                        !isDescriptionExpanded && 'line-clamp-4'
+                      )}
+                    >
+                      {currentListing.description}
+                    </p>
+                    {!isDescriptionExpanded && (
+                      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                    className="flex items-center gap-1 text-sm font-black text-brand-navy/60 hover:text-brand-navy transition-colors"
+                  >
+                    {isDescriptionExpanded ? 'Leer menos ↑' : 'Leer más →'}
+                  </button>
                 </div>
 
                 <div className="space-y-6">
@@ -711,25 +750,32 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <h3 className="text-brand-navy flex items-center text-2xl font-black">
                     <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
                       02
                     </span>
                     Comodidades
                   </h3>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {currentListing.amenities.map((item) => (
-                      <div
-                        key={item}
-                        className="hover:border-brand-100 hover:bg-brand-50 flex items-center space-x-4 rounded-2xl border border-transparent bg-gray-50 p-4 transition-all duration-300"
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
-                          <Check className="text-brand-500 h-5 w-5" />
+                  <div className="space-y-8">
+                    {Object.entries(categorizeAmenities(currentListing.amenities)).map(([category, items]) => (
+                      <div key={category} className="space-y-4">
+                        <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">{category}</p>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          {items.map((item) => (
+                            <div
+                              key={item}
+                              className="hover:border-brand-100 hover:bg-brand-50 flex items-center space-x-4 rounded-2xl border border-transparent bg-gray-50 p-4 transition-all duration-300"
+                            >
+                              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                                <Check className="text-brand-500 h-5 w-5" />
+                              </div>
+                              <span className="text-brand-navy font-bold">
+                                {item}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                        <span className="text-brand-navy font-bold">
-                          {item}
-                        </span>
                       </div>
                     ))}
                   </div>
@@ -907,7 +953,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
               </div>
 
               {/* Desktop Booking Card (Visible on lg) */}
-              <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-[480px]">
+              <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-[480px] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:scrollbar-thin">
                 <div className="glass-card rounded-[32px] border-gray-200/50 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.1)] md:p-10">
                   <div className="mb-10 flex items-center justify-between">
                     <div>
@@ -1022,61 +1068,14 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     </div>
                   </div>
 
-                  <div className="mb-10 space-y-6">
-                    {totalNights > 0 && (
-                      <div className="bg-brand-navy flex flex-col justify-between rounded-[28px] p-5 text-white shadow-xl">
-                        <div className="mb-1 flex items-center justify-between">
-                          <span className="text-brand-500 text-[10px] font-black tracking-widest uppercase">
-                            Anticipo de Reserva (20%)
-                          </span>
-                          <Globe className="h-3 w-3 text-white/40" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-2xl leading-none font-black">
-                            $
-                            {calculatePaymentBreakdown(
-                              totalPrice
-                            ).depositAmount.toFixed(2)}
-                          </p>
-                        </div>
-                        <p className="mt-1 mt-2 text-[9px] leading-none font-medium text-gray-300">
-                          Paga{' '}
-                          <strong className="text-white">
-                            $
-                            {calculatePaymentBreakdown(
-                              totalPrice
-                            ).depositAmount.toFixed(2)}
-                          </strong>{' '}
-                          hoy para asegurar tus fechas. Los{' '}
-                          <strong className="text-white">
-                            $
-                            {calculatePaymentBreakdown(
-                              totalPrice
-                            ).remainingBalance.toFixed(2)}
-                          </strong>{' '}
-                          restantes se entregan al anfitrión al llegar.
-                        </p>
-                      </div>
-                    )}
-
+                  <div className="mb-10">
                     <ExchangeCalculator
                       basePriceUSD={
                         totalNights > 0
                           ? calculatePaymentBreakdown(totalPrice).depositAmount
-                          : calculatePaymentBreakdown(currentListing.pricePerNight)
-                              .depositAmount
+                          : currentListing.pricePerNight
                       }
                     />
-
-                    {totalNights > 0 && (
-                      <p className="text-center text-[10px] font-black text-gray-400 uppercase">
-                        Desglose: {totalNights}{' '}
-                        {totalNights === 1 ? 'noche' : 'noches'} x $
-                        {currentListing.pricePerNight} = ${totalPrice}
-                      </p>
-                    )}
-
-                    <PaymentBanner />
                   </div>
 
                   {bookingError && (
@@ -1091,7 +1090,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     className="bg-brand-navy hover:bg-brand-navy/95 group/btn relative w-full transform overflow-hidden rounded-2xl py-5 text-sm font-black tracking-[0.2em] text-white uppercase shadow-[0_15px_30px_-5px_rgba(5,11,24,0.4)] transition-all duration-300 active:scale-[0.98]"
                     onClick={handleBooking}
                   >
-                    <span className="relative z-10">Reservar</span>
+                    <span className="relative z-10">Asegurar mi Estancia</span>
                     <div className="bg-brand-500 absolute inset-0 -translate-x-full opacity-20 transition-transform duration-500 group-hover/btn:translate-x-0" />
                   </button>
 
@@ -1099,12 +1098,11 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     <div className="flex items-center space-x-2">
                       <Info className="h-4 w-4" />
                       <p className="text-[11px] font-bold tracking-tighter uppercase">
-                        Sin cargos inmediatos
+                        Confirmación Inmediata
                       </p>
                     </div>
                     <p className="px-4 text-center text-[10px] leading-relaxed font-medium">
-                      Tras reservar, verás las instrucciones de pago del
-                      anfitrión para confirmar tu estadía.
+                      Tu estancia queda asegurada al instante tras confirmar el anticipo.
                     </p>
                   </div>
                 </div>
@@ -1137,7 +1135,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
           onClick={handleBooking}
           className="bg-brand-500 text-brand-navy shadow-brand-500/20 flex h-[60px] min-w-[160px] items-center justify-center rounded-2xl px-10 py-5 text-xs font-black tracking-[0.1em] uppercase shadow-xl transition-all active:scale-95"
         >
-          {startDate && endDate ? 'Reservar' : 'Disponibilidad'}
+          {startDate && endDate ? 'Asegurar Estancia' : 'Disponibilidad'}
         </button>
       </div>
 
