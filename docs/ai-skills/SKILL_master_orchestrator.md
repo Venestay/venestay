@@ -25,6 +25,7 @@ Generar un reporte interno con:
 1.  **Prohibición de Edición Ciega:** No se permite realizar más de 2 intentos de corrección sobre el mismo archivo sin realizar una lectura completa (`view_file`) del bloque afectado.
 2.  **Verificación de Sintaxis Estructural:** En componentes de alta complejidad (>500 líneas), todo `replace_file_content` que altere el balance de llaves `{}` debe ser seguido inmediatamente por una validación de tipado focalizada (`tsc`).
 3.  **Memoria de Fallos Mandatoria:** El fallo no es un obstáculo, sino una **oportunidad de actualización obligatoria**. Cada error detectado por una Quality Gate obliga a una actualización de la base de conocimientos (`HISTORY.md`, `PROJECT_MEMORY.md` y `TECHNICAL_DOC.md`).
+4.  **Evolución Documental SSoT:** Queda prohibido cerrar una tarea sin actualizar el `TECHNICAL_DOC.md` si el cambio realizado altera la estructura, lógica de negocio o estándares visuales del proyecto.
 
 ---
 
