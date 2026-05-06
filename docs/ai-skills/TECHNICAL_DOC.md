@@ -114,6 +114,7 @@ VeneStay implementa una arquitectura **Feature-Sliced Design (FSD)** adaptada, l
 - **Alias de Importación**: Usar `@/` para rutas absolutas desde `src/`.
 - **Componentes**: PascalCase para archivos y nombres.
 - **Estándares**: Documentados detalladamente en `docs/ai-skills/SKILL_coding_conventions.md`.
+- **Integridad Estructural**: En componentes extensos (>500 líneas), se debe mantener un rigor extremo en el balance de hooks y closures. Cualquier refactorización masiva debe ser validada mediante el protocolo de "Doble Candado" (Sincronización SSoT + TSC Gate).
 
 ---
 

@@ -19,7 +19,7 @@
 | 05-May | Master Orchestrator | Integración total de los 19 Skills (The Quality Stack & SOP v2.0) + QA Engineer. | [Gate: PASSED] | ✅ |
 | 05-May | SRE Architect | Implementación de Storage Service con compresión y SEO dinámico (Lechería). | [Gate: PASSED] | ✅ |
 | 05-May | Master Orchestrator | Reparación Quirúrgica Crítica: ListingDetail.tsx (JSX huérfano, firmas restauradas, unificación navigate). | [Gate: PASSED] | ✅ |
-| 06-May | Master Orchestrator | **OPERACIÓN DE EMERGENCIA: Restauración Forense Completa.** Re-aplicación de v0.9.5: Checkout Consolidado, UX Premium (Asegurar mi Estancia), Amenities Categorizados y Fix de Estabilidad. | [Gate: PASSED] | ✅ |
+| 06-May | Master Orchestrator | **OPERACIÓN DE EMERGENCIA: Restauración Forense Completa.** Re-aplicación de v0.9.5: Checkout Consolidado, UX Premium y Fix de Estabilidad. | [Gate: PASSED after Self-Correction] | ✅ |
 
 ## 🎯 Criterios de Aceptación Globales (Gobernanza)
 1. **FSD Strict:** Prohibido crear componentes en `src/components` que pertenezcan a una `feature` específica.

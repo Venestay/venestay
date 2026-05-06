@@ -1,37 +1,38 @@
-# 👑 Master Orchestrator - VeneStay Management
+# 🛠️ SKILL: Master Orchestrator (Protocolo de Gobernanza v2.1)
 
-## 🎯 Misión Superior
-Eres el Director de Orquesta de VeneStay. Tu responsabilidad es coordinar a los 19 agentes especializados y asegurar que la "Memoria del Proyecto" sea la única fuente de verdad.
+Este documento define el comportamiento mandatorio del Agente Líder para asegurar la integridad del codebase de VeneStay.
 
-## 🔄 Protocolo de Acción (The Orchestration Loop)
-Antes de ejecutar cualquier comando de escritura (`write_file`), DEBES:
-1. **Consulta de Memoria:** Leer `@PROJECT_MEMORY.md` para verificar bloqueos o restricciones actuales.
-2. **Selección de Especialistas:** Activar los Skills necesarios según la tarea (ej: Agile para priorizar, UX para diseñar).
-3. **Sincronización Transversal:** Si el cambio afecta al Roadmap, a las Tareas o a la Configuración Global, debes actualizar esos archivos en el mismo turno.
+## 📜 Protocolo de Aprendizaje Post-Mortem (MANDATORIO)
 
-## 🚦 Resolución de Conflictos de Agentes
-- **Seguridad vs. Marketing:** Si el `Growth Hacker` propone algo que debilita el `Trust Architect`, la seguridad tiene prioridad absoluta.
-- **Diseño vs. Funcionalidad:** El `UX Architect` tiene la última palabra sobre el estilo visual para mantener el estándar Premium Dark.
+Queda estrictamente prohibida cualquier corrección "ciega" ante fallos detectados por **Quality Gates** (Compilación, Linting, Auditoría de Realidad). Ante un fallo, se debe ejecutar:
 
-## ⛓️ Lógica de Dependencias (DAG Coordinator)
-Antes de activar a un agente especialista, debes verificar si existe una dependencia técnica bloqueante:
-1. **Estrategia ante todo:** No inicies ninguna tarea sin el Score RICE del `Agile Planner`.
-2. **Infraestructura primero:** No actives al `UX Architect` si el `UCP Protocol` no ha definido el esquema de datos en `PROJECT_MEMORY.md`.
-3. **Seguridad Obligatoria:** No actives al `Growth Hacker` para cambios en el checkout si el `Trust Architect` no ha validado las `firestore.rules`.
-4. **Validación Secuencial:** El `Reality Auditor` y el `QA Engineer` solo intervienen DESPUÉS de que el `SRE Architect` confirme que el código compila y es estable en el entorno de pruebas.
-5. **Certificación Final:** Ninguna funcionalidad se marca como 'Hecha' sin el reporte de calidad 'PASS' del `QA Engineer`.
+### 🟢 PASO 1: Análisis de Falla (Autocrítica)
+Generar un reporte interno con:
+1.  **Causa Técnica:** Identificación exacta del archivo y línea (o bloque) que rompió el sistema.
+2.  **Falla de Proceso:** Análisis de por qué el agente generó el error (ej. error de contexto en `replace_file_content`, asunción incorrecta de tipos, omisión de cierre de tags).
+3.  **Antecedente:** Consulta obligatoria a `@HISTORY.md` para verificar si es un error recurrente.
 
-## 🛠️ The Quality Stack (Guardianes Técnicos)
-Como Director de Orquesta, tienes la autoridad para invocar a estos guardianes en cualquier momento del ciclo:
-- **React Performance:** Bloquea el flujo si detecta Cascadas de Carga (Waterfalls).
-- **Composition Patterns:** Exige la refactorización de componentes monolíticos con exceso de props booleanas.
-- **Agent Browser:** Ejecuta validaciones E2E obligatorias en componentes de alta transaccionalidad.
+### 🟡 PASO 2: Propuesta de Reparación Quirúrgica
+1.  Documentar el cambio exacto.
+2.  Explicar por qué esta reparación no repetirá el error del PASO 1.
 
-## 🚧 Quality Gates (No-Go Conditions)
-Tienes PROHIBIDO actualizar `PROJECT_MEMORY.md` o marcar una tarea como 'Hecha' si falla cualquiera de estas puertas:
+### 🔴 PASO 3: Ejecución y Cierre de Gate
+1.  Aplicar el cambio.
+2.  Registrar el incidente en `@HISTORY.md` para alimentar la memoria del sistema.
 
-1. **Gate de Compilación:** Si `npx tsc --noEmit` arroja un solo error, el flujo se detiene. Debes retroceder a la fase de construcción.
-2. **Gate de Estilo:** `npm run lint` debe ser exitoso. No se aceptan "warnings" en componentes de la capa Shared o Features.
-3. **Gate de Evidencia:** Si el `Reality Auditor` no presenta la captura de pantalla o el `QA Engineer` no valida el User Journey (trayecto del usuario), la tarea es declarada 'Nula'.
-4. **Gate de Seguridad:** Cualquier cambio en pagos requiere una verificación doble del esquema `UCPTransactionPayload` por el `Trust Architect`.
-5. **Gate de Estabilidad (SRE):** Validar que el rendimiento no degrade más del 5% en Web Vitals tras el cambio.
+## 🛡️ Restricciones de Seguridad (AI Guardrails)
+
+1.  **Prohibición de Edición Ciega:** No se permite realizar más de 2 intentos de corrección sobre el mismo archivo sin realizar una lectura completa (`view_file`) del bloque afectado.
+2.  **Verificación de Sintaxis Estructural:** En componentes de alta complejidad (>500 líneas), todo `replace_file_content` que altere el balance de llaves `{}` debe ser seguido inmediatamente por una validación de tipado focalizada (`tsc`).
+3.  **Memoria de Fallos Mandatoria:** El fallo no es un obstáculo, sino una **oportunidad de actualización obligatoria**. Cada error detectado por una Quality Gate obliga a una actualización de la base de conocimientos (`HISTORY.md`, `PROJECT_MEMORY.md` y `TECHNICAL_DOC.md`).
+
+---
+
+## 🚦 Quality Gates (Vigilancia del Codebase)
+
+1.  **Gate 1: Compilación (TSC):** No se aprueban cambios con errores de tipado o sintaxis.
+2.  **Gate 2: Reality Auditor (Browser):** Los cambios visuales DEBEN ser capturados y verificados contra el diseño Premium Dark.
+3.  **Gate 3: Trust Gate:** Cambios en pagos o seguridad requieren revisión del Trust Architect.
+
+---
+*Gobernanza activada: 06 de Mayo de 2026*
