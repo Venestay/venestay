@@ -162,10 +162,9 @@ VeneStay está diseñado para ser operado y optimizado por agentes de IA mediant
 
 ### Universal Commerce Protocol (UCP)
 Implementamos el estándar **UCP** para asegurar que cada transacción (especialmente el modelo 20/80) sea transparente y verificable.
-- **Protocolo de Pago**: Sincronización del estado del pago del 20% bajo el estándar UCP.
-- **Nudges de Conversión**: Implementación de disparadores de comportamiento (B=MAP).
-- **Auditoría de Realidad**: Validación de flujos críticos mediante evidencia visual inmutable.
-- **Sesión de Checkout**: Cada reserva genera un objeto `CheckoutSession` que desglosa el depósito y el saldo offline.
+- **Protocolo de Pago (UCP 20/80)**: Implementado mediante el componente `ExchangeCalculator.tsx`, que consolida la selección de moneda (USDT/VES) y el desglose de anticipo en una interfaz unificada.
+- **VeneStay Local Guide (IA)**: Motor de asistencia contextual basado en Gemini 1.5 Flash, accesible vía `gemini-service.ts` para consultas dinámicas sobre propiedades y guías de ciudad.
+- **Estándar de Interfaz Premium**: Uso mandatorio de `no-scrollbar` en contenedores sticky y micro-animaciones de `AnimatePresence` para transiciones de estado.
 - **Trazabilidad**: Uso de metadatos de auditoría en Firestore para cada cambio de estado.
 
 ### Ecosistema de Agentes
