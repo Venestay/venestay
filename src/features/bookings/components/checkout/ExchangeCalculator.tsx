@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ExchangeRates } from '@/types';
 import {
-  TrendingUp,
-  Wallet,
   Building2,
   CheckCircle2,
   ShieldCheck,
   Zap,
   Star,
+  Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface ExchangeCalculatorProps {
   basePriceUSD: number;
@@ -23,9 +24,7 @@ const ExchangeCalculator: React.FC<ExchangeCalculatorProps> = ({
   const [rates, setRates] = useState<ExchangeRates | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedOption, setSelectedOption] = useState<PaymentOption>('USDT');
-
-  const discountRate = 0.15; // 15% incentive
-  const usdtPriceUSD = basePriceUSD * (1 - discountRate);
+  const [showFlash, setShowFlash] = useState(false);
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -53,158 +52,184 @@ const ExchangeCalculator: React.FC<ExchangeCalculatorProps> = ({
     fetchRates();
   }, []);
 
+  const handleSelect = (option: PaymentOption) => {
+    setSelectedOption(option);
+    setShowFlash(true);
+    setTimeout(() => setShowFlash(false), 500);
+  };
+
   const calculations = useMemo(() => {
     if (!rates) return null;
 
     const totalVES = basePriceUSD * rates.bcv;
-    const totalUSDT = usdtPriceUSD;
+    const totalUSDT = basePriceUSD * 1; // USDT is 1:1 with USD but in crypto
     const gap = ((rates.p2p - rates.bcv) / rates.bcv) * 100;
-
-    const vesAtBcv = basePriceUSD * rates.bcv;
-    const usdtValueInVes = totalUSDT * rates.p2p;
-    const savingsVES = vesAtBcv - usdtValueInVes;
 
     return {
       totalVES,
       totalUSDT,
       gap,
-      savingsVES,
     };
-  }, [rates, basePriceUSD, usdtPriceUSD]);
+  }, [rates, basePriceUSD]);
 
   if (loading || !rates || !calculations) {
     return (
-      <div className="w-full animate-pulse rounded-2xl border border-gray-100 bg-gray-50 p-6">
-        <div className="mb-4 h-4 w-32 rounded bg-gray-200"></div>
+      <div className="w-full animate-pulse space-y-4">
+        <div className="h-4 w-32 rounded bg-gray-100" />
         <div className="grid grid-cols-2 gap-4">
-          <div className="h-24 rounded-xl bg-gray-200"></div>
-          <div className="h-24 rounded-xl bg-gray-200"></div>
+          <div className="h-32 rounded-3xl bg-gray-50" />
+          <div className="h-32 rounded-3xl bg-gray-50" />
         </div>
       </div>
     );
   }
 
-  const isGapHigh = calculations.gap > 20;
-
   return (
-    <div className="animate-fade-in w-full space-y-4">
+    <div className="w-full space-y-4">
       <div className="flex items-center justify-between px-1">
-        <h4 className="text-brand-navy/60 text-[11px] font-black tracking-widest uppercase">
-          Modalidad de Pago
+        <h4 className="text-brand-navy/60 text-[10px] font-black tracking-widest uppercase">
+          Asegurar con Anticipo (20%)
         </h4>
-        <div
-          className={cn(
-            'flex items-center space-x-1.5 rounded-full px-2.5 py-1 text-[10px] font-black tracking-tight transition-all duration-500',
-            isGapHigh
-              ? 'bg-brand-500 text-brand-navy shadow-lg'
-              : 'bg-gray-100 text-gray-500'
-          )}
-        >
-          <TrendingUp
-            className={cn('h-3 w-3', isGapHigh && 'animate-bounce')}
-          />
-          <span>Brecha: {calculations.gap.toFixed(1)}%</span>
+        <div className="flex items-center space-x-1 text-[10px] font-bold text-gray-400 uppercase">
+          <TrendingUp className="h-3 w-3" />
+          <span>Tasa BCV: {rates.bcv}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* VES Card */}
-        <div
-          onClick={() => setSelectedOption('VES')}
+        <button
+          onClick={() => handleSelect('VES')}
           className={cn(
-            'relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-300',
+            'group relative flex flex-col items-start rounded-[32px] border-2 p-6 text-left transition-all duration-500',
             selectedOption === 'VES'
-              ? 'border-brand-navy scale-[1.02] bg-white shadow-xl'
-              : 'hover:border-brand-200 border-gray-100 bg-gray-50 opacity-60 hover:opacity-100'
+              ? 'border-brand-navy bg-white shadow-2xl scale-[1.02]'
+              : 'border-gray-100 bg-gray-50/50 hover:border-gray-200'
           )}
         >
-          <div className="mb-3 flex items-start justify-between">
-            <div className="bg-brand-navy text-brand-500 rounded-xl p-2">
-              <Building2 className="h-4 w-4" />
+          <div className="mb-4 flex w-full items-center justify-between">
+            <div className={cn(
+              "rounded-2xl p-2.5 transition-colors duration-500",
+              selectedOption === 'VES' ? "bg-brand-navy text-brand-500" : "bg-gray-200 text-gray-500"
+            )}>
+              <Building2 className="h-5 w-5" />
             </div>
             {selectedOption === 'VES' && (
-              <CheckCircle2 className="text-brand-navy h-5 w-5" />
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                <CheckCircle2 className="text-brand-navy h-6 w-6" />
+              </motion.div>
             )}
           </div>
 
           <div className="space-y-1">
-            <p className="text-brand-navy/40 text-[10px] font-black uppercase">
-              Transferencia VES
+            <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
+              Pago en VES
             </p>
-            <p className="text-brand-navy text-xl leading-none font-black">
-              {calculations.totalVES.toLocaleString('es-VE', {
-                maximumFractionDigits: 0,
-              })}
-            </p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-black text-brand-navy">
+                {calculations.totalVES.toLocaleString('es-VE', {
+                  maximumFractionDigits: 0,
+                })}
+              </span>
+              <span className="text-xs font-black text-brand-navy/40 uppercase">VES</span>
+            </div>
             <p className="text-[10px] font-bold text-gray-400">
-              1$ = {rates.bcv} (BCV)
+              Monto hoy al cambio oficial
             </p>
           </div>
-        </div>
+        </button>
 
         {/* USDT Card */}
-        <div
-          onClick={() => setSelectedOption('USDT')}
+        <button
+          onClick={() => handleSelect('USDT')}
           className={cn(
-            'relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-300',
+            'group relative flex flex-col items-start rounded-[32px] border-2 p-6 text-left transition-all duration-500',
             selectedOption === 'USDT'
-              ? 'scale-[1.02] border-emerald-500 bg-white shadow-xl'
-              : 'border-gray-100 bg-gray-50 opacity-60 hover:border-emerald-200 hover:opacity-100'
+              ? 'border-brand-500 bg-white shadow-2xl scale-[1.02]'
+              : 'border-gray-100 bg-gray-50/50 hover:border-brand-200'
           )}
         >
-          <div className="mb-3 flex items-start justify-between">
-            <div className="rounded-xl bg-emerald-500 p-2 text-white">
-              <Zap className="h-4 w-4" />
+          <div className="mb-4 flex w-full items-center justify-between">
+            <div className={cn(
+              "rounded-2xl p-2.5 transition-colors duration-500",
+              selectedOption === 'USDT' ? "bg-brand-500 text-brand-navy" : "bg-gray-200 text-gray-500"
+            )}>
+              <Zap className="h-5 w-5" />
             </div>
-            {selectedOption === 'USDT' && (
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-            )}
+            <div className="flex items-center gap-2">
+              <div className="bg-emerald-50 text-emerald-600 rounded-full px-2.5 py-1 text-[9px] font-black tracking-widest uppercase">
+                Mejor Precio
+              </div>
+              {selectedOption === 'USDT' && (
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                  <CheckCircle2 className="text-brand-500 h-6 w-6" />
+                </motion.div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1">
-            <p className="flex items-center text-[10px] font-black text-emerald-600 uppercase">
-              PAGAR CON USDT <Star className="ml-1 h-3 w-3 fill-emerald-500" />
+            <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
+              Cripto (Binance)
             </p>
-            <div className="flex items-baseline space-x-2">
-              <p className="text-xl leading-none font-black text-emerald-600">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-black text-brand-navy">
                 {calculations.totalUSDT.toFixed(2)}
-              </p>
-              <span className="text-xs font-bold text-gray-400 line-through">
-                ${basePriceUSD}
               </span>
+              <span className="text-xs font-black text-brand-navy/40 uppercase">USDT</span>
             </div>
+            <p className="text-[10px] font-bold text-gray-400">
+              Confirmación instantánea 24/7
+            </p>
+          </div>
 
-            <div className="mt-2 inline-block rounded-lg border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700">
-              AHORRO:{' '}
-              {calculations.savingsVES.toLocaleString('es-VE', {
-                maximumFractionDigits: 0,
-              })}{' '}
-              VES
-            </div>
+          {/* Flash Effect */}
+          <AnimatePresence>
+            {showFlash && selectedOption === 'USDT' && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 0.2, scale: 1.2 }}
+                exit={{ opacity: 0 }}
+                className="bg-brand-500 absolute inset-0 rounded-[32px]"
+              />
+            )}
+          </AnimatePresence>
+        </button>
+      </div>
+
+      <motion.div 
+        layout
+        className="bg-brand-navy brand-gradient relative overflow-hidden rounded-3xl border border-white/10 p-5 text-white shadow-xl"
+      >
+        <div className="relative z-10 flex items-start gap-4">
+          <div className="bg-brand-500/20 rounded-2xl p-2">
+            <ShieldCheck className="text-brand-500 h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-black uppercase tracking-widest">
+              VeneStay Security Shield
+            </p>
+            <p className="text-[11px] leading-relaxed font-medium text-white/70">
+              {selectedOption === 'USDT' 
+                ? 'Al asegurar con USDT, tu reserva se confirma de forma automática y tu saldo queda protegido contra devaluación.'
+                : 'Al asegurar con VES, el monto se calcula a tasa BCV del momento. Deberás enviar el comprobante para validación manual.'}
+            </p>
           </div>
         </div>
-      </div>
-
-      <div className="bg-brand-navy brand-gradient rounded-2xl border border-white/10 p-4 text-white/90 shadow-lg">
-        <div className="flex items-start space-x-3">
-          <ShieldCheck className="text-brand-500 mt-0.5 h-5 w-5 shrink-0" />
-          <p className="text-[10px] leading-relaxed font-medium">
-            <span className="mb-1 block font-black text-white">
-              VeneStay Security Shield
-            </span>
-            Al reservar con USDT obtienes confirmación inmediata y el tipo de
-            cambio se congela durante la negociación.
-          </p>
-        </div>
-      </div>
+        
+        {/* Decorative Sparkle */}
+        {selectedOption === 'USDT' && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute -right-4 -bottom-4 opacity-10"
+          >
+            <Sparkles className="h-24 w-24 text-brand-500" />
+          </motion.div>
+        )}
+      </motion.div>
     </div>
   );
 };
 
 export default ExchangeCalculator;
-
-
-
-
-
-
