@@ -39,7 +39,7 @@ VeneStay opera mediante un equipo de **Agentes Especializados (Skills)** que ase
 
 ---
 
-## 🏗️ Fase Actual: Agentic Intelligence & Optimization (v0.9.5)
+## 🏗️ Fase Actual: Performance & Host Ecosystem (v0.9.6)
 
 Nos encontramos en la fase de **madurez funcional**. El sistema ha sido optimizado para condiciones de uso reales en Venezuela (redes móviles y latencia variable), incorporando capas de ciberseguridad estrictas.
 
@@ -49,12 +49,15 @@ Nos encontramos en la fase de **madurez funcional**. El sistema ha sido optimiza
 - **Modelado Zero-Trust**: Reglas de base de datos endurecidas en Firestore y Storage, protegiendo datos sensibles (PII) y previniendo fugas relacionales.
 - **UX de Transaccionalidad**: Sistema "In-place" para confirmación de pagos con "Tap-to-copy" y desgloses financieros transparentes.
 - **Whimsy & Nudges**: Inyección de micro-interacciones de deleite y disparadores psicológicos para aumentar la retención.
-- **Rendimiento**: Implementación de **Skeleton Loaders** para una experiencia fluida incluso en redes 4G/LTE.
+- **Admin Dashboard Pro (v2.2)**: Sistema modular para anfitriones con arquitectura FSD, permitiendo una gestión fluida de reservas y propiedades.
+- **Rendimiento Harness**: Implementación de cargas en paralelo (`async-parallel`) y carga diferida (`lazy-loading`) para componentes de alta complejidad.
+- **Integridad con Zod**: Validación estricta y coerción de datos en formularios para asegurar sincronización perfecta con Firestore.
+- **Skeleton Loaders**: Experiencia visual de carga inmediata incluso en redes de baja latencia.
 
 ### Próximos Pasos:
 - **Notificaciones Push**: Alertas inmediatas para mensajes y cambios en el estado de reservas.
 - **Buscador Avanzado**: Filtros granulares por precio, amenidades específicas y número de habitaciones.
-- **Insights para Anfitriones**: Panel de estadísticas de ingresos y rendimiento de listings.
+- **Lógica de Comisiones**: Implementación del modelo de rentabilidad 12/10/8% para socios fundadores.
 
 ---
 

@@ -116,6 +116,17 @@ const CheckoutPage: React.FC = () => {
           } as Listing;
           setListing(lData);
 
+          // v2.2 Host Audit for Commission Tier
+          let hostTier: any = 12;
+          if (lData.hostId) {
+            const hostSnap = await getDoc(doc(db, 'users', lData.hostId));
+            if (hostSnap.exists()) {
+              const hData = hostSnap.data();
+              const { getCommissionTier } = await import('@/lib/commission');
+              hostTier = getCommissionTier(hData.isVerified || false, hData.completedBookings || 0);
+            }
+          }
+
           const sDate = new Date(start);
           const eDate = new Date(end);
           const nights =
@@ -124,12 +135,16 @@ const CheckoutPage: React.FC = () => {
               : 0;
           const total = nights * lData.pricePerNight;
 
+          const { calculateCommission } = await import('@/lib/commission');
+          const financials = calculateCommission(total, hostTier);
+
           setBooking({
             listingId,
             startDate: start,
             endDate: end,
             guests: parseInt(guests || '2'),
             totalAmount: total,
+            financials, // Persist current financial law
             status: 'PENDING_PAYMENT',
             isDraft: true,
           });
@@ -262,6 +277,11 @@ const CheckoutPage: React.FC = () => {
       const total = nights * listing.pricePerNight;
       newBooking.totalAmount = total;
 
+      // Recalculate financials with the same tier
+      const currentTier = booking.financials?.commissionTier || 12;
+      const { calculateCommission } = await import('@/lib/commission');
+      newBooking.financials = calculateCommission(total, currentTier);
+
       setBooking(newBooking);
       setIsCalendarOpen(false);
 
@@ -272,6 +292,7 @@ const CheckoutPage: React.FC = () => {
             startDate: format(start, 'yyyy-MM-dd'),
             endDate: format(end, 'yyyy-MM-dd'),
             totalAmount: total,
+            financials: newBooking.financials,
             updatedAt: serverTimestamp(),
             statusHistory: [
               ...(booking.statusHistory || []),
@@ -308,6 +329,7 @@ const CheckoutPage: React.FC = () => {
         startDate: booking.startDate,
         endDate: booking.endDate,
         totalAmount: booking.totalAmount,
+        financials: booking.financials || null,
         agreedPercentage: 20,
         status: 'PENDING_PAYMENT' as BookingStatus,
         paymentInstructions: listing.paymentInstructions || '',
@@ -536,6 +558,7 @@ const CheckoutPage: React.FC = () => {
         status: 'AWAITING_VERIFICATION',
         proofUrl,
         paymentReference: reference,
+        financials: booking.financials, // Seal the deal
         updatedAt: serverTimestamp(),
         statusHistory: [
           ...(booking.statusHistory || []),
@@ -731,6 +754,7 @@ const CheckoutPage: React.FC = () => {
                           ? 'border-brand-500 ring-brand-500/5 ring-4'
                           : 'hover:border-brand-500 border-gray-100'
                       )}
+                      id="checkout-stay-trigger"
                     >
                       <div className="mb-2 flex items-center space-x-2">
                         <Clock className="text-brand-500 h-4 w-4 transition-transform group-hover:scale-110" />
@@ -786,6 +810,7 @@ const CheckoutPage: React.FC = () => {
                           ? 'border-brand-500 ring-brand-500/5 ring-4'
                           : 'hover:border-brand-500 border-gray-100'
                       )}
+                      id="checkout-guests-trigger"
                     >
                       <div className="mb-2 flex items-center space-x-2">
                         <Users className="text-brand-500 h-4 w-4 transition-transform group-hover:scale-110" />
@@ -1284,6 +1309,7 @@ const CheckoutPage: React.FC = () => {
                       <input
                         type="text"
                         inputMode="numeric"
+                        id="reference-input"
                         value={reference}
                         onChange={(e) => setReference(e.target.value)}
                         placeholder="Introduce los números"
@@ -1327,6 +1353,7 @@ const CheckoutPage: React.FC = () => {
                     </div>
                   )}
                   <button
+                    id="payment-submit-button-desktop"
                     disabled={isSubmitting || !reference.trim() || !file}
                     onClick={handleSubmitPayment}
                     className="bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400 flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase shadow-2xl transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
@@ -1408,6 +1435,7 @@ const CheckoutPage: React.FC = () => {
       {!uploadSuccess && (
         <div className="pointer-events-none fixed right-0 bottom-16 left-0 z-[60] p-4 md:hidden">
           <button
+            id="payment-submit-button-mobile"
             disabled={isSubmitting || !reference.trim() || !file}
             onClick={handleSubmitPayment}
             className="bg-brand-500 text-brand-navy shadow-brand-500/40 pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"

@@ -11,7 +11,7 @@ Esta documentación proporciona una visión técnica detallada del proyecto **Ve
 - **React 19**: Framework principal para la interfaz de usuario, utilizando componentes funcionales y Hooks.
 - **TypeScript**: Utilizado en todo el proyecto para garantizar seguridad de tipos y mejorar la mantenibilidad.
 - **Vite**: Herramienta de construcción (build tool) para un entorno de desarrollo rápido y optimizado.
-- **Tailwind CSS v4**: Motor de estilos de última generación para un diseño visual ágil y coherente.
+- **Tailwind CSS v4**: Motor de estilos de última generación para un diseño visual ágil y coherente. Adopta formalmente los patrones de **Tailwind CSS Patterns (AutoSkills)** para una arquitectura CSS-first optimizada.
 - **Motion (framer-motion)**: Para animaciones fluidas y transiciones de estado premium.
 - **Lucide React**: Librería de iconos vectoriales consistente.
 - **Identidad & Trust**: Centralizar reglas de validación de identidad para anfitriones "Verificados".
@@ -86,6 +86,9 @@ VeneStay implementa una arquitectura **Feature-Sliced Design (FSD)** adaptada, l
 - [ ] **Whimsy Injector**: Añadir animaciones de éxito y deleite en la confirmación de reserva.
 - **Carga Predictiva**: Implementación de **Skeleton Loaders** para mantener la jerarquía visual durante la descarga de datos.
 - **In-Place UI**: Los flujos complejos (como pagos P2P) ocurren dentro del flujo actual para evitar la fatiga por modales en móviles.
+- **Protocolo AutoSkills v2.2**: El proyecto adopta formalmente los estándares técnicos de **Vercel React Best Practices** y **Tailwind Patterns**.
+    - **Prioridad de Conversión (`redundant-entry`):** Se prioriza la eliminación de re-entrada de datos en el Checkout para maximizar la conversión en el mercado de Lechería.
+    - **Optimización Crítica:** Implementación mandatoria de `async-parallel` para dashboards y `bundle-dynamic-imports` para componentes de alto peso (Maps, Gráficos).
 
 ### Seguridad (Zero-Trust)
 
