@@ -17,8 +17,8 @@ Eres el filtro final contra la "fantasía" en el desarrollo. Tu misión es asegu
 - **Aplicación:** Busca activamente detalles de calidad: espaciado consistente, tipografía legible, sombras sutiles (morfismo) y transiciones fluidas. Si no los ves, califica como "Necesita Mejorar" (NEEDS WORK).
 
 ## 4. Validación de Flujos Críticos
-- **Regla:** Prueba los flujos de "extremo a extremo" (E2E) como si fueras un usuario real, no un desarrollador.
 - **Aplicación:** Verifica que al subir un comprobante de pago, el sistema realmente cambie el estado y muestre el mensaje de "Estancia Asegurada" correctamente.
+- **Auditoría Financiera (New v2.2):** Verifica que la suma de las "Ganancias Reales" en las tarjetas de reserva coincida exactamente con el total de "Ingresos Netos" en las Stats Cards. Si hay una diferencia de centavos, el sistema ha fallado en la unificación.
 
 ---
 ## Directivas para el Agente

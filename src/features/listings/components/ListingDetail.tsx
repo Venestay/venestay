@@ -304,24 +304,6 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
       ) : (
         <>
 
-      <div className="sticky top-0 z-[60] flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-3 backdrop-blur-xl lg:hidden">
-        <button
-          onClick={handleClose}
-          className="rounded-full p-2 transition-colors hover:bg-gray-100"
-        >
-          <ArrowLeft className="text-brand-navy h-5 w-5" />
-        </button>
-        <div className="flex flex-col items-center">
-          <span className="text-brand-500 text-[10px] font-black tracking-widest uppercase">
-            VeneStay Premium
-          </span>
-          <span className="text-brand-navy max-w-[150px] truncate text-xs font-black">
-            {currentListing.title}
-          </span>
-        </div>
-        <div className="w-9" /> {/* Spacer */}
-      </div>
-
       <div className="mx-auto flex max-w-7xl flex-col pt-4">
         {/* Navigation / Back Button (Desktop) */}
         <div className="mb-6 hidden px-4 sm:px-6 lg:block lg:px-8">
@@ -1087,6 +1069,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   )}
 
                   <button
+                    id="reserve-button-desktop"
                     className="bg-brand-navy hover:bg-brand-navy/95 group/btn relative w-full transform overflow-hidden rounded-2xl py-5 text-sm font-black tracking-[0.2em] text-white uppercase shadow-[0_15px_30px_-5px_rgba(5,11,24,0.4)] transition-all duration-300 active:scale-[0.98]"
                     onClick={handleBooking}
                   >
@@ -1132,6 +1115,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
           </button>
         </div>
         <button
+          id="reserve-button-mobile"
           onClick={handleBooking}
           className="bg-brand-500 text-brand-navy shadow-brand-500/20 flex h-[60px] min-w-[160px] items-center justify-center rounded-2xl px-10 py-5 text-xs font-black tracking-[0.1em] uppercase shadow-xl transition-all active:scale-95"
         >

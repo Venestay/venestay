@@ -20,6 +20,25 @@
 | 05-May | SRE Architect | Implementación de Storage Service con compresión y SEO dinámico (Lechería). | [Gate: PASSED] | ✅ |
 | 05-May | Master Orchestrator | Reparación Quirúrgica Crítica: ListingDetail.tsx (JSX huérfano, firmas restauradas, unificación navigate). | [Gate: PASSED] | ✅ |
 | 06-May | Master Orchestrator | **OPERACIÓN DE EMERGENCIA: Restauración Forense Completa.** Re-aplicación de v0.9.5: Checkout Consolidado, UX Premium y Fix de Estabilidad. | [Gate: PASSED after Self-Correction] | ✅ |
+| 07-May | Master Orchestrator | **INICIO UNIFICACIÓN v2.2:** Integración de 11 AutoSkills (Vercel, Anthony Fu, midudev). | [Gate: PASSED] | ✅ |
+| 07-MAY | Master Orchestrator | **INTELIGENCIA FINANCIERA v2.2:** [Sync: PASSED]. Implementación de motor de comisiones 12/10/8% y unificación de cálculos en Dashboard. | [Gate: PASSED] | ✅ |
+| 07-MAY | Reality Auditor | **INCIDENTE: Test Stuck en Checkout.** El sub-agente falló en la validación por bucles en el calendario. Medida: Actualización de `SKILL_agent_browser.md` con protocolos financieros. | [Gate: FAILED -> FIXED] | ✅ |
+| 07-MAY | Master Orchestrator | **SINCRONIZACIÓN BRIDGE v2.2:** Sincronización de los 11 AutoSkills globales con manuales locales mediante el modelo de Puente. | [Gate: PASSED] | ✅ |
+
+## 🧬 Ecosistema de AutoSkills (Triggers & Mapping)
+| Skill | Disparadores (Triggers) | Aplicación en VeneStay |
+| :--- | :--- | :--- |
+| **Accessibility** | "a11y audit", "WCAG compliance", "keyboard navigation", "screen reader" | Cumplimiento WCAG 2.2 en Checkout. |
+| **Composition** | "boolean prop proliferation", "compound components", "React 19" | Refactorización de componentes de UI. |
+| **Frontend Design** | "luxury UI", "landing pages", "beautify", "animations" | Estética Premium Dark / Lechería. |
+| **Node.js Patterns** | "REST API", "middleware", "error handling", "backend" | Estabilidad de servicios Firebase/Functions. |
+| **React Best Practices**| "waterfalls", "performance", "data fetching", "memo" | Optimización de ListingDetail y Dashboards. |
+| **SEO** | "meta tags", "structured data", "sitemap", "ranking" | Visibilidad de propiedades en Lechería. |
+| **Tailwind Patterns** | "v4 theme", "responsive", "design systems" | Estilización v4.0+ y Mobile-First. |
+| **TS Advanced** | "generics", "conditional types", "type safety" | Robustez del sistema de pagos y UCP. |
+| **Vite** | "vite.config.ts", "HMR", "plugins" | Velocidad de desarrollo y builds. |
+| **Zod** | "safeParse", "z.infer", "schema validation" | Validación de payloads UCP y formularios. |
+| **Node.js BP** | "async patterns", "security", "architecture" | Seguridad en el manejo de sesiones. |
 
 ## 🎯 Criterios de Aceptación Globales (Gobernanza)
 1. **FSD Strict:** Prohibido crear componentes en `src/components` que pertenezcan a una `feature` específica.

@@ -13,6 +13,7 @@ export interface UserProfile {
   location?: string;
   responseTime?: string;
   responseRate?: string;
+  isVerified?: boolean;
 }
 
 

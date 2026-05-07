@@ -21,21 +21,24 @@ export function safeFormat(
   }
 }
 
+import { calculateCommission, CommissionTier } from './commission';
+
 export interface PaymentBreakdown {
   total: number;
   depositAmount: number;
   platformFee: number;
-  hostAdvance: number;
+  hostPayout: number;
   remainingBalance: number;
 }
 
-export function calculatePaymentBreakdown(total: number): PaymentBreakdown {
+export function calculatePaymentBreakdown(total: number, tier: CommissionTier = 12): PaymentBreakdown {
+  const breakdown = calculateCommission(total, tier);
   return {
     total,
-    depositAmount: total * 0.2,
-    platformFee: total * 0.1,
-    hostAdvance: total * 0.1,
-    remainingBalance: total * 0.8,
+    depositAmount: breakdown.ucpDeposit,
+    platformFee: breakdown.platformFee,
+    hostPayout: breakdown.settlementAmount,
+    remainingBalance: breakdown.ucpBalance,
   };
 }
 

@@ -1,0 +1,125 @@
+import React from 'react';
+import { MapPin, Edit2, Trash2, Plus } from 'lucide-react';
+import { Listing } from '@/types';
+
+interface ListingListProps {
+  listings: Listing[];
+  setEditingListing: (listing: Listing | null) => void;
+  handleDeleteListing: (id: string) => Promise<void>;
+  user: any;
+}
+
+const ListingList: React.FC<ListingListProps> = ({
+  listings,
+  setEditingListing,
+  handleDeleteListing,
+  user,
+}) => {
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {listings.map((listing) => (
+        <div
+          key={listing.id}
+          className="flex flex-col overflow-hidden rounded-[32px] border border-gray-100 bg-white shadow-sm"
+        >
+          <div className="relative aspect-video overflow-hidden">
+            <img
+              src={listing.images[0]}
+              alt={listing.title}
+              className="h-full w-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80';
+              }}
+            />
+            <div className="absolute top-4 left-4 flex gap-2">
+              <span className="text-brand-navy rounded-full bg-white/90 px-3 py-1 text-[10px] font-black uppercase shadow-sm backdrop-blur-sm">
+                {listing.city}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-grow flex-col p-6">
+            <div className="mb-2 flex items-start justify-between">
+              <h4 className="text-brand-navy line-clamp-1 text-lg leading-tight font-black">
+                {listing.title}
+              </h4>
+              <span className="text-brand-500 font-black">
+                ${listing.pricePerNight}
+              </span>
+            </div>
+            <p className="mb-4 line-clamp-2 text-xs text-gray-400">
+              {listing.description}
+            </p>
+
+            <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-6">
+              <div className="flex items-center text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                <MapPin className="mr-1 h-3 w-3" />
+                {listing.location.split(',')[0]}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEditingListing(listing)}
+                  className="text-brand-navy hover:bg-brand-500 rounded-xl bg-gray-50 p-2.5 transition-colors"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteListing(listing.id)}
+                  className="rounded-xl bg-gray-50 p-2.5 text-red-500 transition-colors hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+      <button
+        onClick={() =>
+          setEditingListing({
+            id: `listing-${Date.now()}`,
+            title: '',
+            description: '',
+            city: 'Caracas',
+            location: '',
+            pricePerNight: 0,
+            rating: 5,
+            reviewsCount: 0,
+            isVerified: true,
+            isPetFriendly: false,
+            images: [
+              'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb',
+            ],
+            amenities: ['Wifi', 'Estacionamiento'],
+            maxGuests: 2,
+            bedrooms: 1,
+            beds: 1,
+            baths: 1,
+            hostName: user?.displayName || 'Admin',
+            hostAvatar:
+              user?.photoURL || 'https://i.pravatar.cc/150?u=admin',
+            hostId: user?.uid || 'admin',
+            blockedDates: [],
+            paymentInstructions: '',
+            minNights: 1,
+            maxNights: 30,
+            propertyType: 'Apartamento',
+            accommodationType: 'Alojamiento entero',
+            buildingFloors: 1,
+            propertyFloor: 0,
+            constructionYear: new Date().getFullYear(),
+          })
+        }
+        className="hover:border-brand-500 hover:bg-brand-500/5 hover:text-brand-500 flex flex-col items-center justify-center gap-4 rounded-[32px] border-2 border-dashed border-gray-200 p-8 text-gray-400 transition-all"
+      >
+        <Plus className="h-8 w-8" />
+        <span className="text-[10px] font-black tracking-widest uppercase">
+          Añadir Propiedad
+        </span>
+      </button>
+    </div>
+  );
+};
+
+export default ListingList;

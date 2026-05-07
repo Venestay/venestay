@@ -54,7 +54,7 @@
 
 @layer base {
   body {
-    @apply font-inter bg-white text-gray-900 antialiased;
+    @apply font-inter bg-brand-navy text-white antialiased;
   }
 }
 
