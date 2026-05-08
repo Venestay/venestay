@@ -108,3 +108,17 @@ Este archivo registra las fallas detectadas por las Quality Gates y las leccione
 3.  **Audit & Fix:** Se detectó y corrigió una discrepancia matemática centralizando el cálculo del Tier en el Dashboard principal.
 
 **Resultado:** El anfitrión ahora tiene una visión real y coherente de sus beneficios. [Sync: PASSED].
+
+---
+
+## [08-MAY-2026] - REPORTE DE INCIDENCIA (TRUNCAMIENTO DE PERFIL):
+
+**Contexto:** Deshabilitación de IA y Sincronización post-Git Pull.
+
+**Error Detectado:** Sección "Conoce al anfitrión" bloqueada en skeleton loader (Loading status stuck).
+
+**Análisis de Falla:** Tras la sincronización del repositorio, se perdió la lógica de fetching (`useEffect`) del perfil del anfitrión en `ListingDetail.tsx`, dejando el estado `loadingHost` en `true` permanentemente.
+
+**Lección de IA:** "Los flujos de carga asíncrona deben tener siempre un disparador de cierre (`finally` o control de errores) y la lógica de fetching debe estar blindada contra reemplazos parciales que omitan hooks esenciales".
+
+**Acción Correctiva:** Restauración de la importación de `auth-service` y reimplementación del `useEffect` de recuperación de perfil. [Gate: PASSED].

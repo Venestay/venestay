@@ -22,6 +22,7 @@ const CheckoutPage = lazy(
 );
 const HostGuide = lazy(() => import('@/pages/HostGuide'));
 const ListingDetail = lazy(() => import('@/features/listings/components/ListingDetail'));
+const ProfileSettings = lazy(() => import('@/features/auth/components/ProfileSettings'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -93,6 +94,7 @@ const App: React.FC = () => {
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
+          <Route path="/test-profile" element={<ProfileSettings />} />
         </Routes>
       </Suspense>
       <Toaster position="top-right" richColors />

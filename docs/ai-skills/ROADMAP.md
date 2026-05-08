@@ -43,7 +43,7 @@ Este documento define la visión estratégica y las fases de ejecución de VeneS
 ## 🌌 Visión de Expansión (AGOSTO 2026+)
 - [ ] **Expansión Geográfica**: Escalado del modelo probado en Lechería a Caracas y Margarita.
 - [ ] **Agentic Trust Badges**: Insignias dinámicas de verificación por IA.
-- [ ] **Chat con IA**: Soporte automático para huéspedes basado en datos de la propiedad.
+- [ ] **Chat con IA**: Soporte automático para huéspedes basado en datos de la propiedad. (Diferido por política de estabilidad 08-May)
 
 ---
-*Última actualización: 2026-05-07 (Unificación v2.2 Harness Engineering)*
+*Última actualización: 2026-05-08 (Deshabilitación IA Local Guide)*

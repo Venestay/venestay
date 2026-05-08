@@ -28,6 +28,11 @@
 | 07-MAY | Reality Auditor | **INCIDENTE: Comparación de Strings en Pisos.** La refactorización a Coerción de Zod dejó el estado interno como string, causando fallos de validación visual (`"5" > "10"`). Medida: Implementación de `Number()` en comparaciones inline del componente. | [Gate: FIXED] | ✅ |
 | 07-MAY | UX Architect | **MEJORA DE NAVEGACIÓN:** Inserción de botón "Volver al Inicio" en `DashboardHeader.tsx` mediante icono `ArrowLeft` y `useNavigate`. Mejora del flujo de salida administrativo. | [Gate: PASSED] | ✅ |
 | 07-MAY | SRE Architect | **PROTOCOLO DE CONTINGENCIA:** Implementación de bypass para Google Maps en `ListingForm.tsx`. Permite el avance de pruebas E2E mediante coordenadas forzadas de Lechería. | [Gate: PASSED] | ✅ |
+| 08-MAY | Master Orchestrator | **RESTRICCIÓN ESTRATÉGICA:** Deshabilitación de 'VeneStay Local Guide (IA)' en ListingDetail.tsx. Código preservado bajo comentarios por política de privacidad/estabilidad. | [Gate: PASSED] | ✅ |
+| 08-MAY | Master Orchestrator | **REPARACIÓN QUIRÚRGICA:** Restauración de lógica de perfil del anfitrión en ListingDetail.tsx. Solución al skeleton loader infinito. | [Gate: PASSED] | ✅ |
+| 08-MAY | UX Architect | **REFACTOR DE LAYOUT:** Optimización de `ListingDetail.tsx` eliminando `overflow-hidden` y fijando la barra de navegación superior. El panel de reserva ahora es 100% sticky. | [Gate: PASSED] | ✅ |
+| 08-MAY | UX Architect | **MINIMALISMO E INTEGRACIÓN:** Rediseño de la sección de anfitrión en `ListingDetail.tsx`. Eliminación de sombras, fondos y bordes pesados. Integración orgánica mediante separadores lineales. | [Gate: PASSED] | ✅ |
+| 08-MAY | Master Orchestrator | **PASAPORTE v2.0:** Implementación del perfil experimental con Trust Score, estética minimalista y auditoría de accesibilidad. | [Gate: PASSED] | ✅ |
 
 ## 🧬 Ecosistema de AutoSkills (Triggers & Mapping)
 | Skill | Disparadores (Triggers) | Aplicación en VeneStay |

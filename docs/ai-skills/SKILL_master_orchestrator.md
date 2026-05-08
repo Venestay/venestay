@@ -29,6 +29,7 @@ Generar un reporte interno con:
 2.  **Verificación de Sintaxis Estructural:** En componentes de alta complejidad (>500 líneas), todo `replace_file_content` que altere el balance de llaves `{}` debe ser seguido inmediatamente por una validación de tipado focalizada (`tsc`).
 3.  **Memoria de Fallos Mandatoria:** El fallo no es un obstáculo, sino una **oportunidad de actualización obligatoria**. Cada error detectado por una Quality Gate obliga a una actualización de la base de conocimientos (`HISTORY.md`, `PROJECT_MEMORY.md` y `TECHNICAL_DOC.md`).
 4.  **Evolución Documental SSoT:** Queda prohibido cerrar una tarea sin actualizar el `TECHNICAL_DOC.md` si el cambio realizado altera la estructura, lógica de negocio o estándares visuales del proyecto.
+5.  **Política de IA (Status: DISABLED):** La funcionalidad 'VeneStay Local Guide (IA)' ha sido desactivada preventivamente. Queda prohibida su reactivación o la implementación de nuevos flujos de IA (Gemini/OpenAI) sin autorización expresa del usuario. El código debe permanecer comentado pero funcional para futura reversibilidad.
 
 ---
 

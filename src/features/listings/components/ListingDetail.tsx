@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { es } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import * as bookingService from '@/services/booking-service';
+import * as authService from '@/services/auth-service';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
 import {
   Listing,
@@ -193,18 +194,21 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
       ? (currentListing?.pricePerNight || 0) * totalNights
       : (currentListing?.pricePerNight || 0);
 
+  /* 
+     VeneStay Local Guide (IA) - Deshabilitado por ahora
+     "Información impulsada por IA deshabilitada por ahora."
   useEffect(() => {
     const fetchInsights = async () => {
       if (!currentListing?.city) {
         setLoadingInsights(false);
         return;
       }
-      /* API Temporalmente Desactivada por falta de Key */
       setLoadingInsights(false);
       setInsights('Información impulsada por IA deshabilitada por ahora.');
     };
     fetchInsights();
   }, [currentListing?.city]);
+  */
 
   useEffect(() => {
     const fetchReservedDates = async () => {
@@ -226,6 +230,25 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
     };
     fetchReservedDates();
   }, [currentListing?.id]);
+
+  useEffect(() => {
+    const fetchHostProfile = async () => {
+      if (!currentListing?.hostId) {
+        setLoadingHost(false);
+        return;
+      }
+      try {
+        setLoadingHost(true);
+        const profile = await authService.getUserProfile(currentListing.hostId);
+        setHostProfile(profile);
+      } catch (error) {
+        console.error('ListingDetail: Error fetching host profile:', error);
+      } finally {
+        setLoadingHost(false);
+      }
+    };
+    fetchHostProfile();
+  }, [currentListing?.hostId]);
 
   useEffect(() => {
     if (
@@ -305,8 +328,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
         <>
 
       <div className="mx-auto flex max-w-7xl flex-col pt-4">
-        {/* Navigation / Back Button (Desktop) */}
-        <div className="mb-6 hidden px-4 sm:px-6 lg:block lg:px-8">
+        {/* Navigation / Back Button (Desktop) - Now Sticky */}
+        <div className="sticky top-0 z-[60] -mx-4 mb-6 hidden bg-white/80 px-4 py-4 backdrop-blur-md sm:-mx-6 sm:px-6 lg:block lg:-mx-8 lg:px-8">
           <button
             onClick={handleClose}
             className="group hover:bg-brand-navy text-brand-navy flex items-center space-x-3 rounded-2xl border border-gray-100 bg-white p-3 px-5 shadow-lg transition-all duration-300 hover:text-white"
@@ -351,7 +374,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
           )}
         </AnimatePresence>
 
-        <div className="overflow-hidden">
+        <div className="">
           {/* Gallery Header */}
           <div className="relative mt-2 mb-6 hidden h-[50vh] max-h-[600px] min-h-[400px] gap-2 px-4 sm:px-6 md:grid md:grid-cols-4 md:grid-rows-2 lg:px-8">
             {/* Desktop Bento Box */}
@@ -561,15 +584,15 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   </div>
                 </div>
 
-                {/* Meet your host section */}
-                <div className="group relative overflow-hidden rounded-[40px] border border-gray-100 bg-gray-50/50 p-8 md:p-10">
-                  <div className="absolute top-0 right-0 p-8 opacity-5 transition-transform duration-700 group-hover:scale-110">
+                {/* Meet your host section - Minimalist Integration */}
+                <div className="group relative border-y border-gray-100/60 py-10 md:py-12">
+                  <div className="absolute top-0 right-0 p-8 opacity-[0.03] transition-transform duration-700 group-hover:scale-110">
                     <ShieldCheck className="text-brand-navy h-32 w-32" />
                   </div>
 
                   <div className="relative z-10 flex flex-col items-center gap-10 md:flex-row md:items-start">
                     <div className="relative">
-                      <div className="relative h-32 w-32 overflow-hidden rounded-[32px] border-4 border-white shadow-2xl">
+                      <div className="relative h-32 w-32 overflow-hidden rounded-[32px] border-2 border-gray-100 bg-gray-50">
                         {loadingHost ? (
                           <Skeleton className="h-full w-full rounded-none" />
                         ) : (
@@ -581,7 +604,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                         )}
                       </div>
                       {!loadingHost && (
-                        <div className="bg-brand-500 text-brand-navy absolute -right-2 -bottom-2 rounded-xl border-2 border-white p-2 shadow-lg">
+                        <div className="bg-brand-500 text-brand-navy absolute -right-2 -bottom-2 rounded-xl border-2 border-white p-2">
                           <CheckCircle2 className="h-4 w-4" />
                         </div>
                       )}
@@ -603,7 +626,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                                 {hostProfile?.displayName?.split(' ')[0] ||
                                   currentListing.hostName.split(' ')[0]}
                               </h3>
-                              <span className="bg-brand-navy text-brand-500 border-brand-navy rounded-lg border px-3 py-1 text-[9px] font-black tracking-widest uppercase shadow-sm">
+                              <span className="bg-brand-navy text-brand-500 border-brand-navy rounded-lg border px-3 py-1 text-[9px] font-black tracking-widest uppercase">
                                 Superanfitrión
                               </span>
                             </div>
@@ -707,6 +730,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   </button>
                 </div>
 
+                {/* 
                 <div className="space-y-6">
                   <h3 className="text-brand-navy flex items-center text-2xl font-black">
                     <Sparkles className="text-brand-500 fill-brand-500/20 mr-3 h-7 w-7" />
@@ -731,6 +755,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     )}
                   </div>
                 </div>
+                */}
 
                 <div className="space-y-8">
                   <h3 className="text-brand-navy flex items-center text-2xl font-black">
