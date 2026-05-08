@@ -18,6 +18,7 @@ import { GoogleMap, Marker, StandaloneSearchBox } from '@react-google-maps/api';
 import { Listing, City, PaymentMethodType } from '@/types';
 import { listingSchema } from '../types/dashboard.schema';
 import { toast } from 'sonner';
+import Skeleton from '@/components/ui/Skeleton';
 
 interface ListingFormProps {
   editingListing: Listing;
@@ -215,7 +216,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                   type="number"
                   className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 font-bold outline-none"
                   value={editingListing.pricePerNight}
-                  onChange={(e) => setEditingListing({ ...editingListing, pricePerNight: Number(e.target.value) })}
+                  onChange={(e) => setEditingListing({ ...editingListing, pricePerNight: e.target.value as any })}
                 />
               </div>
               <div className="space-y-2">
@@ -245,7 +246,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                       type="number"
                       className="w-full rounded-xl border border-white bg-white p-3 text-sm font-bold shadow-sm"
                       value={(editingListing as any)[item.key]}
-                      onChange={(e) => setEditingListing({ ...editingListing, [item.key]: Number(e.target.value) })}
+                      onChange={(e) => setEditingListing({ ...editingListing, [item.key]: e.target.value })}
                     />
                   </div>
                 ))}
@@ -258,19 +259,19 @@ const ListingForm: React.FC<ListingFormProps> = ({
                     { label: 'Año Const.', key: 'constructionYear' },
                   ].map(item => (
                     <div key={item.key} className="space-y-1">
-                      <label className={`text-[8px] font-black tracking-widest uppercase ${item.key === 'propertyFloor' && editingListing.propertyFloor > editingListing.buildingFloors ? 'text-red-500' : 'text-gray-400'}`}>
+                      <label className={`text-[8px] font-black tracking-widest uppercase ${item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors) ? 'text-red-500' : 'text-gray-400'}`}>
                         {item.label}
                       </label>
                       <input
                         type="number"
-                        className={`w-full rounded-xl border p-3 text-sm font-bold shadow-sm ${item.key === 'propertyFloor' && editingListing.propertyFloor > editingListing.buildingFloors ? 'border-red-200 bg-red-50 text-red-600' : 'border-white bg-white'}`}
+                        className={`w-full rounded-xl border p-3 text-sm font-bold shadow-sm ${item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors) ? 'border-red-200 bg-red-50 text-red-600' : 'border-white bg-white'}`}
                         value={(editingListing as any)[item.key] || ''}
-                        onChange={(e) => setEditingListing({ ...editingListing, [item.key]: Number(e.target.value) })}
+                        onChange={(e) => setEditingListing({ ...editingListing, [item.key]: e.target.value })}
                       />
                     </div>
                   ))}
                 </div>
-                {editingListing.propertyFloor > editingListing.buildingFloors && (
+                {Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors) && (
                   <div className="flex items-center gap-2 text-red-500 text-[9px] font-bold uppercase animate-pulse">
                     <AlertCircle className="h-3 w-3" /> El piso del alojamiento es superior al del edificio
                   </div>
@@ -311,7 +312,33 @@ const ListingForm: React.FC<ListingFormProps> = ({
                     </StandaloneSearchBox>
                     {editingListing.latitude && <Marker position={{ lat: editingListing.latitude, lng: editingListing.longitude! }} />}
                   </GoogleMap>
-                ) : <div className="bg-gray-50 flex h-full items-center justify-center font-bold text-gray-300">Cargando Mapa...</div>}
+                ) : (
+                  <div className="bg-gray-50 flex h-full w-full flex-col items-center justify-center gap-4 p-8 text-center">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-2">
+                      <p className="text-brand-navy/60 text-xs font-bold">API de Google Maps no disponible</p>
+                      <button 
+                        id="bypass-maps-btn"
+                        type="button"
+                        onClick={() => {
+                          setEditingListing({
+                            ...editingListing,
+                            latitude: 10.2167,
+                            longitude: -67.95,
+                            location: 'Lechería (Bypass)',
+                          });
+                          toast.success('Bypass Activado: Ubicación establecida en Lechería');
+                        }}
+                        className="bg-brand-500 rounded-xl px-4 py-2 text-[10px] font-black tracking-widest text-white uppercase shadow-lg transition-transform active:scale-95"
+                      >
+                        Forzar Ubicación (Bypass)
+                      </button>
+                    </div>
+                    <div className="text-[10px] font-black tracking-widest text-gray-300 uppercase animate-pulse mt-2">
+                      Esperando Conexión Geoespacial...
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 

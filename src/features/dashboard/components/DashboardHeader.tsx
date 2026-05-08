@@ -1,6 +1,7 @@
 import React from 'react';
-import { Building2 } from 'lucide-react';
+import { Building2, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 export type DashboardTab = 'bookings' | 'listings' | 'profile';
 
@@ -17,9 +18,18 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   isAdmin,
   isHost,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-brand-navy flex shrink-0 flex-col justify-between gap-6 border-b border-gray-100 p-8 md:flex-row md:items-center">
       <div className="flex items-center space-x-4">
+        <button 
+          onClick={() => navigate('/')}
+          className="group flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 transition-all hover:bg-brand-500 hover:shadow-lg hover:shadow-brand-500/20"
+          title="Volver al Inicio"
+        >
+          <ArrowLeft className="text-white h-5 w-5 transition-transform group-hover:-translate-x-1" />
+        </button>
         <div className="bg-brand-500/20 rounded-2xl p-4">
           <Building2 className="text-brand-500 h-8 w-8" />
         </div>

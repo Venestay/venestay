@@ -41,6 +41,7 @@ Usa estos selectores para una navegación 100% estable:
 - `reference-input`: Campo para el número de referencia de pago.
 - `payment-submit-button-desktop`: Botón final de envío de pago.
 - `receipt-upload`: Input (oculto) para subir el comprobante.
+- `bypass-maps-btn`: Botón de contingencia para forzar ubicación en Lechería.
 
 ## 🏁 Protocolo de Auditoría Financiera (VeneStay)
 

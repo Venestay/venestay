@@ -11,6 +11,7 @@ Generar un reporte interno con:
 1.  **Causa Técnica:** Identificación exacta del archivo y línea (o bloque) que rompió el sistema.
 2.  **Falla de Proceso:** Análisis de por qué el agente generó el error (ej. error de contexto en `replace_file_content`, asunción incorrecta de tipos, omisión de cierre de tags).
 3.  **Antecedente:** Consulta obligatoria a `@HISTORY.md` para verificar si es un error recurrente.
+4.  **AutoSkill Pre-flight:** Consulta obligatoria a la regla correspondiente en `.agents/skills/` antes de proponer cualquier cambio estructural.
 
 ### 🟡 PASO 2: Propuesta de Reparación Quirúrgica
 1.  Documentar el cambio exacto.
