@@ -24,6 +24,10 @@
 | 07-MAY | Master Orchestrator | **INTELIGENCIA FINANCIERA v2.2:** [Sync: PASSED]. Implementación de motor de comisiones 12/10/8% y unificación de cálculos en Dashboard. | [Gate: PASSED] | ✅ |
 | 07-MAY | Reality Auditor | **INCIDENTE: Test Stuck en Checkout.** El sub-agente falló en la validación por bucles en el calendario. Medida: Actualización de `SKILL_agent_browser.md` con protocolos financieros. | [Gate: FAILED -> FIXED] | ✅ |
 | 07-MAY | Master Orchestrator | **SINCRONIZACIÓN BRIDGE v2.2:** Sincronización de los 11 AutoSkills globales con manuales locales mediante el modelo de Puente. | [Gate: PASSED] | ✅ |
+| 07-MAY | Master Orchestrator | **OPERACIÓN SINCRONIZACIÓN TOTAL:** Refactorización de ListingForm (Zod Coercion + Lazy Maps) e integración del Pre-flight Check. | [Gate: PASSED] | ✅ |
+| 07-MAY | Reality Auditor | **INCIDENTE: Comparación de Strings en Pisos.** La refactorización a Coerción de Zod dejó el estado interno como string, causando fallos de validación visual (`"5" > "10"`). Medida: Implementación de `Number()` en comparaciones inline del componente. | [Gate: FIXED] | ✅ |
+| 07-MAY | UX Architect | **MEJORA DE NAVEGACIÓN:** Inserción de botón "Volver al Inicio" en `DashboardHeader.tsx` mediante icono `ArrowLeft` y `useNavigate`. Mejora del flujo de salida administrativo. | [Gate: PASSED] | ✅ |
+| 07-MAY | SRE Architect | **PROTOCOLO DE CONTINGENCIA:** Implementación de bypass para Google Maps en `ListingForm.tsx`. Permite el avance de pruebas E2E mediante coordenadas forzadas de Lechería. | [Gate: PASSED] | ✅ |
 
 ## 🧬 Ecosistema de AutoSkills (Triggers & Mapping)
 | Skill | Disparadores (Triggers) | Aplicación en VeneStay |

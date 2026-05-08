@@ -29,8 +29,9 @@ The project follows a refined FSD architecture. Code is organized into modules b
 - **Firebase**: Avoid direct Firebase calls in UI components. Use the centralized services in `src/services/`.
 - **Types**: Use centralized types in `src/types/index.ts` for global interfaces, and feature-specific types in their respective folders.
 - **Strict Typing**: Ensure all props and function parameters are strictly typed.
-- **Tipado de Componentes (`architecture-avoid-boolean-props`):** Queda prohibido el uso de props booleanos (ej. `isPremium`, `isLuxury`) para alternar estilos o comportamientos mayores. Se deben usar variantes explícitas (ej. `variant="luxury" | "standard"`) para mayor claridad y escalabilidad.
-- **Integridad Zod (`schema-coercion`):** Todo input numérico procesado por esquemas de Zod (especialmente para el protocolo UCP 20/80) debe utilizar coerción (`z.coerce.number()`) para garantizar que los datos provenientes de formularios o queries sean tratados correctamente como números.
+- **Tipado de Componentes:** Queda prohibido el uso de props booleanos para alternar estilos mayores. Se debe seguir la arquitectura de variantes definida en `.agents/skills/composition-patterns/SKILL.md`.
+- **Integridad Zod:** Todo input numérico procesado (especialmente UCP 20/80) debe utilizar coerción según el estándar en `.agents/skills/zod/references/refine-transform-coerce.md`.
+- **Eficiencia Dinámica:** Componentes de alto peso (Maps, Charts) deben usar `React.lazy` siguiendo `.agents/skills/react-best-practices/rules/bundle-dynamic-imports.md`.
 
 ## 5. Agentic & UI/UX Rules
 - **Theme**: "Premium Dark" aesthetics.
