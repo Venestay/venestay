@@ -33,6 +33,7 @@ Este archivo registra las fallas detectadas por las Quality Gates y las leccione
 **Contexto:** Refactorización Modular del `AdminDashboard.tsx` y `ListingForm.tsx`.
 
 **Errores Detectados:**
+
 1. **Gate 1 (TSC):** `Property 'booking' does not exist on type 'FloatingChatProps'`. Desincronización de interfaz en el orquestador.
 2. **Gate 1 (TSC):** `Property 'errors' does not exist on type 'ZodError'`. Uso de propiedad incorrecta para acceder a mensajes de validación.
 3. **Gate 1 (TSC):** `Cannot find module '@google/genai'`. Error de asunción en el nombre del paquete oficial de Gemini.
@@ -76,6 +77,7 @@ Este archivo registra las fallas detectadas por las Quality Gates y las leccione
 **Estatus:** `[Sync: PASSED]`
 
 **Resultados:**
+
 - **Branding Sync:** Se detectó un "Skill Clash" donde el `index.css` mantenía una base clara frente al manual Premium Dark. Se corrigió forzando `bg-brand-navy` y `text-white` como base mandatoria.
 - **Authority Sync:** Creación del manual **@[SKILL_ux_architect_venestay.md]** para blindar la estética de la marca frente a sugerencias técnicas genéricas.
 - **Logic Sync:** Confirmada la integración del protocolo **UCP 20/80** como disparador de la integridad de datos (`schema-coercion`).
@@ -103,6 +105,7 @@ Este archivo registra las fallas detectadas por las Quality Gates y las leccione
 **Contexto:** Implementación del motor de rentabilidad 12/10/8% y protocolo UCP.
 
 **Acciones:**
+
 1.  **Motor Central:** Creación de `src/lib/commission.ts`.
 2.  **Transparencia UI:** Desglose de Ganancia Neta y Liquidación UCP en `BookingList.tsx`.
 3.  **Audit & Fix:** Se detectó y corrigió una discrepancia matemática centralizando el cálculo del Tier en el Dashboard principal.

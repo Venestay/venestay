@@ -38,7 +38,9 @@
 | 08-MAY | Master Orchestrator | **VALIDACIÓN E2E:** Verificación funcional total de los flujos de Perfil y Checkout tras correcciones de gobernanza. | [Gate: PASSED] | ✅ |
 | 08-MAY | Master Orchestrator | **PRODUCT DIVISION:** Integración completa de los 5 agentes de producto (Manager, Prioritizer, Synthesizer, Researcher, Behavioral Nudge). | [Gate: PASSED] | ✅ |
 | 09-MAY | Master Orchestrator | **DASHBOARD v2.3:** Optimización de Dashboard y refactorización integral del formulario de propiedades a Stepper UI con validaciones estrictas de métodos de pago bancarios y esquemas Zod. | [Gate: PASSED] | ✅ |
-| 09-MAY | Master Orchestrator | **RESERVA ASÍNCRONA v2.5:** Implementación de lógica de bloqueo suave (Soft-Block) y gestión de conflictos para optimizar la conversión y evitar "bloqueos fantasmas". | [Gate: IN PROGRESS] | ✅ |
+| 09-MAY | Master Orchestrator | **RESERVA ASÍNCRONA v2.5:** Implementación de lógica de bloqueo suave (Soft-Block) y gestión de conflictos para optimizar la conversión y evitar "bloqueos fantasmas". | [Gate: PASSED] | ✅ |
+| 09-MAY | Product Strategist | **PROPUESTA v2.5+:** Creación del documento de optimización estratégica (TTL, Trust Score dinámico, Antifraude AI). | [Gate: REVIEW] | 🕒 |
+
 
 ## 👥 Ecosistema de Agentes de Producto (Product Division)
 | Agente | Rol Principal | Disparadores / Casos de Uso |
@@ -68,6 +70,13 @@
 1. **FSD Strict:** Prohibido crear componentes en `src/components` que pertenezcan a una `feature` específica.
 2. **UCP Compliance:** Toda lógica de pago debe reflejar el desglose 20/80.
 3. **Evidencia Visual:** Cada avance requiere una captura de pantalla validada por el `Reality Auditor`.
+
+---
+
+## 🚀 Propuestas Futuras (Pendientes de Aprobación)
+| ID | Propuesta | Estado | Documento de Referencia |
+| :--- | :--- | :--- | :--- |
+| **V2.5-OPT** | Optimización Estratégica VeneStay (TTL, Trust Score, Antifraude) | Pendiente | [PROPUESTA_OPTIMIZACION_RESERVAS_V2.5.md](file:///c:/VeneStay/docs/PROPUESTA_OPTIMIZACION_RESERVAS_V2.5.md) |
 
 ## 🛠️ Entorno de Desarrollo
 - **Puerto Local:** `http://localhost:3000/` (Configurado en `vite.config.ts`).
