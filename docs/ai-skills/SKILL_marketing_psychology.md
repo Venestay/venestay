@@ -1,4 +1,4 @@
-# Marketing Psychology & Mental Models - VeneStay Specialist
+# Psicología de Marketing y Modelos Mentales - Especialista en VeneStay
 
 ## 1. Contabilidad Mental (Mental Accounting)
 Las personas asignan valores diferentes al dinero según su categoría o propósito, lo que influye en el "dolor del pago".

@@ -1,4 +1,4 @@
-# Vercel React Composition Patterns - SKILL.md
+# Patrones de Composición de React (Vercel) - SKILL.md
 
 ## Descripción General
 

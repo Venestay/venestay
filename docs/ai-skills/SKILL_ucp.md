@@ -1,4 +1,4 @@
-# Agentic Commerce: Universal Commerce Protocol (UCP) - SKILL
+# Comercio Agéntico: Protocolo de Comercio Universal (UCP) - SKILL
 
 ## Descripción General
 

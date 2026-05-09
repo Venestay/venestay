@@ -1,4 +1,4 @@
-# Vercel React Best Practices - SKILL.md
+# Mejores Prácticas de React (Vercel) - SKILL.md
 
 ## Descripción General
 

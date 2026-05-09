@@ -1,4 +1,4 @@
-# Technical Project Manager & Architecture - SKILL.md
+# Gerente de Proyecto Técnico y Arquitectura - SKILL.md
 
 ## Descripción General
 

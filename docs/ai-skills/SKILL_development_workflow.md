@@ -4,17 +4,17 @@ Para asegurar que cada cambio en la plataforma sea de clase mundial, hemos estan
 
 ## 🔄 El Ciclo de Vida de una Mejora (Flujo SOP v2.2)
 
-### Paso 1: Planificación y Arquitectura (The Brain)
+### Paso 1: Planificación y Arquitectura (El Cerebro)
 - **Habilidades:** `Agile Product Planner` + `Project Manager`.
 - **Acción:** Cálculo de Score RICE y descomposición de tareas en un `Task Breakdown` atómico.
 - **Ley Harness:** **FSD Strict**. Todo el código debe organizarse por dominios de negocio en `src/features/`.
 
-### Paso 2: Diseño de Comportamiento y Confianza (The Heart)
+### Paso 2: Diseño de Comportamiento y Confianza (El Corazón)
 - **Habilidades:** `Marketing Psychology` + `Trust Architect`.
 - **Acción:** Auditoría de fricción y validación de protocolos de seguridad/pagos (UCP 20/80).
 - **Ley Harness:** **redundant-entry**. Prohibido solicitar datos que el sistema ya posea.
 
-### Paso 3: Construcción de Alto Rendimiento (The Craft)
+### Paso 3: Construcción de Alto Rendimiento (El Oficio)
 - **Habilidades:** `React Performance` + `Composition Patterns`.
 - **Acción:** Implementación técnica siguiendo las leyes de eficiencia de Vercel.
 - **Leyes Harness:**
@@ -22,14 +22,14 @@ Para asegurar que cada cambio en la plataforma sea de clase mundial, hemos estan
   - **bundle-dynamic-imports:** Carga diferida (`React.lazy`) para componentes pesados.
   - **architecture-avoid-boolean-props:** Uso de variantes explícitas en lugar de flags.
 
-### Paso 4: Gobernanza y Calidad (The Shield)
+### Paso 4: Gobernanza y Calidad (El Escudo)
 - **Habilidades:** `Master Orchestrator` + `Zod`.
 - **Acción:** Ejecución obligatoria de **Quality Gates**.
 - **Leyes Harness:**
   - **schema-coercion:** Validación y conversión de tipos estricta en el edge.
   - **Gate 1 (TSC):** `npx tsc --noEmit` obligatorio tras cada cambio estructural.
 
-### Paso 5: Auditoría de Realidad y Evidencia (The Reality)
+### Paso 5: Auditoría de Realidad y Evidencia (La Realidad)
 - **Habilidad:** `Reality & Evidence Auditor` + `Agent Browser`.
 - **Acción:** Validación E2E en el navegador y captura de evidencia visual.
 - **Práctica:** Prohibido el "Aprobar por Fe". Cada cambio debe tener un reporte de calidad (C, B, A).
