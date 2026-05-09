@@ -37,6 +37,8 @@
 | 08-MAY | SRE Architect | **RESILIENCIA CHECKOUT:** Corrección de error de carga de borradores. Actualización de `firestore.rules` (Public Profile Get) y manejo de errores en tiers. | [Gate: PASSED] | ✅ |
 | 08-MAY | Master Orchestrator | **VALIDACIÓN E2E:** Verificación funcional total de los flujos de Perfil y Checkout tras correcciones de gobernanza. | [Gate: PASSED] | ✅ |
 | 08-MAY | Master Orchestrator | **PRODUCT DIVISION:** Integración completa de los 5 agentes de producto (Manager, Prioritizer, Synthesizer, Researcher, Behavioral Nudge). | [Gate: PASSED] | ✅ |
+| 09-MAY | Master Orchestrator | **DASHBOARD v2.3:** Optimización de Dashboard y refactorización integral del formulario de propiedades a Stepper UI con validaciones estrictas de métodos de pago bancarios y esquemas Zod. | [Gate: PASSED] | ✅ |
+| 09-MAY | Master Orchestrator | **RESERVA ASÍNCRONA v2.5:** Implementación de lógica de bloqueo suave (Soft-Block) y gestión de conflictos para optimizar la conversión y evitar "bloqueos fantasmas". | [Gate: IN PROGRESS] | ✅ |
 
 ## 👥 Ecosistema de Agentes de Producto (Product Division)
 | Agente | Rol Principal | Disparadores / Casos de Uso |
@@ -66,3 +68,9 @@
 1. **FSD Strict:** Prohibido crear componentes en `src/components` que pertenezcan a una `feature` específica.
 2. **UCP Compliance:** Toda lógica de pago debe reflejar el desglose 20/80.
 3. **Evidencia Visual:** Cada avance requiere una captura de pantalla validada por el `Reality Auditor`.
+
+## 🛠️ Entorno de Desarrollo
+- **Puerto Local:** `http://localhost:3000/` (Configurado en `vite.config.ts`).
+- **Host:** `0.0.0.0` (Permite acceso desde red local si es necesario).
+- **Herramientas:** Vite 6.x, React 19.
+

@@ -148,14 +148,15 @@ Si ves `ApiProjectMapError`:
 
 ---
 
-## 7. Alcance Funcional (v0.9.5)
+## 7. Alcance Funcional (v2.3)
 
 VeneStay es una plataforma P2P adaptada al mercado venezolano:
 
 1. **Descubrimiento**: Búsqueda inteligente por destino y filtros premium.
 2. **Reservas**: Flujo de calendario con protección contra solapamientos.
 3. **Pagos Dinámicos**: Sistema de anticipo del 20% para asegurar estancias, con liquidación del 80% offline. Soporte para **Zelle, Binance Pay y Pago Móvil** con tasa BCV automática.
-4. **Validación**: Dashboard para anfitriones con verificación manual de comprobantes de pago.
+4. **Validación**: Verificación manual de comprobantes de pago.
+5. **Dashboard Administrativo**: Panel avanzado para Anfitriones y Admins. Incluye un Stepper UI para Ingesta de Propiedades con validación Zod estricta, subida de imágenes optimizada (Drag & Drop), y Motor de Comisiones gamificado (12/10/8%).
 
 ---
 

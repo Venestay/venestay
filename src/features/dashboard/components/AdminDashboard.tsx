@@ -1,4 +1,5 @@
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   collection,
   query,
@@ -249,17 +250,21 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const filteredBookings = bookings.filter((b) => {
-    if (!isAdmin && b.ownerId !== user?.uid) return false;
-    const matchesFilter = filter === 'ALL' || b.status === filter;
-    const matchesSearch = b.listingTitle.toLowerCase().includes(searchTerm.toLowerCase()) || b.id.includes(searchTerm);
-    return matchesFilter && matchesSearch;
-  });
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((b) => {
+      if (!isAdmin && b.ownerId !== user?.uid) return false;
+      const matchesFilter = filter === 'ALL' || b.status === filter;
+      const matchesSearch = b.listingTitle.toLowerCase().includes(searchTerm.toLowerCase()) || b.id.includes(searchTerm);
+      return matchesFilter && matchesSearch;
+    });
+  }, [bookings, isAdmin, user?.uid, filter, searchTerm]);
 
-  const filteredListings = listings.filter((l) => {
-    if (!isAdmin && l.hostId !== user?.uid) return false;
-    return l.title.toLowerCase().includes(searchTerm.toLowerCase()) || l.city.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const filteredListings = useMemo(() => {
+    return listings.filter((l) => {
+      if (!isAdmin && l.hostId !== user?.uid) return false;
+      return l.title.toLowerCase().includes(searchTerm.toLowerCase()) || l.city.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }, [listings, isAdmin, user?.uid, searchTerm]);
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 pt-16">
@@ -313,35 +318,68 @@ const AdminDashboard: React.FC = () => {
 
         {/* List Content */}
         <div className="no-scrollbar flex-grow overflow-y-auto bg-gray-50/20 p-6 md:p-8">
-          {loading ? (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="space-y-6 rounded-[32px] border border-gray-100 bg-white p-8 shadow-sm">
-                  <Skeleton className="h-40 w-full rounded-3xl" />
-                  <Skeleton className="h-8 w-3/4" />
-                </div>
-              ))}
-            </div>
-          ) : activeTab === 'bookings' ? (
-            <BookingList
-              bookings={filteredBookings}
-              isAdmin={isAdmin || false}
-              user={user}
-              handleUpdateStatus={handleUpdateStatus}
-              setActiveChatId={setActiveChatId}
-              setActiveChatBooking={setActiveChatBooking}
-              tier={currentTier}
-            />
-          ) : activeTab === 'listings' ? (
-            <ListingList
-              listings={filteredListings}
-              setEditingListing={setEditingListing}
-              handleDeleteListing={handleDeleteListing}
-              user={user}
-            />
-          ) : (
-            <UserProfileSetup />
-          )}
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-1 gap-6 xl:grid-cols-2"
+              >
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="space-y-6 rounded-[32px] border border-gray-100 bg-white p-8 shadow-sm">
+                    <Skeleton className="h-40 w-full rounded-3xl" />
+                    <Skeleton className="h-8 w-3/4" />
+                  </div>
+                ))}
+              </motion.div>
+            ) : activeTab === 'bookings' ? (
+              <motion.div
+                key="bookings"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <BookingList
+                  bookings={filteredBookings}
+                  isAdmin={isAdmin || false}
+                  user={user}
+                  handleUpdateStatus={handleUpdateStatus}
+                  setActiveChatId={setActiveChatId}
+                  setActiveChatBooking={setActiveChatBooking}
+                  tier={currentTier}
+                />
+              </motion.div>
+            ) : activeTab === 'listings' ? (
+              <motion.div
+                key="listings"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ListingList
+                  listings={filteredListings}
+                  setEditingListing={setEditingListing}
+                  handleDeleteListing={handleDeleteListing}
+                  user={user}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="profile"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <UserProfileSetup />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

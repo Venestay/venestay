@@ -6,7 +6,8 @@ import {
   Award 
 } from 'lucide-react';
 import { Booking, Listing } from '@/types';
-import { calculateCommission, getCommissionTier } from '@/lib/commission';
+import { calculateCommission } from '@/lib/commission';
+import { motion } from 'motion/react';
 
 interface StatsCardsProps {
   bookings: Booking[];
@@ -25,6 +26,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ bookings, listings, isVerified,
   }, 0);
 
   const currentTier = tier;
+  const isMaxTier = currentTier === 8;
 
   const stats = [
     {
@@ -55,30 +57,45 @@ const StatsCards: React.FC<StatsCardsProps> = ({ bookings, listings, isVerified,
       label: 'Comisión Actual',
       value: `${currentTier}%`,
       icon: Award,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50',
-      subtext: currentTier === 8 ? 'Nivel Superhost Max' : `Faltan ${10 - confirmedBookings.length} para 8%`
+      color: isMaxTier ? 'text-brand-500' : 'text-purple-500',
+      bgColor: isMaxTier ? 'bg-brand-50' : 'bg-purple-50',
+      subtext: isMaxTier ? 'Nivel Superhost Max Alcanzado' : `Faltan ${10 - confirmedBookings.length} reservas para 8%`,
+      isGlow: isMaxTier
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, staggerChildren: 0.1 }}
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8"
+    >
       {stats.map((stat, idx) => (
-        <div key={idx} className="bg-white border border-gray-100 rounded-[32px] p-6 shadow-sm hover:shadow-md transition-all group">
-          <div className="flex items-center justify-between mb-4">
+        <motion.div 
+          key={idx} 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: idx * 0.1 }}
+          className={`relative bg-white border rounded-[32px] p-6 shadow-sm hover:shadow-lg transition-all group overflow-hidden ${stat.isGlow ? 'border-brand-500/50 ring-1 ring-brand-500/20' : 'border-gray-100'}`}
+        >
+          {stat.isGlow && (
+            <div className="absolute inset-0 bg-brand-500/5 animate-pulse rounded-[32px]"></div>
+          )}
+          <div className="relative z-10 flex items-center justify-between mb-4">
             <div className={`p-3 rounded-2xl ${stat.bgColor} ${stat.color} group-hover:scale-110 transition-transform`}>
               <stat.icon className="h-6 w-6" />
             </div>
             <span className="text-[10px] font-black tracking-widest text-gray-300 uppercase">Resumen</span>
           </div>
-          <div>
-            <h3 className="text-2xl font-black text-brand-navy tracking-tight">{stat.value}</h3>
+          <div className="relative z-10">
+            <h3 className={`text-2xl font-black tracking-tight ${stat.isGlow ? 'text-brand-500' : 'text-brand-navy'}`}>{stat.value}</h3>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{stat.label}</p>
-            <p className="text-[9px] font-medium text-gray-400 mt-2 italic">{stat.subtext}</p>
+            <p className={`text-[9px] font-medium mt-2 italic ${stat.isGlow ? 'text-brand-500 font-bold' : 'text-gray-400'}`}>{stat.subtext}</p>
           </div>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 

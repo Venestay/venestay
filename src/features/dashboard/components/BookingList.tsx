@@ -10,7 +10,7 @@ import {
   Hash,
   Filter,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO, isWithinInterval, startOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Booking, BookingStatus } from '@/types';
 import { calculateCommission, getCommissionTier } from '@/lib/commission';
@@ -50,15 +50,38 @@ const BookingList: React.FC<BookingListProps> = ({
 
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-      {bookings.map((booking) => (
+      {bookings.map((booking) => {
+        const isConflicting = bookings.some(b => {
+          if (b.id === booking.id || b.listingId !== booking.listingId) return false;
+          if (booking.status === 'REJECTED' || booking.status === 'CANCELLED') return false;
+          if (b.status === 'REJECTED' || b.status === 'CANCELLED') return false;
+
+          try {
+            const start1 = startOfDay(parseISO(booking.startDate));
+            const end1 = startOfDay(parseISO(booking.endDate));
+            const start2 = startOfDay(parseISO(b.startDate));
+            const end2 = startOfDay(parseISO(b.endDate));
+
+            return (
+              isWithinInterval(start1, { start: start2, end: end2 }) ||
+              isWithinInterval(end1, { start: start2, end: end2 }) ||
+              isWithinInterval(start2, { start: start1, end: end1 })
+            );
+          } catch {
+            return false;
+          }
+        });
+
+        return (
         <motion.div
           layout
           key={booking.id}
-          className="flex h-full flex-col rounded-[32px] border border-gray-100 bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-xl"
+          className={cn("flex h-full flex-col rounded-[32px] border bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-xl", isConflicting && booking.status === 'AWAITING_VERIFICATION' ? 'border-red-200 ring-2 ring-red-100' : 'border-gray-100')}
         >
           <div className="mb-6 flex items-start justify-between">
-            <div
-              className={cn(
+            <div className="flex flex-col gap-2">
+              <div
+                className={cn(
                 'flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-black tracking-widest uppercase',
                 booking.status === 'CONFIRMED'
                   ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
@@ -87,6 +110,15 @@ const BookingList: React.FC<BookingListProps> = ({
                     : booking.status === 'REJECTED'
                       ? 'Rechazada'
                       : 'Cancelada'}
+              </div>
+              {isConflicting && booking.status === 'AWAITING_VERIFICATION' && (
+                <div className="flex w-fit items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1 animate-pulse">
+                  <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                  <span className="text-[9px] font-black tracking-widest text-red-600 uppercase">
+                    Solapamiento de Fechas
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-3">
@@ -313,7 +345,7 @@ const BookingList: React.FC<BookingListProps> = ({
             )}
           </div>
         </motion.div>
-      ))}
+      )})}
     </div>
   );
 };

@@ -23,6 +23,7 @@ interface CalendarProps {
   startDate: Date | null;
   endDate: Date | null;
   reservedDates?: { start: Date; end: Date }[];
+  softReservedDates?: { start: Date; end: Date }[];
   onChange: (start: Date | null, end: Date | null) => void;
   onClose: () => void;
 }
@@ -31,6 +32,7 @@ const Calendar: React.FC<CalendarProps> = ({
   startDate,
   endDate,
   reservedDates = [],
+  softReservedDates = [],
   onChange,
   onClose,
 }) => {
@@ -156,6 +158,13 @@ const Calendar: React.FC<CalendarProps> = ({
           })
         );
 
+        const isSoftReserved = softReservedDates.some((range) =>
+          isWithinInterval(startOfDay(day), {
+            start: startOfDay(range.start),
+            end: startOfDay(range.end),
+          })
+        );
+
         const isDisabled = isBefore(day, today) || isReserved;
         const isNotCurrentMonth = !isSameMonth(day, monthStart);
 
@@ -165,6 +174,7 @@ const Calendar: React.FC<CalendarProps> = ({
             className={cn(
               'group relative flex h-10 cursor-pointer items-center justify-center transition-all duration-200',
               isInRange && !isSelected ? 'bg-brand-50' : '',
+              isSoftReserved && !isDisabled && !isSelected ? 'bg-amber-50/80 border border-dashed border-amber-300/50' : '',
               isDisabled ? 'cursor-not-allowed opacity-20' : 'hover:bg-gray-50',
               isNotCurrentMonth ? 'text-gray-300' : 'text-brand-navy font-bold'
             )}
@@ -183,6 +193,9 @@ const Calendar: React.FC<CalendarProps> = ({
             </span>
             {isSameDay(day, today) && !isSelected && (
               <div className="bg-brand-500 absolute bottom-1 h-1 w-1 rounded-full" />
+            )}
+            {isSoftReserved && !isDisabled && !isSelected && (
+              <div className="bg-amber-400 absolute top-1 right-1 h-1.5 w-1.5 animate-pulse rounded-full" />
             )}
           </div>
         );

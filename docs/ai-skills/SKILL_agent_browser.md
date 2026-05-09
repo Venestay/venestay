@@ -50,5 +50,41 @@ Usa estos selectores para una navegación 100% estable:
 3. **Sidebar Audit:** El sidebar derecho en el Checkout es tu "Verdad Financiera". Verifica que el desglose (Anticipo 20% / Saldo 80%) sea matemáticamente exacto según el Total.
 4. **Manejo de Auth:** Si el checkout pide login, usa el flujo de `AuthModal`. No intentes saltar validaciones de seguridad o el sistema te bloqueará.
 
+## 5. Pruebas Específicas: Dashboard & Ingesta (v2.2)
+
+1. **Transiciones y Rendimiento:** Al probar el Admin Dashboard, verifica que el cambio entre pestañas (Reservas, Propiedades, Perfil) sea fluido (animado por Framer Motion) y sin bloqueos de renderizado (gracias a `useMemo`).
+2. **Consistencia Visual:** Asegúrate de que las tarjetas de propiedades y las `StatsCards` mantengan una estética limpia y armónica con el resto de la web (fondo claro, jerarquía clara en botones como "Editar" y "Eliminar").
+3. **Validación del Stepper (Listing Form):** Al abrir el formulario de nueva propiedad, valida la navegación secuencial (Paso a Paso). Confirma que la UI previene avances si faltan datos obligatorios y que la subida de imágenes muestra feedback de carga.
+
+## ⚠️ 6. Protocolo Anti-Bucle (Timing y Animaciones)
+
+- **Problema Conocido:** El agente tiende a atraparse en bucles infinitos si toma una captura de pantalla *durante* una transición de Framer Motion (ej. al cambiar de pestaña), asumiendo erróneamente que el clic falló porque la UI antigua aún es visible.
+- **Solución Obligatoria:** Tras cada acción que dispare una transición de estado o modal (ej. clics en pestañas, abrir formularios), el agente **debe usar una espera explícita** (`wait` o `sleep` de al menos 2-3 segundos) ANTES de evaluar el resultado visual o tomar capturas. 
+- Si una prueba falla dos veces por el mismo selector o estado visual, el agente debe abortar la secuencia en lugar de insistir, y reportar el fallo al usuario.
+
 ---
-*Última actualización: 07 de Mayo de 2026 (Unificación v2.2)*
+
+## 🧪 Escenario de Prueba: Conflicto de Reservas (Soft-Block)
+
+Para validar la lógica de la v2.5 sin caer en bucles de fechas:
+
+1. **Fase 1: El Bloqueador Suave (Huésped A)**
+   - Login -> Seleccionar Propiedad -> Checkout.
+   - Subir comprobante (`receipt-upload`).
+   - **Validación:** Confirmar que el estado cambia a `AWAITING_VERIFICATION`.
+
+2. **Fase 2: La Transparencia (Huésped B)**
+   - Cambiar de usuario (Logout/Login) -> Misma Propiedad.
+   - **Auditoría Visual:** El calendario **debe** mostrar los días seleccionados por A con el estilo `bg-amber-50/80` y el borde punteado.
+   - Seleccionar esas mismas fechas -> Ir a Checkout.
+   - **Auditoría UX:** El componente **debe** renderizar el banner de "Alta Demanda" (ID sugerido: `soft-block-conflict-warning`).
+
+3. **Fase 3: El Arbitraje (Anfitrión)**
+   - Login Anfitrión -> Dashboard -> Reservas.
+   - **Auditoría de Datos:** Ambas reservas deben aparecer.
+   - **Validación Final:** Verificar la presencia del badge rojo "Solapamiento de Fechas" en ambas tarjetas de reserva.
+
+**⚠️ Nota Anti-Bucle:** No intentes interactuar con el calendario mediante clics de píxeles si hay animaciones activas. Espera a que el `AnimatePresence` termine su ciclo de 500ms.
+
+---
+*Última actualización: 09 de Mayo de 2026 (Unificación v2.2 - Fase de Pruebas y Prevención Anti-Bucle)*

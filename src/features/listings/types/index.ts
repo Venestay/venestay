@@ -44,6 +44,7 @@ export interface Listing {
   constructionYear?: number;
   latitude?: number;
   longitude?: number;
+  nearbyActivities?: string;
   paymentMethods?: PaymentMethod[];
   bankDetails?: {
     bankName: string;
