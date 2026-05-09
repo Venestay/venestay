@@ -60,13 +60,14 @@ const ListingList: React.FC<ListingListProps> = ({
               <div className="flex gap-2">
                 <button
                   onClick={() => setEditingListing(listing)}
-                  className="text-brand-navy hover:bg-brand-500 rounded-xl bg-gray-50 p-2.5 transition-colors"
+                  className="bg-brand-navy hover:bg-brand-500 flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-[10px] font-black tracking-widest text-white uppercase transition-colors"
                 >
-                  <Edit2 className="h-4 w-4" />
+                  <Edit2 className="h-3 w-3" /> Editar
                 </button>
                 <button
                   onClick={() => handleDeleteListing(listing.id)}
-                  className="rounded-xl bg-gray-50 p-2.5 text-red-500 transition-colors hover:bg-red-50"
+                  className="flex items-center justify-center rounded-xl bg-gray-50 p-2.5 text-red-500 transition-colors hover:bg-red-50"
+                  title="Eliminar propiedad"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -88,10 +89,8 @@ const ListingList: React.FC<ListingListProps> = ({
             reviewsCount: 0,
             isVerified: true,
             isPetFriendly: false,
-            images: [
-              'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb',
-            ],
-            amenities: ['Wifi', 'Estacionamiento'],
+            images: [],
+            amenities: ['WiFi', 'Estacionamiento'],
             maxGuests: 2,
             bedrooms: 1,
             beds: 1,

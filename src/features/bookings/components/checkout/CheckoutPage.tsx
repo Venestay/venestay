@@ -48,6 +48,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { cn, safeFormat, calculatePaymentBreakdown, parseLocalDate } from '@/lib/utils';
 import Chat from '@/components/Chat';
+import * as bookingService from '@/services/booking-service';
 import Skeleton from '@/components/ui/Skeleton';
 import AuthModal from '@/features/auth/components/AuthModal';
 import Calendar from '@/features/bookings/components/Calendar';
@@ -76,6 +77,9 @@ const CheckoutPage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isGuestsEditorOpen, setIsGuestsEditorOpen] = useState(false);
+
+  const [reservedDates, setReservedDates] = useState<{ start: Date; end: Date }[]>([]);
+  const [softReservedDates, setSoftReservedDates] = useState<{ start: Date; end: Date }[]>([]);
 
   const calendarRef = useRef<HTMLDivElement>(null);
   const guestsRef = useRef<HTMLDivElement>(null);
@@ -232,6 +236,31 @@ const CheckoutPage: React.FC = () => {
     fetchRates();
   }, []);
 
+  useEffect(() => {
+    if (!listing?.id) return;
+    const fetchReserved = async () => {
+      try {
+        const ranges = await bookingService.getReservedDates(listing.id);
+        const confirmed = ranges.filter(r => r.type === 'confirmed').map(r => ({ start: r.start, end: r.end }));
+        const pending = ranges.filter(r => r.type === 'pending').map(r => ({ start: r.start, end: r.end }));
+        
+        if (listing.blockedDates && listing.blockedDates.length > 0) {
+          const { parseISO } = await import('date-fns');
+          listing.blockedDates.forEach((dateStr) => {
+            const date = parseISO(dateStr);
+            confirmed.push({ start: date, end: date });
+          });
+        }
+        
+        setReservedDates(confirmed);
+        setSoftReservedDates(pending);
+      } catch (err) {
+        console.error('Error fetching reserved dates:', err);
+      }
+    };
+    fetchReserved();
+  }, [listing?.id]);
+
   const convertedAmount = useMemo(() => {
     if (!booking || !rates || !selectedMethod) return null;
     if (
@@ -250,7 +279,7 @@ const CheckoutPage: React.FC = () => {
   };
 
   const handleGuestsChange = async (newGuests: number) => {
-    if (newGuests < 1 || !listing) return;
+    if (newGuests < 1 || !listing || newGuests > listing.maxGuests) return;
 
     const newBooking = {
       ...booking,
@@ -603,6 +632,31 @@ const CheckoutPage: React.FC = () => {
     return Math.max(0, differenceInDays(end, start));
   }, [booking]);
 
+  const hasSoftBlockConflict = useMemo(() => {
+    if (!booking?.startDate || !booking?.endDate) return false;
+    const start = parseLocalDate(booking.startDate);
+    const end = parseLocalDate(booking.endDate);
+    if (!start || !end) return false;
+    
+    // Lazy import for performance, but we just use date-fns functions we already have
+    const { isWithinInterval, startOfDay } = require('date-fns');
+    
+    return softReservedDates.some((range) => {
+      // Check if any day in the softReserved range falls inside our booking range
+      // or if any day in our booking range falls inside the softReserved range
+      const rangeStart = startOfDay(range.start);
+      const rangeEnd = startOfDay(range.end);
+      const bStart = startOfDay(start);
+      const bEnd = startOfDay(end);
+      
+      return (
+        isWithinInterval(rangeStart, { start: bStart, end: bEnd }) ||
+        isWithinInterval(rangeEnd, { start: bStart, end: bEnd }) ||
+        isWithinInterval(bStart, { start: rangeStart, end: rangeEnd })
+      );
+    });
+  }, [booking, softReservedDates]);
+
   if (loading || authLoading) {
     return (
       <div className="flex min-h-screen flex-col overflow-hidden bg-white md:flex-row">
@@ -658,7 +712,7 @@ const CheckoutPage: React.FC = () => {
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-8 backdrop-blur-xl md:px-12">
           <div className="flex items-center space-x-6">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate(`/listing/${listing.id}`)}
               className="group rounded-2xl p-3 transition-all hover:bg-gray-100"
             >
               <ArrowLeft className="text-brand-navy h-5 w-5 transition-transform group-hover:-translate-x-1" />
@@ -716,6 +770,22 @@ const CheckoutPage: React.FC = () => {
             </motion.div>
           ) : (
             <>
+              {hasSoftBlockConflict && (
+                <div className="flex flex-col items-center justify-between gap-4 rounded-3xl border border-amber-200 bg-amber-50 p-6 md:flex-row">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-500">
+                      <Clock className="h-5 w-5 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-amber-800 text-sm font-black uppercase tracking-wider">Alta Demanda</h4>
+                      <p className="text-amber-700 mt-1 text-xs">
+                        Otro usuario está en proceso de pago para estas mismas fechas. Puedes continuar, pero la reserva se otorgará a quien el anfitrión valide primero.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Summary Section */}
               <section className="space-y-6">
                 <div className="flex flex-col items-start gap-8 rounded-[40px] border border-gray-100 bg-gray-50 p-8 md:flex-row md:items-center">
@@ -798,6 +868,8 @@ const CheckoutPage: React.FC = () => {
                             <Calendar
                               startDate={parseLocalDate(booking.startDate)}
                               endDate={parseLocalDate(booking.endDate)}
+                              reservedDates={reservedDates}
+                              softReservedDates={softReservedDates}
                               onChange={handleDateChange}
                               onClose={() => setIsCalendarOpen(false)}
                             />
@@ -862,9 +934,10 @@ const CheckoutPage: React.FC = () => {
                               </span>
                               <button
                                 onClick={() =>
-                                  handleGuestsChange(booking.guests + 1)
+                                  handleGuestsChange(Math.min(listing.maxGuests, booking.guests + 1))
                                 }
-                                className="text-brand-navy hover:bg-brand-500 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white font-black transition-colors hover:text-white"
+                                disabled={booking.guests >= listing.maxGuests}
+                                className="text-brand-navy hover:bg-brand-500 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white font-black transition-colors hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                               >
                                 +
                               </button>

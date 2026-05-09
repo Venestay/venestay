@@ -46,6 +46,9 @@ import {
   Languages,
   MessageCircle,
   ShieldAlert,
+  Building2,
+  Hash,
+  CalendarDays,
 } from 'lucide-react';
 import { cn, calculatePaymentBreakdown } from '@/lib/utils';
 import Skeleton from '@/components/ui/Skeleton';
@@ -104,6 +107,9 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
   const [reservedDates, setReservedDates] = useState<
     { start: Date; end: Date }[]
   >([]);
+  const [softReservedDates, setSoftReservedDates] = useState<
+    { start: Date; end: Date }[]
+  >([]);
   const [hostProfile, setHostProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -130,6 +136,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [activeReviewSession, setActiveReviewSession] = useState<any>(null);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isAmenitiesExpanded, setIsAmenitiesExpanded] = useState(false);
   const [guideQuestion, setGuideQuestion] = useState('');
 
   useEffect(() => {
@@ -216,14 +223,18 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
       try {
         const ranges = await bookingService.getReservedDates(currentListing.id);
 
+        const confirmed = ranges.filter(r => r.type === 'confirmed').map(r => ({ start: r.start, end: r.end }));
+        const pending = ranges.filter(r => r.type === 'pending').map(r => ({ start: r.start, end: r.end }));
+
         if (currentListing.blockedDates && currentListing.blockedDates.length > 0) {
           currentListing.blockedDates.forEach((dateStr) => {
             const date = parseISO(dateStr);
-            ranges.push({ start: date, end: date });
+            confirmed.push({ start: date, end: date });
           });
         }
 
-        setReservedDates(ranges);
+        setReservedDates(confirmed);
+        setSoftReservedDates(pending);
       } catch (error) {
         console.error('Error fetching reserved dates:', error);
       }
@@ -583,6 +594,57 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     </span>
                   </div>
                 </div>
+                
+                {/* Building Details Section - Unified Premium Style */}
+                {(currentListing.buildingFloors || currentListing.propertyFloor || currentListing.constructionYear) && (
+                  <div className="grid grid-cols-2 gap-4 pt-6 sm:grid-cols-3">
+                    {currentListing.buildingFloors && (
+                      <div className="flex items-center gap-3 rounded-2xl bg-gray-50/50 border border-gray-100 p-4 transition-all hover:bg-white hover:shadow-md">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+                          <Building2 className="text-brand-500 h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-brand-navy text-sm font-black leading-tight">
+                            {currentListing.buildingFloors} pisos
+                          </span>
+                          <span className="text-[9px] font-black tracking-widest text-gray-400 uppercase">
+                            Edificio
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {currentListing.propertyFloor && (
+                      <div className="flex items-center gap-3 rounded-2xl bg-gray-50/50 border border-gray-100 p-4 transition-all hover:bg-white hover:shadow-md">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+                          <Hash className="text-brand-500 h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-brand-navy text-sm font-black leading-tight">
+                            Piso {currentListing.propertyFloor}
+                          </span>
+                          <span className="text-[9px] font-black tracking-widest text-gray-400 uppercase">
+                            Ubicación
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {currentListing.constructionYear && (
+                      <div className="flex items-center gap-3 rounded-2xl bg-gray-50/50 border border-gray-100 p-4 transition-all hover:bg-white hover:shadow-md">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+                          <CalendarDays className="text-brand-500 h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-brand-navy text-sm font-black leading-tight">
+                            {currentListing.constructionYear}
+                          </span>
+                          <span className="text-[9px] font-black tracking-widest text-gray-400 uppercase">
+                            Construcción
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Meet your host section - Minimalist Integration */}
                 <div className="group relative border-y border-gray-100/60 py-10 md:py-12">
@@ -730,6 +792,23 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   </button>
                 </div>
 
+                {/* Environment / Nearby Activities Section */}
+                {currentListing.nearbyActivities && (
+                  <div className="space-y-6">
+                    <h3 className="text-brand-navy flex items-center text-2xl font-black">
+                      <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
+                        02
+                      </span>
+                      Entorno y Experiencias
+                    </h3>
+                    <div className="bg-gray-50/50 rounded-3xl border border-gray-100 p-8">
+                      <p className="text-lg leading-relaxed font-medium text-gray-600 whitespace-pre-line">
+                        {currentListing.nearbyActivities}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* 
                 <div className="space-y-6">
                   <h3 className="text-brand-navy flex items-center text-2xl font-black">
@@ -760,12 +839,14 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                 <div className="space-y-8">
                   <h3 className="text-brand-navy flex items-center text-2xl font-black">
                     <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
-                      02
+                      03
                     </span>
                     Comodidades
                   </h3>
                   <div className="space-y-8">
-                    {Object.entries(categorizeAmenities(currentListing.amenities)).map(([category, items]) => (
+                    {Object.entries(categorizeAmenities(currentListing.amenities))
+                      .filter(([category]) => isAmenitiesExpanded || category === 'Esenciales')
+                      .map(([category, items]) => (
                       <div key={category} className="space-y-4">
                         <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">{category}</p>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -785,13 +866,22 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                         </div>
                       </div>
                     ))}
+                    
+                    {currentListing.amenities.length > 6 && (
+                      <button
+                        onClick={() => setIsAmenitiesExpanded(!isAmenitiesExpanded)}
+                        className="w-full sm:w-auto mt-4 px-8 py-4 border-2 border-brand-navy text-brand-navy rounded-2xl text-xs font-black tracking-widest uppercase hover:bg-brand-navy hover:text-white transition-all duration-300 shadow-lg active:scale-95"
+                      >
+                        {isAmenitiesExpanded ? 'Ver menos ↑' : `Ver todas las comodidades (${currentListing.amenities.length}) →`}
+                      </button>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-6">
                   <h3 className="text-brand-navy flex items-center text-2xl font-black">
                     <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
-                      03
+                      04
                     </span>
                     Ubicación
                   </h3>
@@ -905,7 +995,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <h3 className="text-brand-navy flex items-center text-2xl font-black">
                       <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
-                        04
+                        05
                       </span>
                       Reseñas Verificadas
                     </h3>
@@ -1037,6 +1127,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                               startDate={startDate}
                               endDate={endDate}
                               reservedDates={reservedDates}
+                              softReservedDates={softReservedDates}
                               onChange={(start, end) => {
                                 setStartDate(start);
                                 setEndDate(end);
@@ -1066,8 +1157,9 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                           {guests} {guests === 1 ? 'Viajero' : 'Viajeros'}
                         </span>
                         <button
-                          onClick={() => setGuests(guests + 1)}
-                          className="text-brand-navy flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 transition-colors hover:bg-gray-100"
+                          onClick={() => setGuests(Math.min(currentListing.maxGuests, guests + 1))}
+                          disabled={guests >= currentListing.maxGuests}
+                          className="text-brand-navy flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 transition-colors hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           +
                         </button>

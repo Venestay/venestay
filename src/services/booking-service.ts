@@ -13,15 +13,11 @@ import { db } from '@/lib/firebase';
 import { Booking, BookingStatus } from '@/types';
 import { parseISO } from 'date-fns';
 
-export const getReservedDates = async (listingId: string): Promise<{ start: Date; end: Date }[]> => {
+export const getReservedDates = async (listingId: string): Promise<{ start: Date; end: Date; type: 'confirmed' | 'pending' }[]> => {
   const q = query(
     collection(db, 'bookings'),
     where('listingId', '==', listingId),
-    where('status', 'in', [
-      'PENDING_PAYMENT',
-      'AWAITING_VERIFICATION',
-      'CONFIRMED',
-    ])
+    where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION'])
   );
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => {
@@ -29,6 +25,7 @@ export const getReservedDates = async (listingId: string): Promise<{ start: Date
     return {
       start: parseISO(data.startDate),
       end: parseISO(data.endDate),
+      type: data.status === 'CONFIRMED' ? 'confirmed' : 'pending'
     };
   });
 };
