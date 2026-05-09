@@ -37,7 +37,7 @@ VeneStay no es solo código; es una plataforma impulsada por un equipo de **Agen
 ## 🛡️ Pilar 3: Confianza y Calidad
 *La base de nuestra reputación en Venezuela.*
 
-### 6. Trust & Identity Architect 🔐
+### 6. Arquitecto de Confianza e Identidad 🔐
 - **¿Qué hace?**: Gestiona la seguridad y verificación de identidad.
 - **Función**: Implementa protocolos de "Cero Confianza" para que cada anfitrión y huésped sea real, eliminando el riesgo de fraude en pagos P2P.
 

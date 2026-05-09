@@ -1,4 +1,4 @@
-# Vercel Building Components - SKILL.md
+# Construcción de Componentes (Vercel) - SKILL.md
 
 ## Descripción General
 

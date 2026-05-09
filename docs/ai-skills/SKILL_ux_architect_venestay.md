@@ -1,4 +1,4 @@
-# 🛡️ SKILL: UX Architect & Branding Authority (VeneStay)
+# 🛡️ SKILL: Arquitecto UX y Autoridad de Branding (VeneStay)
 
 Este manual establece la **Autoridad Suprema** en diseño y experiencia de usuario para VeneStay. Bajo el modelo de **Pirámide de Verdad (v2.2)**, las reglas aquí descritas filtran y dominan cualquier sugerencia técnica o automatizada de los AutoSkills.
 

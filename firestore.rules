@@ -133,7 +133,8 @@ service cloud.firestore {
 
     // User Profiles
     match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow get: if true; // Publicly verifiable profiles (Trust Strategy)
+      allow list: if isAdmin();
       allow create: if isSignedIn() && request.auth.uid == userId && 
                     isValidUser(incoming()) && 
                     incoming().role == 'user'; // Prevent self-escalation

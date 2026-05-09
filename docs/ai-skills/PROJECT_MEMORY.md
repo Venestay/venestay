@@ -1,9 +1,9 @@
 # 📒 VeneStay Project Memory (The Blackboard)
 
 ## 🚦 Estado de Sincronización Global
-- **Versión:** v0.9.5.
+- **Versión:** v2.2.1.
 - **Lanzamiento:** Beta Lechería - Julio 2026.
-- **Última Decisión Crítica:** Estabilización de Checkout y ErrorBoundary (04-May-2026).
+- **Última Decisión Crítica:** Resiliencia de Checkout e Integración de Pasaporte v2.1 (08-May-2026).
 - **Estética Oficial:** Premium Dark (#0B1120) / Dorado (#C5A059).
 
 ## 🧠 Registro de Decisiones y Sincronización (Ledger)
@@ -33,6 +33,19 @@
 | 08-MAY | UX Architect | **REFACTOR DE LAYOUT:** Optimización de `ListingDetail.tsx` eliminando `overflow-hidden` y fijando la barra de navegación superior. El panel de reserva ahora es 100% sticky. | [Gate: PASSED] | ✅ |
 | 08-MAY | UX Architect | **MINIMALISMO E INTEGRACIÓN:** Rediseño de la sección de anfitrión en `ListingDetail.tsx`. Eliminación de sombras, fondos y bordes pesados. Integración orgánica mediante separadores lineales. | [Gate: PASSED] | ✅ |
 | 08-MAY | Master Orchestrator | **PASAPORTE v2.0:** Implementación del perfil experimental con Trust Score, estética minimalista y auditoría de accesibilidad. | [Gate: PASSED] | ✅ |
+| 08-MAY | UX Architect | **PASAPORTE v2.1:** Pulido estético Premium con efectos de resplandor (glow), micro-animaciones y unificación de tarjetas VIP. | [Gate: PASSED] | ✅ |
+| 08-MAY | SRE Architect | **RESILIENCIA CHECKOUT:** Corrección de error de carga de borradores. Actualización de `firestore.rules` (Public Profile Get) y manejo de errores en tiers. | [Gate: PASSED] | ✅ |
+| 08-MAY | Master Orchestrator | **VALIDACIÓN E2E:** Verificación funcional total de los flujos de Perfil y Checkout tras correcciones de gobernanza. | [Gate: PASSED] | ✅ |
+| 08-MAY | Master Orchestrator | **PRODUCT DIVISION:** Integración completa de los 5 agentes de producto (Manager, Prioritizer, Synthesizer, Researcher, Behavioral Nudge). | [Gate: PASSED] | ✅ |
+
+## 👥 Ecosistema de Agentes de Producto (Product Division)
+| Agente | Rol Principal | Disparadores / Casos de Uso |
+| :--- | :--- | :--- |
+| **Product Manager** | Liderazgo y estrategia holística. | "PRD", "Roadmap", "priorizar features", "Go-to-market". |
+| **Sprint Prioritizer** | Planificación ágil y maximización de valor. | "Planificar sprint", "RICE", "Scrum", "asignar recursos". |
+| **Feedback Synthesizer**| Análisis de feedback cualitativo. | "Analizar encuestas", "NPS", "tickets de soporte", "journey map". |
+| **Trend Researcher** | Inteligencia de mercado y oportunidades. | "Análisis de competencia", "nuevas tendencias", "TAM/SAM". |
+| **Behavioral Nudge** | Psicología conductual y formación de hábitos. | "Reducir fricción", "gamificación", "aumentar retención". |
 
 ## 🧬 Ecosistema de AutoSkills (Triggers & Mapping)
 | Skill | Disparadores (Triggers) | Aplicación en VeneStay |

@@ -333,10 +333,10 @@ const ProfileSettings: React.FC = () => {
                       aria-pressed={selectedInterests.includes(interest)}
                       onClick={() => toggleInterest(interest)}
                       className={cn(
-                        "rounded-xl border px-6 py-3 text-[10px] font-black tracking-widest uppercase transition-all focus:outline-none focus:ring-1 focus:ring-brand-500",
+                        "rounded-xl border px-6 py-3 text-[10px] font-black tracking-widest uppercase transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-brand-500",
                         selectedInterests.includes(interest)
-                          ? "bg-brand-500 border-brand-500 text-brand-navy scale-105 shadow-xl shadow-brand-500/10"
-                          : "bg-white/5 border-gray-100/10 text-gray-500 hover:border-gray-100/20 hover:text-gray-300"
+                          ? "bg-brand-500 border-brand-500 text-brand-navy scale-105 shadow-[0_0_20px_rgba(197,160,89,0.3)]"
+                          : "bg-white/5 border-gray-100/10 text-gray-500 hover:border-brand-500/30 hover:text-gray-300 hover:scale-[1.02]"
                       )}
                     >
                       {interest}
@@ -349,13 +349,18 @@ const ProfileSettings: React.FC = () => {
                 <label className="text-[10px] font-black tracking-[0.2em] text-gray-400 uppercase">Idiomas de Preferencia</label>
                 <button 
                   type="button"
-                  className="w-full flex items-center justify-between rounded-2xl border border-gray-100/5 bg-white/5 px-6 py-5 hover:bg-white/10 transition-all focus:ring-1 focus:ring-brand-500"
+                  className="group w-full flex items-center justify-between rounded-2xl border border-gray-100/5 bg-white/5 px-6 py-6 hover:bg-white/10 hover:border-brand-500/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                 >
-                  <div className="flex items-center gap-3">
-                    <Languages className="h-4 w-4 text-brand-500" />
-                    <span className="text-xs font-bold">Español e Inglés</span>
+                  <div className="flex items-center gap-5">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-gray-400 group-hover:bg-brand-500/10 group-hover:text-brand-500 transition-all duration-500">
+                      <Languages className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black group-hover:text-white transition-colors text-left">Español e Inglés</p>
+                      <p className="text-[10px] font-medium text-gray-500 group-hover:text-gray-400 transition-colors text-left">Configuración de comunicación global.</p>
+                    </div>
                   </div>
-                  <ChevronRight className="h-3 w-3 text-gray-700" />
+                  <ChevronRight className="h-3 w-3 text-gray-700 group-hover:translate-x-1 group-hover:text-brand-500 transition-all" />
                 </button>
               </div>
             </div>
@@ -379,12 +384,12 @@ const ProfileSettings: React.FC = () => {
                   className="flex items-center justify-between rounded-2xl border border-gray-100/5 bg-white/5 px-6 py-6 hover:border-gray-100/10 transition-colors"
                 >
                   <div className="flex items-center gap-5">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-gray-400">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-gray-400 group-hover:bg-brand-500/10 group-hover:text-brand-500 transition-all duration-500">
                       <channel.icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-black">{channel.label}</p>
-                      <p className="text-[10px] font-medium text-gray-500">{channel.desc}</p>
+                      <p className="text-sm font-black group-hover:text-white transition-colors">{channel.label}</p>
+                      <p className="text-[10px] font-medium text-gray-500 group-hover:text-gray-400 transition-colors">{channel.desc}</p>
                     </div>
                   </div>
                   <button
@@ -393,8 +398,10 @@ const ProfileSettings: React.FC = () => {
                     aria-checked={notifications[channel.id as keyof typeof notifications]}
                     onClick={() => setNotifications(prev => ({ ...prev, [channel.id]: !prev[channel.id as keyof typeof prev] }))}
                     className={cn(
-                      "relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-navy",
-                      notifications[channel.id as keyof typeof notifications] ? "bg-brand-500" : "bg-white/10"
+                      "relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:ring-offset-2 focus:ring-offset-brand-navy",
+                      notifications[channel.id as keyof typeof notifications] 
+                        ? "bg-brand-500 shadow-[0_0_12px_rgba(197,160,89,0.4)]" 
+                        : "bg-white/10"
                     )}
                   >
                     <span

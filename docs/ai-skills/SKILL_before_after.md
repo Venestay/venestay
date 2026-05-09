@@ -1,4 +1,4 @@
-# 📸 SKILL: Before & After (Visual & Performance Regression v2.2)
+# 📸 SKILL: Antes y Después (Regresión Visual y de Rendimiento v2.2)
 
 Este Skill previene regresiones visuales y de rendimiento obligando a realizar una comparación del estado del componente antes y después de aplicar cambios bajo el flujo **Harness Engineering**.
 

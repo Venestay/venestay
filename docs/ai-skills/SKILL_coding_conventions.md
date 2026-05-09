@@ -1,48 +1,48 @@
-# VeneStay Project Conventions
+# Convenciones del Proyecto VeneStay
 
-This document outlines the coding standards, architecture, and conventions for the VeneStay project.
+Este documento describe los estándares de codificación, arquitectura y convenciones para el proyecto VeneStay.
 
-## 1. Architecture: Feature-Sliced Design (FSD)
-The project follows a refined FSD architecture. Code is organized into modules by business domain.
+## 1. Arquitectura: Feature-Sliced Design (FSD)
+El proyecto sigue una arquitectura FSD refinada. El código se organiza en módulos según el dominio de negocio.
 
-### Structure of a Feature (`src/features/[feature-name]/`)
-- `/components`: UI components specific to the feature.
-- `/hooks`: Custom React hooks specific to the feature.
-- `/api`: (Optional) Feature-specific API calls/services.
-- `/types`: TypeScript definitions for the feature.
+### Estructura de una Característica (`src/features/[nombre-feature]/`)
+- `/components`: Componentes de UI específicos de la característica.
+- `/hooks`: Hooks personalizados de React específicos de la característica.
+- `/api`: (Opcional) Llamadas a la API o servicios específicos de la característica.
+- `/types`: Definiciones de TypeScript para la característica.
 
-## 2. Naming Conventions
-- **Components**: `PascalCase.tsx` (e.g., `ListingCard.tsx`)
-- **Hooks**: `kebab-case.ts/tsx` (e.g., `use-auth.tsx`)
-- **Services/Utils/Others**: `kebab-case.ts` (e.g., `auth-service.ts`)
-- **Folders**: `kebab-case` (e.g., `listing-detail`)
+## 2. Convenciones de Nomenclatura
+- **Componentes**: `PascalCase.tsx` (ej. `ListingCard.tsx`)
+- **Hooks**: `kebab-case.ts/tsx` (ej. `use-auth.tsx`)
+- **Servicios/Utilidades/Otros**: `kebab-case.ts` (ej. `auth-service.ts`)
+- **Carpetas**: `kebab-case` (ej. `listing-detail`)
 
-## 3. Technology Stack
+## 3. Stack Tecnológico
 - **Framework**: React 19 + Vite
-- **Styling**: Tailwind CSS v4 + Framer Motion (motion/react)
-- **State Management**: React Context (Auth), TanStack Query (Future)
-- **Validation**: Zod
+- **Estilos**: Tailwind CSS v4 + Framer Motion (motion/react)
+- **Gestión de Estado**: React Context (Auth), TanStack Query (Próximamente)
+- **Validación**: Zod
 - **Backend**: Firebase (Firestore, Auth, Storage)
 
-## 4. Coding Standards
-- **Imports**: Use the `@/` alias for absolute imports from the `src/` directory.
-- **Firebase**: Avoid direct Firebase calls in UI components. Use the centralized services in `src/services/`.
-- **Types**: Use centralized types in `src/types/index.ts` for global interfaces, and feature-specific types in their respective folders.
-- **Strict Typing**: Ensure all props and function parameters are strictly typed.
-- **Tipado de Componentes:** Queda prohibido el uso de props booleanos para alternar estilos mayores. Se debe seguir la arquitectura de variantes definida en `.agents/skills/composition-patterns/SKILL.md`.
-- **Integridad Zod:** Todo input numérico procesado (especialmente UCP 20/80) debe utilizar coerción según el estándar en `.agents/skills/zod/references/refine-transform-coerce.md`.
-- **Eficiencia Dinámica:** Componentes de alto peso (Maps, Charts) deben usar `React.lazy` siguiendo `.agents/skills/react-best-practices/rules/bundle-dynamic-imports.md`.
+## 4. Estándares de Codificación
+- **Importaciones**: Usa el alias `@/` para importaciones absolutas desde el directorio `src/`.
+- **Firebase**: Evita llamadas directas a Firebase en componentes de UI. Usa los servicios centralizados en `src/services/`.
+- **Tipos**: Usa tipos centralizados en `src/types/index.ts` para interfaces globales, y tipos específicos de características en sus respectivas carpetas.
+- **Tipado Estricto**: Asegúrate de que todas las props y parámetros de funciones estén estrictamente tipados.
+- **Tipado de Componentes**: Queda prohibido el uso de props booleanos para alternar estilos mayores. Se debe seguir la arquitectura de variantes definida en `SKILL_composition.md`.
+- **Integridad Zod**: Todo input numérico procesado (especialmente UCP 20/80) debe utilizar coerción según el estándar en las referencias de Zod.
+- **Eficiencia Dinámica**: Componentes de alto peso (Mapas, Gráficos) deben usar `React.lazy` siguiendo las mejores prácticas de React.
 
-## 5. Agentic & UI/UX Rules
-- **Theme**: "Premium Dark" aesthetics.
-- **Psychology First**: Every UI element must align with `SKILL_marketing_psychology.md` (e.g., scarcity indicators, social proof).
-- **Reality Check**: Every PR/Change requires **Visual Evidence** (screenshots) as defined in `SKILL_reality_auditor.md`.
-- **Whimsy**: Use subtle micro-animations for feedback to reduce user anxiety.
-- **Performance**: Use `lazy` and `Suspense` for heavy components.
+## 5. Reglas Agénticas y UI/UX
+- **Tema**: Estética "Premium Dark".
+- **Psicología Primero**: Cada elemento de la UI debe alinearse con `SKILL_marketing_psychology.md` (ej. indicadores de escasez, prueba social).
+- **Verificación de Realidad**: Cada cambio requiere **Evidencia Visual** (capturas de pantalla) según se define en `SKILL_reality_auditor.md`.
+- **Whimsy**: Usa micro-animaciones sutiles para el feedback y así reducir la ansiedad del usuario.
+- **Rendimiento**: Usa `lazy` y `Suspense` para componentes pesados.
 
-## 6. Quality Gates (No-Go Conditions)
-The following conditions must be met before any task is considered complete:
-1. **Compilation**: `npx tsc --noEmit` must pass without errors.
-2. **Linting**: `npm run lint` must pass without warnings in Shared or Features.
-3. **Evidence**: Visual evidence (screenshots/descriptions) must be provided by the `Reality Auditor`.
-4. **Security**: Payment changes must strictly adhere to `UCPTransactionPayload`.
+## 6. Puertas de Calidad (Condiciones No-Go)
+Las siguientes condiciones deben cumplirse antes de que cualquier tarea se considere completa:
+1. **Compilación**: `npx tsc --noEmit` debe pasar sin errores.
+2. **Linting**: `npm run lint` debe pasar sin advertencias en Shared o Features.
+3. **Evidencia**: El `Reality Auditor` debe proporcionar evidencia visual (capturas de pantalla/descripciones).
+4. **Seguridad**: Los cambios en los pagos deben cumplir estrictamente con `UCPTransactionPayload`.

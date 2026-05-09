@@ -116,14 +116,24 @@ const CheckoutPage: React.FC = () => {
           } as Listing;
           setListing(lData);
 
-          // v2.2 Host Audit for Commission Tier
+          // v2.2 Host Audit for Commission Tier (Resilient Mode)
           let hostTier: any = 12;
           if (lData.hostId) {
-            const hostSnap = await getDoc(doc(db, 'users', lData.hostId));
-            if (hostSnap.exists()) {
-              const hData = hostSnap.data();
-              const { getCommissionTier } = await import('@/lib/commission');
-              hostTier = getCommissionTier(hData.isVerified || false, hData.completedBookings || 0);
+            try {
+              const hostSnap = await getDoc(doc(db, 'users', lData.hostId));
+              if (hostSnap.exists()) {
+                const hData = hostSnap.data();
+                const { getCommissionTier } = await import('@/lib/commission');
+                hostTier = getCommissionTier(
+                  hData.isVerified || false,
+                  hData.completedBookings || 0
+                );
+              }
+            } catch (tierError) {
+              console.warn(
+                'Checkout: Fallo al obtener métricas del anfitrión. Usando Tier base (12%).',
+                tierError
+              );
             }
           }
 

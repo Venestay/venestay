@@ -1,4 +1,4 @@
-# 🌐 SKILL: Agent Browser Automation (Harness v2.2)
+# 🌐 SKILL: Automatización del Navegador Agéntico (Harness v2.2)
 
 Este Skill otorga la capacidad de realizar pruebas End-to-End (E2E) interactuando con el DOM real de VeneStay. Bajo el flujo v2.2, el navegador no es solo una herramienta de visualización, sino el instrumento principal de la **Quality Gate 2 (Reality Auditor)**.
 
