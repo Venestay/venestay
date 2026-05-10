@@ -45,6 +45,8 @@ export interface Listing {
   latitude?: number;
   longitude?: number;
   nearbyActivities?: string;
+  manualAddress?: string;
+  environmentPhotos?: Record<string, string>;
   paymentMethods?: PaymentMethod[];
   bankDetails?: {
     bankName: string;

@@ -16,6 +16,13 @@ import {
   ArrowRight,
   ArrowLeft,
   Image as ImageIcon,
+  Sofa,
+  UtensilsCrossed,
+  Bed,
+  BedDouble,
+  Bath,
+  Mountain,
+  LayoutGrid,
 } from 'lucide-react';
 import { GoogleMap, Marker, StandaloneSearchBox } from '@react-google-maps/api';
 import { Listing, City, PaymentMethodType } from '@/types';
@@ -29,7 +36,7 @@ interface ListingFormProps {
   handleUpdateListing: (e: React.FormEvent, listing?: Listing) => Promise<void>;
   isSaving: boolean;
   isUploading: boolean;
-  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => Promise<void>;
   removeImage: (index: number) => void;
   isLoaded: boolean;
   loadError: any;
@@ -37,6 +44,15 @@ interface ListingFormProps {
   DEFAULT_MAP_OPTIONS: any;
   user: any;
 }
+
+const ENVIRONMENTS = [
+  { id: 'sala', label: 'Sala Principal', icon: Sofa },
+  { id: 'cocina', label: 'Cocina', icon: UtensilsCrossed },
+  { id: 'habitacion_master', label: 'Habitación Máster', icon: Bed },
+  { id: 'habitacion_secundaria', label: 'Habitación Secundaria', icon: BedDouble },
+  { id: 'bano', label: 'Baño', icon: Bath },
+  { id: 'terraza', label: 'Terraza / Vista', icon: Mountain },
+] as const;
 
 const PAYMENT_OPTIONS = [
   { type: 'Zelle', label: 'ZELLE', icon: Globe, color: 'text-purple-500', bgColor: 'bg-purple-50' },
@@ -66,6 +82,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
   const [tempPaymentData, setTempPaymentData] = useState<any>({});
   const [step, setStep] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
+  const [targetEnvironment, setTargetEnvironment] = useState<string | null>(null);
   const [showWarningModal, setShowWarningModal] = useState(false);
 
   useEffect(() => {
@@ -122,10 +139,46 @@ const ListingForm: React.FC<ListingFormProps> = ({
         const location = place.geometry?.location;
         if (location) {
           setEditingListing((prev) =>
-            prev ? { ...prev, latitude: location.lat(), longitude: location.lng(), location: place.formatted_address || prev.location } : null
+            prev ? { 
+              ...prev, 
+              latitude: location.lat(), 
+              longitude: location.lng(), 
+              location: place.formatted_address || prev.location,
+              manualAddress: place.formatted_address || prev.manualAddress
+            } : null
           );
         }
       }
+    }
+  };
+
+  const handleGeocodeManualAddress = () => {
+    if (!editingListing.manualAddress || !window.google) return;
+    
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ address: editingListing.manualAddress }, (results, status) => {
+      if (status === 'OK' && results && results[0]) {
+        const { lat, lng } = results[0].geometry.location;
+        setEditingListing(prev => prev ? {
+          ...prev,
+          latitude: lat(),
+          longitude: lng(),
+          location: results[0].formatted_address
+        } : null);
+        toast.success('Ubicación actualizada en el mapa');
+      } else {
+        toast.error('No se pudo encontrar la ubicación exacta');
+      }
+    });
+  };
+
+  const handleMarkerDragEnd = (e: google.maps.MapMouseEvent) => {
+    if (e.latLng) {
+      setEditingListing(prev => prev ? {
+        ...prev,
+        latitude: e.latLng!.lat(),
+        longitude: e.latLng!.lng()
+      } : null);
     }
   };
 
@@ -383,34 +436,148 @@ const ListingForm: React.FC<ListingFormProps> = ({
               )}
 
               {step === 2 && (
-                <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                  <div className="text-center">
-                    <h4 className="text-brand-navy text-lg font-black tracking-tight">Galería Visual Premium</h4>
-                    <p className="text-gray-400 text-xs mt-1">Arrastra tus fotos o haz clic para subir</p>
+                <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
+                  {/* Quality Gauge Header */}
+                  <div className="flex flex-col items-center justify-between gap-6 rounded-[32px] border border-brand-navy/5 bg-gray-50/50 p-8 md:flex-row">
+                    <div className="flex items-center gap-6">
+                      <div className="relative flex h-20 w-20 items-center justify-center">
+                        <svg className="h-full w-full" viewBox="0 0 36 36">
+                          <path
+                            className="stroke-gray-200"
+                            strokeDasharray="100, 100"
+                            strokeWidth="3"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className="stroke-brand-500 transition-all duration-1000"
+                            strokeDasharray={`${Math.min(100, (Object.keys(editingListing.environmentPhotos || {}).length / ENVIRONMENTS.length) * 100)}, 100`}
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <span className="text-brand-navy absolute text-sm font-black">
+                          {Math.round((Object.keys(editingListing.environmentPhotos || {}).length / ENVIRONMENTS.length) * 100)}%
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-brand-navy text-xl font-black tracking-tight">Calidad de Galería</h4>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          {Object.keys(editingListing.environmentPhotos || {}).length} de {ENVIRONMENTS.length} ambientes cubiertos
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-brand-500/10 border-brand-500/20 flex items-center rounded-2xl border px-4 py-2">
+                      <Sparkles className="text-brand-500 mr-2 h-4 w-4" />
+                      <span className="text-brand-navy text-[10px] font-black tracking-widest uppercase">
+                        Nivel Premium Activo
+                      </span>
+                    </div>
                   </div>
-                  
-                  {/* Drag and Drop Zone */}
-                  <div 
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`cursor-pointer border-2 border-dashed rounded-[32px] p-12 text-center transition-all ${isDragging ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-brand-500 hover:bg-gray-50'}`}
-                  >
-                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
-                    {isUploading ? (
-                      <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="h-10 w-10 animate-spin text-brand-500" />
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Subiendo imágenes...</span>
+
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <h4 className="text-brand-navy text-lg font-black tracking-tight">Galería Visual Premium</h4>
+                      <p className="text-gray-400 text-xs mt-1">Completa los ambientes sugeridos para una publicación perfecta</p>
+                    </div>
+                    
+                    {/* Guided Environment Slots */}
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                      {ENVIRONMENTS.map((env) => {
+                        const photo = editingListing.environmentPhotos?.[env.id];
+                        return (
+                          <div 
+                            key={env.id}
+                            onClick={() => {
+                              if (!photo && !isUploading) {
+                                setTargetEnvironment(env.id);
+                                setTimeout(() => fileInputRef.current?.click(), 0);
+                              }
+                            }}
+                            className={`group relative flex aspect-video cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[24px] border-2 border-dashed transition-all ${
+                              photo 
+                                ? 'border-transparent bg-white shadow-sm' 
+                                : 'border-gray-100 bg-white hover:border-brand-500 hover:bg-gray-50'
+                            }`}
+                          >
+                            {photo ? (
+                              <>
+                                <img src={photo} alt={env.label} className="h-full w-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center">
+                                  <button 
+                                    type="button" 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const newEnvPhotos = { ...editingListing.environmentPhotos };
+                                      delete newEnvPhotos[env.id];
+                                      setEditingListing({ ...editingListing, environmentPhotos: newEnvPhotos });
+                                    }}
+                                    className="bg-red-500 p-2 rounded-xl text-white shadow-lg"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                <div className="absolute top-2 right-2 bg-brand-500 text-brand-navy rounded-lg p-1 shadow-md">
+                                  <Check className="h-3 w-3" />
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center gap-2 p-4 text-center">
+                                <div className="bg-gray-50 p-3 rounded-xl transition-transform group-hover:scale-110">
+                                  <env.icon className="h-5 w-5 text-brand-navy/30" />
+                                </div>
+                                <span className="text-brand-navy/60 text-[9px] font-black uppercase tracking-widest">{env.label}</span>
+                              </div>
+                            )}
+                            {isUploading && !photo && (
+                              <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                                <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Extra Photos Dropzone */}
+                    <div className="mt-10 space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-[1px] flex-grow bg-gray-100" />
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Otras Fotos</span>
+                        <div className="h-[1px] flex-grow bg-gray-100" />
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="bg-white p-4 rounded-full shadow-sm">
-                          <ImageIcon className="h-8 w-8 text-brand-navy" />
+
+                      <div 
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        onClick={() => {
+                          setTargetEnvironment(null);
+                          fileInputRef.current?.click();
+                        }}
+                        className={`cursor-pointer border-2 border-dashed rounded-[32px] p-8 text-center transition-all ${isDragging ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-brand-500 hover:bg-gray-50'}`}
+                      >
+                        <input 
+                          type="file" 
+                          ref={fileInputRef} 
+                          className="hidden" 
+                          accept="image/*" 
+                          multiple 
+                          onChange={(e) => {
+                            handleImageUpload(e, targetEnvironment || undefined);
+                            setTargetEnvironment(null); // Reset after triggering
+                          }} 
+                        />
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="bg-white p-3 rounded-full shadow-sm">
+                            <LayoutGrid className="h-6 w-6 text-brand-navy" />
+                          </div>
+                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Añadir más fotos</span>
                         </div>
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Añadir Fotos</span>
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   {editingListing.images.length > 0 && (
@@ -447,7 +614,23 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         <StandaloneSearchBox onLoad={onSearchBoxLoad} onPlacesChanged={onPlacesChanged}>
                           <input type="text" placeholder="🔍 Buscar dirección..." className="absolute top-4 left-1/2 z-10 w-[90%] max-w-md -translate-x-1/2 rounded-2xl bg-white/95 p-4 text-xs font-bold shadow-xl outline-none border border-gray-100" />
                         </StandaloneSearchBox>
-                        {editingListing.latitude && <Marker position={{ lat: editingListing.latitude, lng: editingListing.longitude! }} />}
+                        {editingListing.latitude && (
+                          <Marker 
+                            position={{ lat: editingListing.latitude, lng: editingListing.longitude! }} 
+                            draggable={true}
+                            onDragEnd={handleMarkerDragEnd}
+                            icon={{
+                              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#C5A059" stroke="#0B1120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                  <polyline points="9 22 9 12 15 12 15 22"/>
+                                </svg>
+                              `),
+                              scaledSize: new window.google.maps.Size(40, 40),
+                              anchor: new window.google.maps.Point(20, 40),
+                            }}
+                          />
+                        )}
                       </GoogleMap>
                     ) : (
                       <div className="bg-gray-50 flex h-full w-full flex-col items-center justify-center gap-4 p-8 text-center">
@@ -474,6 +657,35 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Manual Address Input */}
+                  <div className="bg-gray-50 flex flex-col gap-4 rounded-[32px] border border-gray-100 p-6 md:p-8">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Dirección Detallada / Punto de Referencia</label>
+                      <div className="flex gap-3">
+                        <div className="relative flex-grow">
+                          <input
+                            type="text"
+                            className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-white px-6 py-4 text-xs font-bold outline-none shadow-sm"
+                            value={editingListing.manualAddress || ''}
+                            onChange={(e) => setEditingListing({ ...editingListing, manualAddress: e.target.value })}
+                            onBlur={handleGeocodeManualAddress}
+                            placeholder="Ej: Edificio Yacht Club, frente al Bodegón X..."
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleGeocodeManualAddress}
+                          className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy flex items-center justify-center gap-2 rounded-2xl px-6 font-black text-[10px] tracking-widest text-white uppercase transition-all shadow-md active:scale-95"
+                        >
+                          Ubicar
+                        </button>
+                      </div>
+                      <p className="text-[9px] font-medium text-gray-400 mt-1 ml-1 italic">
+                        * Puedes escribir la dirección y presionar "Ubicar" o arrastrar el ícono de la casa en el mapa.
+                      </p>
+                    </div>
                   </div>
                 </motion.div>
               )}

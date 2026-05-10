@@ -1,7 +1,7 @@
 # 🔄 Resumen de Sincronización de Sesión - VeneStay
 
-**Última Actualización:** 5 de Mayo de 2026 (05:30 AM)
-**Estado del Proyecto:** v0.9.5 (Agentic Update)
+**Última Actualización:** 9 de Mayo de 2026 (07:15 PM)
+**Estado del Proyecto:** v2.5 (Async Booking Implementation)
 **Estrategia Actual:** Beta Controlada Lechería (Julio 2026)
 
 ---
@@ -10,29 +10,32 @@
 
 _Al iniciar una nueva interacción, el Agente DEBE leer este bloque para situarse._
 
-1. **Meta de Julio:** El lanzamiento beta es para los **primeros 10 anfitriones en Lechería**. No es un lanzamiento masivo.
-2. **Ecosistema Agente:** Contamos con 8 habilidades especializadas en `docs/ai-skills/`. Cada cambio debe ser validado por el `Reality Auditor`.
-3. **Estética Oficial:** Dorado `#b8914d` sobre Premium Dark.
-4. **Modelo de Negocio:** Comisiones escalonadas del 12%, 10% y 8%.
+1. **Meta de Julio:** El lanzamiento beta es para los **primeros 10 anfitriones en Lechería**.
+2. **Ecosistema Agente:** Contamos con 19 habilidades especializadas en `docs/ai-skills/`. Cada cambio debe ser validado por el `Reality Auditor`.
+3. **Reserva v2.5:** Implementado sistema de **Reserva Asíncrona** con Soft-blocking (Ámbar) y Hard-blocking (Navy).
+4. **VeneStay Passport:** Perfil de usuario con Trust Score activo (v2.1).
 
 ---
 
-## ✅ Logros de la Sesión de Hoy
+## ✅ Logros de la Sesión de Hoy (09-MAY)
 
-1. **Inteligencia:** Instalación y documentación de 8 Skills (Marketing, Trust, Growth, etc.).
-2. **Estrategia:** Creación del plan de **100 horas** para inversores.
-3. **Organización:** Migración de toda la documentación técnica y estratégica a la carpeta `docs/`.
-4. **Roadmap:** Sincronización de fases con el calendario de Julio 2026.
-5. **Git:** Sincronización total del repositorio con GitHub.
+1. **Sincronización Git:** Se integró el commit `b7dba82` con el nuevo sistema de reservas y Dashboard Stepper UI.
+2. **Auditoría Técnica:** Verificación exitosa del flujo de Checkout, Listing Detail y Admin Dashboard tras la actualización.
+3. **Estrategia Futura:** Diseño y documentación de la **Propuesta de Optimización v2.5+** (ID: V2.5-OPT) que incluye:
+    - Motor de expiración automática (TTL).
+    - Trust Score dinámico (VeneStay Passport).
+    - Sistema Antifraude basado en Image Hashing.
+4. **Memoria del Proyecto:** Actualización de `PROJECT_MEMORY.md` con la nueva arquitectura y propuestas en revisión.
+5. **Github:** Todos los cambios locales (incluyendo documentación nueva) han sido subidos a la rama `main`.
 
 ---
 
 ## 🚧 Próximos Pasos Inmediatos (MAYO)
 
-1. [ ] **Prioridad 1:** Implementar el motor de pagos **UCP (20/80)** en Firestore.
-2. [ ] **Prioridad 2:** Sistema de **Gestión de Imágenes** optimizado.
-3. [ ] **Quick Win:** SEO dinámico para el mercado de **Lechería**.
+1. [ ] **Prioridad 1:** Implementar las **Cloud Functions** para el motor de expiración TTL (30 min).
+2. [ ] **Prioridad 2:** Desarrollar el algoritmo de **Trust Score dinámico** (VeneStay Passport v2.5).
+3. [ ] **UI Polish:** Implementar micro-animaciones en el calendario para el estado de "Alta Demanda".
 
 ---
 
-**Nota para el Usuario:** Al cambiar de equipo, asegúrate de hacer un `git pull` antes de empezar para que yo pueda leer este archivo actualizado.
+**Nota para el Usuario:** El proyecto está sincronizado. Al retomar, un `git pull` asegurará que el siguiente agente herede esta visión estratégica.
