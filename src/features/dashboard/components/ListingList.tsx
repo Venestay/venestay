@@ -108,6 +108,7 @@ const ListingList: React.FC<ListingListProps> = ({
             buildingFloors: 1,
             propertyFloor: 0,
             constructionYear: new Date().getFullYear(),
+            environmentPhotos: {},
           })
         }
         className="hover:border-brand-500 hover:bg-brand-500/5 hover:text-brand-500 flex flex-col items-center justify-center gap-4 rounded-[32px] border-2 border-dashed border-gray-200 p-8 text-gray-400 transition-all"
