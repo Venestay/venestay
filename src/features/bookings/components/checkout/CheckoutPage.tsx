@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInDays, isWithinInterval, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   ArrowLeft,
@@ -638,8 +638,8 @@ const CheckoutPage: React.FC = () => {
     const end = parseLocalDate(booking.endDate);
     if (!start || !end) return false;
     
-    // Lazy import for performance, but we just use date-fns functions we already have
-    const { isWithinInterval, startOfDay } = require('date-fns');
+    // Use imported date-fns functions for conflict check
+
     
     return softReservedDates.some((range) => {
       // Check if any day in the softReserved range falls inside our booking range

@@ -22,6 +22,8 @@ export const listingSchema = z.object({
   images: z.array(z.string()).min(1, 'Debes subir al menos una imagen'),
   amenities: z.array(z.string()).default([]),
   nearbyActivities: z.string().optional(),
+  manualAddress: z.string().optional(),
+  environmentPhotos: z.record(z.string(), z.string()).optional(),
   isVerified: z.boolean().default(true),
   isPetFriendly: z.boolean().default(false),
   paymentMethods: z.array(z.object({

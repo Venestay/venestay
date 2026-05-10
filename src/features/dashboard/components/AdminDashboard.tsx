@@ -130,12 +130,14 @@ const AdminDashboard: React.FC = () => {
     };
   }, [isAdmin, user]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || !files.length || !editingListing) return;
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => {
+    const listingId = editingListing?.id;
+    if (!listingId || !user) return;
+
+    const files = 'target' in e ? e.target.files : (e as any).files;
+    if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    const listingId = editingListing.id;
 
     try {
       const imageCompression = (await import('browser-image-compression')).default;
@@ -159,14 +161,22 @@ const AdminDashboard: React.FC = () => {
           if (downloadURL) {
             setEditingListing((prev) => {
               if (!prev || prev.id !== listingId) return prev;
-              return { ...prev, images: [...prev.images, downloadURL] };
+              const next = { ...prev, images: [...prev.images, downloadURL] };
+              if (environmentId) {
+                next.environmentPhotos = { ...(prev.environmentPhotos || {}), [environmentId]: downloadURL };
+              }
+              return next;
             });
 
             if (!listingId.startsWith('listing-')) {
-              await updateDoc(doc(db, 'listings', listingId), {
+              const updates: any = {
                 images: arrayUnion(downloadURL),
                 updatedAt: new Date().toISOString(),
-              });
+              };
+              if (environmentId) {
+                updates[`environmentPhotos.${environmentId}`] = downloadURL;
+              }
+              await updateDoc(doc(db, 'listings', listingId), updates);
             }
           }
         } catch (err) {

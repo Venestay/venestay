@@ -902,6 +902,16 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                               lat: currentListing.latitude,
                               lng: currentListing.longitude,
                             }}
+                            icon={{
+                              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#C5A059" stroke="#0B1120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                  <polyline points="9 22 9 12 15 12 15 22"/>
+                                </svg>
+                              `),
+                              scaledSize: new window.google.maps.Size(40, 40),
+                              anchor: new window.google.maps.Point(20, 40),
+                            }}
                           />
                         )}
                       </GoogleMap>
@@ -971,7 +981,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                             Dirección Exacta
                           </p>
                           <p className="text-brand-navy line-clamp-1 text-sm font-black">
-                            {currentListing.location}
+                            {currentListing.manualAddress || currentListing.location}
                           </p>
                         </div>
                         <button
