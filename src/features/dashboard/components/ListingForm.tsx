@@ -45,7 +45,7 @@ interface ListingFormProps {
   user: any;
 }
 
-const ENVIRONMENTS = [
+export const ENVIRONMENTS = [
   { id: 'sala', label: 'Sala Principal', icon: Sofa },
   { id: 'cocina', label: 'Cocina', icon: UtensilsCrossed },
   { id: 'habitacion_master', label: 'Habitación Máster', icon: Bed },
@@ -82,7 +82,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
   const [tempPaymentData, setTempPaymentData] = useState<any>({});
   const [step, setStep] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
-  const [targetEnvironment, setTargetEnvironment] = useState<string | null>(null);
+  const targetEnvRef = useRef<string | null>(null);
   const [showWarningModal, setShowWarningModal] = useState(false);
 
   useEffect(() => {
@@ -119,11 +119,13 @@ const ListingForm: React.FC<ListingFormProps> = ({
     e.preventDefault();
     setIsDragging(false);
   };
-  const handleDrop = async (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent, environmentId?: string) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      await handleImageUpload({ target: { files: e.dataTransfer.files } } as any);
+      // Use explicit environmentId if provided (dropped on a slot), otherwise use targetEnvRef
+      await handleImageUpload({ files: e.dataTransfer.files }, environmentId || targetEnvRef.current || undefined);
+      targetEnvRef.current = null;
     }
   };
 
@@ -451,7 +453,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                           />
                           <path
                             className="stroke-brand-500 transition-all duration-1000"
-                            strokeDasharray={`${Math.min(100, (Object.keys(editingListing.environmentPhotos || {}).length / ENVIRONMENTS.length) * 100)}, 100`}
+                            strokeDasharray={`${Math.min(100, ((editingListing.images?.length || 0) / 6) * 100)}, 100`}
                             strokeWidth="3"
                             strokeLinecap="round"
                             fill="none"
@@ -459,21 +461,15 @@ const ListingForm: React.FC<ListingFormProps> = ({
                           />
                         </svg>
                         <span className="text-brand-navy absolute text-sm font-black">
-                          {Math.round((Object.keys(editingListing.environmentPhotos || {}).length / ENVIRONMENTS.length) * 100)}%
+                          {Math.min(100, Math.round(((editingListing.images?.length || 0) / 6) * 100))}%
                         </span>
                       </div>
                       <div>
                         <h4 className="text-brand-navy text-xl font-black tracking-tight">Calidad de Galería</h4>
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          {Object.keys(editingListing.environmentPhotos || {}).length} de {ENVIRONMENTS.length} ambientes cubiertos
+                          Recomendamos subir al menos 6 fotos de alta calidad
                         </p>
                       </div>
-                    </div>
-                    <div className="bg-brand-500/10 border-brand-500/20 flex items-center rounded-2xl border px-4 py-2">
-                      <Sparkles className="text-brand-500 mr-2 h-4 w-4" />
-                      <span className="text-brand-navy text-[10px] font-black tracking-widest uppercase">
-                        Nivel Premium Activo
-                      </span>
                     </div>
                   </div>
 
@@ -492,20 +488,23 @@ const ListingForm: React.FC<ListingFormProps> = ({
                             key={env.id}
                             onClick={() => {
                               if (!photo && !isUploading) {
-                                setTargetEnvironment(env.id);
-                                setTimeout(() => fileInputRef.current?.click(), 0);
+                                targetEnvRef.current = env.id;
+                                fileInputRef.current?.click();
                               }
                             }}
-                            className={`group relative flex aspect-video cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[24px] border-2 border-dashed transition-all ${
+                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                            onDragLeave={() => setIsDragging(false)}
+                            onDrop={(e) => handleDrop(e, env.id)}
+                            className={`group relative flex aspect-video cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[24px] border-2 transition-all duration-300 ${
                               photo 
-                                ? 'border-transparent bg-white shadow-sm' 
-                                : 'border-gray-100 bg-white hover:border-brand-500 hover:bg-gray-50'
+                                ? 'border-transparent bg-brand-navy ring-2 ring-emerald-500/30' 
+                                : 'border-dashed border-gray-100 bg-white hover:border-brand-500 hover:bg-gray-50'
                             }`}
                           >
                             {photo ? (
                               <>
-                                <img src={photo} alt={env.label} className="h-full w-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center">
+                                <img src={photo} alt={env.label} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                <div className="absolute inset-0 bg-brand-navy/60 opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center backdrop-blur-[2px]">
                                   <button 
                                     type="button" 
                                     onClick={(e) => {
@@ -514,13 +513,16 @@ const ListingForm: React.FC<ListingFormProps> = ({
                                       delete newEnvPhotos[env.id];
                                       setEditingListing({ ...editingListing, environmentPhotos: newEnvPhotos });
                                     }}
-                                    className="bg-red-500 p-2 rounded-xl text-white shadow-lg"
+                                    className="bg-red-500/90 hover:bg-red-500 p-2.5 rounded-2xl text-white shadow-xl transform transition-transform active:scale-95"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-5 w-5" />
                                   </button>
                                 </div>
-                                <div className="absolute top-2 right-2 bg-brand-500 text-brand-navy rounded-lg p-1 shadow-md">
-                                  <Check className="h-3 w-3" />
+                                <div className="absolute top-3 right-3 bg-brand-500 text-brand-navy rounded-xl px-3 py-1.5 shadow-lg shadow-brand-500/30 flex items-center gap-1.5 border border-brand-400/50 backdrop-blur-md transform transition-transform group-hover:scale-110">
+                                  <div className="bg-brand-navy/10 p-0.5 rounded-full">
+                                    <ShieldCheck className="h-2.5 w-2.5" />
+                                  </div>
+                                  <span className="text-[8px] font-black uppercase tracking-widest">Verificado</span>
                                 </div>
                               </>
                             ) : (
@@ -554,7 +556,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
                         onClick={() => {
-                          setTargetEnvironment(null);
+                          targetEnvRef.current = null;
                           fileInputRef.current?.click();
                         }}
                         className={`cursor-pointer border-2 border-dashed rounded-[32px] p-8 text-center transition-all ${isDragging ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-brand-500 hover:bg-gray-50'}`}
@@ -566,8 +568,8 @@ const ListingForm: React.FC<ListingFormProps> = ({
                           accept="image/*" 
                           multiple 
                           onChange={(e) => {
-                            handleImageUpload(e, targetEnvironment || undefined);
-                            setTargetEnvironment(null); // Reset after triggering
+                            handleImageUpload(e, targetEnvRef.current || undefined);
+                            targetEnvRef.current = null;
                           }} 
                         />
                         <div className="flex flex-col items-center gap-3">

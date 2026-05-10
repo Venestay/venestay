@@ -15,12 +15,10 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { Booking, Listing, BookingStatus } from '@/types';
-import {
-  Search,
-} from 'lucide-react';
+import { Search } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { toast } from 'sonner';
 import { useLoadScript } from '@react-google-maps/api';
 import {
   GOOGLE_MAPS_API_KEY,
@@ -37,6 +35,7 @@ import UserProfileSetup from '@/features/auth/components/UserProfileSetup';
 import DashboardHeader, { DashboardTab } from './DashboardHeader';
 import BookingList from './BookingList';
 import ListingList from './ListingList';
+import { ENVIRONMENTS } from './ListingForm';
 import StatsCards from './StatsCards';
 
 // Rule: bundle-dynamic-imports
@@ -177,6 +176,11 @@ const AdminDashboard: React.FC = () => {
                 updates[`environmentPhotos.${environmentId}`] = downloadURL;
               }
               await updateDoc(doc(db, 'listings', listingId), updates);
+            }
+
+            if (environmentId) {
+              const envLabel = ENVIRONMENTS.find(e => e.id === environmentId)?.label || environmentId;
+              toast.success(`Foto asignada a: ${envLabel}`, { icon: '📸' });
             }
           }
         } catch (err) {
