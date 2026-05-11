@@ -14,8 +14,8 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
-import { Booking, Listing, BookingStatus } from '@/types';
-import { Search } from 'lucide-react';
+import { ENVIRONMENTS } from '../constants/dashboard.constants';
+import { Search, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -35,7 +35,6 @@ import UserProfileSetup from '@/features/auth/components/UserProfileSetup';
 import DashboardHeader, { DashboardTab } from './DashboardHeader';
 import BookingList from './BookingList';
 import ListingList from './ListingList';
-import { ENVIRONMENTS } from './ListingForm';
 import StatsCards from './StatsCards';
 
 // Rule: bundle-dynamic-imports
@@ -157,7 +156,6 @@ const AdminDashboard: React.FC = () => {
           const snapshot = await uploadBytes(storageRef, uploadFile, metadata);
           const downloadURL = await getDownloadURL(snapshot.ref);
 
-          if (downloadURL) {
             setEditingListing((prev) => {
               if (!prev || prev.id !== listingId) return prev;
               const next = { ...prev, images: [...prev.images, downloadURL] };
@@ -179,10 +177,15 @@ const AdminDashboard: React.FC = () => {
             }
 
             if (environmentId) {
-              const envLabel = ENVIRONMENTS.find(e => e.id === environmentId)?.label || environmentId;
-              toast.success(`Foto asignada a: ${envLabel}`, { icon: '📸' });
+              const envLabel = ENVIRONMENTS.find(env => env.id === environmentId)?.label || environmentId;
+              toast.success(`¡${envLabel} Verificada!`, {
+                description: "La imagen ha sido asignada y verificada en la galería.",
+                style: { background: '#0A192F', color: '#C5A059', border: '1px solid #C5A059' },
+                icon: <div className="bg-brand-500 rounded-full p-1"><ShieldCheck className="h-4 w-4 text-brand-navy" /></div>
+              });
+            } else {
+              toast.success("Foto añadida a la galería general");
             }
-          }
         } catch (err) {
           console.error('Upload error:', err);
         }
