@@ -47,18 +47,35 @@ service firebase.storage {
     // =========================================================================
     // Se aplican a 'receipts' y a 'bookings/{bookingId}/payments' (rutas app)
     match /receipts/{bookingId}/{fileName} {
-      // Lectura: Restringida a cualquier usuario autenticado 
-      // (por coste no comprobamos si es el dueño de la reserva desde Storage)
-      allow read: if isAuthenticated();
-      // Escritura: Solo usuarios autenticados subiendo imágenes de máximo 5MB
+      // Lectura: Restringida a los involucrados en la reserva o admin
+      allow read: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+        // Admin check requires fetching the user doc
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
       allow create, update: if isAuthenticated() && isValidImage();
-      allow delete: if isAuthenticated();
+      allow delete: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
     }
 
     match /bookings/{bookingId}/payments/{fileName} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
       allow create, update: if isAuthenticated() && isValidImage();
-      allow delete: if isAuthenticated();
+      allow delete: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
     }
 
     // =========================================================================
@@ -67,10 +84,17 @@ service firebase.storage {
     match /listings/{listingId}/{fileName} {
       // Lectura: Pública (necesario para la landing page e invitados)
       allow read: if true;
-      // Escritura: Requiere autenticación y validar la imagen
-      // (Futura mejora: Restringir a custom claims de host o buscar rol de anfitrión)
-      allow create, update: if isAuthenticated() && isValidImage();
-      allow delete: if isAuthenticated();
+      // Escritura: Solo el dueño de la propiedad o un administrador
+      allow create, update: if isAuthenticated() && isValidImage() && (
+        firestore.get(/databases/(default)/documents/listings/$(listingId)).data.hostId == request.auth.uid ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+      allow delete: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/listings/$(listingId)).data.hostId == request.auth.uid ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
     }
 
     // =========================================================================
