@@ -28,6 +28,8 @@ import { ENVIRONMENTS } from '../constants/dashboard.constants';
 import { GoogleMap, Marker, StandaloneSearchBox } from '@react-google-maps/api';
 import { Listing, City, PaymentMethodType } from '@/types';
 import { listingSchema } from '../types/dashboard.schema';
+import { cn } from '@/lib/utils';
+import { useListingValidation } from '../hooks/useListingValidation';
 import { toast } from 'sonner';
 import Skeleton from '@/components/ui/Skeleton';
 
@@ -64,7 +66,6 @@ const ListingForm: React.FC<ListingFormProps> = ({
   handleImageUpload,
   removeImage,
   isLoaded,
-  loadError,
   LECHERIA_CENTER,
   DEFAULT_MAP_OPTIONS,
   user,
@@ -78,6 +79,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const targetEnvRef = useRef<string | null>(null);
   const [showWarningModal, setShowWarningModal] = useState(false);
+  const { errors, touched, validateField, setFieldTouched, validateStep } = useListingValidation();
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -86,17 +88,22 @@ const ListingForm: React.FC<ListingFormProps> = ({
     };
   }, []);
 
-  const currentYear = new Date().getFullYear();
-  const yearError = Number(editingListing.constructionYear) > currentYear;
+
 
   const handleNextStep = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    if (step === 1 && yearError) {
-      toast.error('El año de construcción no puede ser superior al actual');
-      return;
+
+    if (step === 1) {
+      const isValid = validateStep(1, editingListing);
+      if (!isValid) {
+        toast.error('Por favor corrige los errores antes de continuar', {
+          description: Object.values(errors)[0] || 'Campos requeridos faltantes'
+        });
+        return;
+      }
     }
     
     // Evitar la carrera de eventos (Event Bubbling) que dispara el submit del botón en el paso 4
@@ -314,39 +321,104 @@ const ListingForm: React.FC<ListingFormProps> = ({
                   {/* Información General */}
                   <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="col-span-2 space-y-2">
-                      <label className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Título del Alojamiento</label>
-                      <input
-                        type="text"
-                        className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 font-bold outline-none"
-                        value={editingListing.title}
-                        onChange={(e) => setEditingListing({ ...editingListing, title: e.target.value })}
-                        placeholder="Ej: Penthouse de Lujo en Lechería"
-                      />
+                      <label className={cn(
+                        "text-[10px] font-black tracking-widest uppercase ml-1 transition-colors",
+                        touched.title && errors.title ? "text-red-500" : "text-brand-navy/40"
+                      )}>
+                        Título del Alojamiento
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={cn(
+                            "text-brand-navy w-full rounded-2xl border bg-gray-50 px-6 py-4 font-bold outline-none transition-all",
+                            touched.title && errors.title ? "border-red-200 bg-red-50 focus:border-red-500" : 
+                            touched.title && !errors.title ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
+                            "border-gray-100 focus:border-brand-500"
+                          )}
+                          value={editingListing.title}
+                          onChange={(e) => {
+                            setEditingListing({ ...editingListing, title: e.target.value });
+                            validateField('title', e.target.value);
+                          }}
+                          onBlur={() => setFieldTouched('title')}
+                          placeholder="Ej: Penthouse de Lujo en Lechería"
+                        />
+                        {touched.title && errors.title && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-red-500">
+                            <AlertCircle className="h-5 w-5" />
+                          </div>
+                        )}
+                        {touched.title && !errors.title && editingListing.title && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500">
+                            <Check className="h-5 w-5" />
+                          </div>
+                        )}
+                      </div>
+                      {touched.title && errors.title && <p className="ml-1 text-[9px] font-bold text-red-500 uppercase tracking-wider">{errors.title}</p>}
                     </div>
+
                     <div className="col-span-2 space-y-2">
-                      <label className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Descripción del Alojamiento</label>
+                      <label className={cn(
+                        "text-[10px] font-black tracking-widest uppercase ml-1 transition-colors",
+                        touched.description && errors.description ? "text-red-500" : "text-brand-navy/40"
+                      )}>
+                        Descripción del Alojamiento
+                      </label>
                       <textarea
-                        className="text-brand-navy focus:border-brand-500 h-32 w-full resize-none rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 text-xs font-bold outline-none"
+                        className={cn(
+                          "text-brand-navy h-32 w-full resize-none rounded-2xl border bg-gray-50 px-6 py-4 text-xs font-bold outline-none transition-all",
+                          touched.description && errors.description ? "border-red-200 bg-red-50 focus:border-red-500" :
+                          touched.description && !errors.description ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
+                          "border-gray-100 focus:border-brand-500"
+                        )}
                         value={editingListing.description || ''}
-                        onChange={(e) => setEditingListing({ ...editingListing, description: e.target.value })}
+                        onChange={(e) => {
+                          setEditingListing({ ...editingListing, description: e.target.value });
+                          validateField('description', e.target.value);
+                        }}
+                        onBlur={() => setFieldTouched('description')}
                         placeholder="Describe los lujos, la zona y por qué es la mejor opción..."
                       />
+                      {touched.description && errors.description && <p className="ml-1 text-[9px] font-bold text-red-500 uppercase tracking-wider">{errors.description}</p>}
                     </div>
+
                     <div className="space-y-2">
-                      <label className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Precio por Noche ($)</label>
+                      <label className={cn(
+                        "text-[10px] font-black tracking-widest uppercase ml-1 transition-colors",
+                        touched.pricePerNight && errors.pricePerNight ? "text-red-500" : "text-brand-navy/40"
+                      )}>
+                        Precio por Noche ($)
+                      </label>
                       <input
                         type="number"
-                        className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 font-bold outline-none"
+                        className={cn(
+                          "text-brand-navy w-full rounded-2xl border bg-gray-50 px-6 py-4 font-bold outline-none transition-all",
+                          touched.pricePerNight && errors.pricePerNight ? "border-red-200 bg-red-50 focus:border-red-500" :
+                          touched.pricePerNight && !errors.pricePerNight ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
+                          "border-gray-100 focus:border-brand-500"
+                        )}
                         value={editingListing.pricePerNight}
-                        onChange={(e) => setEditingListing({ ...editingListing, pricePerNight: Number(e.target.value) })}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setEditingListing({ ...editingListing, pricePerNight: val });
+                          validateField('pricePerNight', val);
+                        }}
+                        onBlur={() => setFieldTouched('pricePerNight')}
                       />
+                      {touched.pricePerNight && errors.pricePerNight && <p className="ml-1 text-[9px] font-bold text-red-500 uppercase tracking-wider">{errors.pricePerNight}</p>}
                     </div>
+
                     <div className="space-y-2">
                       <label className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Ciudad</label>
                       <select
-                        className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 font-bold outline-none"
+                        className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 font-bold outline-none transition-all"
                         value={editingListing.city}
-                        onChange={(e) => setEditingListing({ ...editingListing, city: e.target.value as City })}
+                        onChange={(e) => {
+                          const val = e.target.value as City;
+                          setEditingListing({ ...editingListing, city: val });
+                          validateField('city', val);
+                        }}
                       >
                         {['Lechería', 'Caracas', 'Margarita', 'Falcon', 'Maracaibo', 'Puerto La Cruz'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
@@ -363,12 +435,25 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         { label: 'Baños', key: 'baths' },
                       ].map(item => (
                         <div key={item.key} className="space-y-1">
-                          <label className="text-[8px] font-black tracking-widest text-gray-400 uppercase">{item.label}</label>
+                          <label className={cn(
+                            "text-[8px] font-black tracking-widest uppercase transition-colors",
+                            touched[item.key] && errors[item.key] ? "text-red-500" : "text-gray-400"
+                          )}>{item.label}</label>
                           <input
                             type="number"
-                            className="w-full rounded-xl border border-white bg-white p-3 text-sm font-bold shadow-sm"
+                            className={cn(
+                              "w-full rounded-xl border p-3 text-sm font-bold shadow-sm transition-all",
+                              touched[item.key] && errors[item.key] ? "border-red-200 bg-red-50 text-red-600 focus:border-red-500" :
+                              touched[item.key] && !errors[item.key] ? "border-emerald-100 bg-emerald-50/20" :
+                              "border-white bg-white focus:border-brand-500"
+                            )}
                             value={(editingListing as any)[item.key]}
-                            onChange={(e) => setEditingListing({ ...editingListing, [item.key]: Number(e.target.value) })}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setEditingListing({ ...editingListing, [item.key]: val });
+                              validateField(item.key, val);
+                            }}
+                            onBlur={() => setFieldTouched(item.key)}
                           />
                         </div>
                       ))}
@@ -381,21 +466,32 @@ const ListingForm: React.FC<ListingFormProps> = ({
                           { label: 'Año Const.', key: 'constructionYear' },
                         ].map(item => (
                           <div key={item.key} className="space-y-1">
-                            <label className={`text-[8px] font-black tracking-widest uppercase ${item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors) ? 'text-red-500' : 'text-gray-400'}`}>
+                            <label className={cn(
+                              "text-[8px] font-black tracking-widest uppercase transition-colors",
+                              (touched[item.key] && errors[item.key]) || (item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors)) ? "text-red-500" : "text-gray-400"
+                            )}>
                               {item.label}
                             </label>
                             <input
                               type="number"
-                              className={`w-full rounded-xl border p-3 text-sm font-bold shadow-sm ${item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors) ? 'border-red-200 bg-red-50 text-red-600' : 'border-white bg-white'}`}
+                              className={cn(
+                                "w-full rounded-xl border p-3 text-sm font-bold shadow-sm transition-all",
+                                (touched[item.key] && errors[item.key]) || (item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors)) ? "border-red-200 bg-red-50 text-red-600" : "border-white bg-white focus:border-brand-500"
+                              )}
                               value={(editingListing as any)[item.key] || ''}
-                              onChange={(e) => setEditingListing({ ...editingListing, [item.key]: Number(e.target.value) })}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setEditingListing({ ...editingListing, [item.key]: val });
+                                validateField(item.key, val);
+                              }}
+                              onBlur={() => setFieldTouched(item.key)}
                             />
                           </div>
                         ))}
                       </div>
-                      {Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors) && (
+                      {(errors.propertyFloor || Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors)) && (
                         <div className="flex items-center gap-2 text-red-500 text-[9px] font-bold uppercase animate-pulse">
-                          <AlertCircle className="h-3 w-3" /> El piso del alojamiento es superior al del edificio
+                          <AlertCircle className="h-3 w-3" /> {errors.propertyFloor || "El piso del alojamiento es superior al del edificio"}
                         </div>
                       )}
                     </div>
