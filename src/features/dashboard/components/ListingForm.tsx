@@ -24,6 +24,7 @@ import {
   Mountain,
   LayoutGrid,
 } from 'lucide-react';
+import { ENVIRONMENTS } from '../constants/dashboard.constants';
 import { GoogleMap, Marker, StandaloneSearchBox } from '@react-google-maps/api';
 import { Listing, City, PaymentMethodType } from '@/types';
 import { listingSchema } from '../types/dashboard.schema';
@@ -45,14 +46,7 @@ interface ListingFormProps {
   user: any;
 }
 
-export const ENVIRONMENTS = [
-  { id: 'sala', label: 'Sala Principal', icon: Sofa },
-  { id: 'cocina', label: 'Cocina', icon: UtensilsCrossed },
-  { id: 'habitacion_master', label: 'Habitación Máster', icon: Bed },
-  { id: 'habitacion_secundaria', label: 'Habitación Secundaria', icon: BedDouble },
-  { id: 'bano', label: 'Baño', icon: Bath },
-  { id: 'terraza', label: 'Terraza / Vista', icon: Mountain },
-] as const;
+// PAYMENT_OPTIONS below...
 
 const PAYMENT_OPTIONS = [
   { type: 'Zelle', label: 'ZELLE', icon: Globe, color: 'text-purple-500', bgColor: 'bg-purple-50' },
@@ -543,6 +537,19 @@ const ListingForm: React.FC<ListingFormProps> = ({
                       })}
                     </div>
 
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      accept="image/*" 
+                      multiple 
+                      onChange={(e) => {
+                        const envId = targetEnvRef.current;
+                        handleImageUpload(e, envId || undefined);
+                        targetEnvRef.current = null;
+                      }} 
+                    />
+
                     {/* Extra Photos Dropzone */}
                     <div className="mt-10 space-y-4">
                       <div className="flex items-center gap-4">
@@ -561,17 +568,6 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         }}
                         className={`cursor-pointer border-2 border-dashed rounded-[32px] p-8 text-center transition-all ${isDragging ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-brand-500 hover:bg-gray-50'}`}
                       >
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          className="hidden" 
-                          accept="image/*" 
-                          multiple 
-                          onChange={(e) => {
-                            handleImageUpload(e, targetEnvRef.current || undefined);
-                            targetEnvRef.current = null;
-                          }} 
-                        />
                         <div className="flex flex-col items-center gap-3">
                           <div className="bg-white p-3 rounded-full shadow-sm">
                             <LayoutGrid className="h-6 w-6 text-brand-navy" />
