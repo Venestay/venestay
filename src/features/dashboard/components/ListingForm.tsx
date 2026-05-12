@@ -79,7 +79,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const targetEnvRef = useRef<string | null>(null);
   const [showWarningModal, setShowWarningModal] = useState(false);
-  const { errors, touched, validateField, setFieldTouched, validateStep } = useListingValidation();
+  const { errors, touched, validateField, setFieldTouched, validateStep, isStepValid } = useListingValidation();
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -898,7 +898,17 @@ const ListingForm: React.FC<ListingFormProps> = ({
             )}
             
             {step < 4 ? (
-              <button type="button" onClick={handleNextStep} className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest text-white uppercase shadow-xl transition-all flex-grow">
+              <button 
+                type="button" 
+                onClick={handleNextStep}
+                disabled={!isStepValid(step, editingListing)}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
+                  isStepValid(step, editingListing) 
+                    ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy" 
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                )}
+              >
                 Siguiente <ArrowRight className="h-4 w-4" />
               </button>
             ) : (
