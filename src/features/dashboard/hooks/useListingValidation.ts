@@ -93,6 +93,47 @@ export const useListingValidation = () => {
     return isValid;
   }, [touched]);
 
+  const isStepValid = useCallback((step: number, data: any) => {
+    const stepFields: Record<number, string[]> = {
+      1: [
+        'title', 
+        'description', 
+        'pricePerNight', 
+        'city', 
+        'maxGuests', 
+        'bedrooms', 
+        'beds', 
+        'baths', 
+        'buildingFloors', 
+        'propertyFloor', 
+        'constructionYear'
+      ],
+      2: ['images'],
+    };
+
+    const fieldsToValidate = stepFields[step] || [];
+    let isValid = true;
+
+    fieldsToValidate.forEach((field) => {
+      try {
+        const fieldSchema = (listingSchema.shape as any)[field];
+        if (fieldSchema) {
+          fieldSchema.parse(data[field]);
+        }
+      } catch (error) {
+        isValid = false;
+      }
+    });
+
+    if (step === 1) {
+      if (data.propertyFloor > data.buildingFloors) {
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }, []);
+
   const clearErrors = useCallback(() => {
     setErrors({});
     setTouched({});
@@ -104,6 +145,7 @@ export const useListingValidation = () => {
     validateField,
     setFieldTouched,
     validateStep,
+    isStepValid,
     clearErrors,
   };
 };
