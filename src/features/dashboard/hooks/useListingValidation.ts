@@ -8,11 +8,9 @@ export const useListingValidation = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const validateField = useCallback((field: string, value: any) => {
+  const validateField = useCallback((field: keyof typeof listingSchema.shape, value: unknown) => {
     try {
-      // Obtenemos el esquema para el campo específico
-      // Nota: listingSchema es un objeto ZodObject
-      const fieldSchema = (listingSchema.shape as any)[field];
+      const fieldSchema = listingSchema.shape[field];
       
       if (!fieldSchema) return;
 
@@ -28,7 +26,7 @@ export const useListingValidation = () => {
       if (error instanceof z.ZodError) {
         setErrors((prev) => ({
           ...prev,
-          [field]: error.errors[0].message,
+          [field]: error.errors?.[0]?.message || 'Valor inválido',
         }));
       }
     }
@@ -38,7 +36,7 @@ export const useListingValidation = () => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
 
-  const validateStep = useCallback((step: number, data: any) => {
+  const validateStep = useCallback((step: number, data: Record<string, unknown>) => {
     const stepFields: Record<number, string[]> = {
       1: [
         'title', 
@@ -54,7 +52,8 @@ export const useListingValidation = () => {
         'constructionYear'
       ],
       2: ['images'],
-      // Los pasos 3 y 4 se validarán según sea necesario en el futuro
+      3: ['latitude', 'longitude', 'manualAddress'],
+      4: ['paymentMethods'],
     };
 
     const fieldsToValidate = stepFields[step] || [];
@@ -63,27 +62,51 @@ export const useListingValidation = () => {
 
     fieldsToValidate.forEach((field) => {
       try {
-        const fieldSchema = (listingSchema.shape as any)[field];
+        const fieldSchema = listingSchema.shape[field as keyof typeof listingSchema.shape];
         if (fieldSchema) {
           fieldSchema.parse(data[field]);
+          // Si pasa la validación individual, lo quitamos de los nuevos errores
+          delete newErrors[field];
         }
       } catch (error) {
         if (error instanceof z.ZodError) {
-          newErrors[field] = error.errors[0].message;
+          newErrors[field] = error.errors?.[0]?.message || 'Valor inválido';
           isValid = false;
         }
       }
     });
 
-    // Validaciones refinadas (como propertyFloor <= buildingFloors)
+    // Validaciones refinadas
     if (step === 1) {
-      if (data.propertyFloor > data.buildingFloors) {
+      const propertyFloor = Number(data.propertyFloor || 0);
+      const buildingFloors = Number(data.buildingFloors || 0);
+      if (propertyFloor > buildingFloors) {
         newErrors['propertyFloor'] = "El piso del alojamiento no puede ser mayor que el total de pisos del edificio";
         isValid = false;
       }
     }
+    
+    if (step === 3) {
+      if (!data.latitude || !data.longitude) {
+        newErrors['latitude'] = "Debe especificar la ubicación en el mapa";
+        isValid = false;
+      }
+    }
 
-    setErrors((prev) => ({ ...prev, ...newErrors }));
+    if (step === 4) {
+      if (!data.paymentMethods || data.paymentMethods.length === 0) {
+        newErrors['paymentMethods'] = "Debe agregar al menos un método de pago";
+        isValid = false;
+      }
+    }
+
+    setErrors((prev) => {
+      const next = { ...prev };
+      // Limpiamos los errores de los campos que estamos validando en este paso
+      fieldsToValidate.forEach(f => delete next[f]);
+      // Añadimos los nuevos errores encontrados
+      return { ...next, ...newErrors };
+    });
     
     // Marcamos todos los campos del paso como tocados para mostrar errores
     const newTouched = { ...touched };
@@ -93,7 +116,7 @@ export const useListingValidation = () => {
     return isValid;
   }, [touched]);
 
-  const isStepValid = useCallback((step: number, data: any) => {
+  const isStepValid = useCallback((step: number, data: Record<string, unknown>) => {
     const stepFields: Record<number, string[]> = {
       1: [
         'title', 
@@ -109,6 +132,8 @@ export const useListingValidation = () => {
         'constructionYear'
       ],
       2: ['images'],
+      3: ['latitude', 'longitude', 'manualAddress'],
+      4: ['paymentMethods'],
     };
 
     const fieldsToValidate = stepFields[step] || [];
@@ -116,17 +141,31 @@ export const useListingValidation = () => {
 
     fieldsToValidate.forEach((field) => {
       try {
-        const fieldSchema = (listingSchema.shape as any)[field];
+        const fieldSchema = listingSchema.shape[field as keyof typeof listingSchema.shape];
         if (fieldSchema) {
           fieldSchema.parse(data[field]);
         }
-      } catch (error) {
+      } catch {
         isValid = false;
       }
     });
 
     if (step === 1) {
-      if (data.propertyFloor > data.buildingFloors) {
+      const propertyFloor = Number(data.propertyFloor || 0);
+      const buildingFloors = Number(data.buildingFloors || 0);
+      if (propertyFloor > buildingFloors) {
+        isValid = false;
+      }
+    }
+
+    if (step === 3) {
+      if (!data.latitude || !data.longitude) {
+        isValid = false;
+      }
+    }
+
+    if (step === 4) {
+      if (!data.paymentMethods || data.paymentMethods.length === 0) {
         isValid = false;
       }
     }
