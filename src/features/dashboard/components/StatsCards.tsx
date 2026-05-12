@@ -16,13 +16,13 @@ interface StatsCardsProps {
   tier: number;
 }
 
-const StatsCards: React.FC<StatsCardsProps> = ({ bookings, listings, isVerified, tier }) => {
+const StatsCards: React.FC<StatsCardsProps> = ({ bookings, listings, tier }) => {
   const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED');
   const pendingBookings = bookings.filter(b => b.status === 'AWAITING_VERIFICATION');
   
   // Calculate total net profit across all confirmed bookings using the centralized tier
   const totalNetProfit = confirmedBookings.reduce((acc, booking) => {
-    return acc + calculateCommission(booking.totalAmount, tier as any).hostNetProfit;
+    return acc + calculateCommission(booking.totalAmount, tier as 8 | 10 | 12).hostNetProfit;
   }, 0);
 
   const currentTier = tier;

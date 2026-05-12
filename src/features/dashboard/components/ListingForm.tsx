@@ -42,10 +42,10 @@ interface ListingFormProps {
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => Promise<void>;
   removeImage: (index: number) => void;
   isLoaded: boolean;
-  loadError: any;
+  loadError: { message: string } | null;
   LECHERIA_CENTER: { lat: number; lng: number };
-  DEFAULT_MAP_OPTIONS: any;
-  user: any;
+  DEFAULT_MAP_OPTIONS: google.maps.MapOptions;
+  user: { uid: string; displayName?: string; photoURL?: string } | null;
 }
 
 // PAYMENT_OPTIONS below...
@@ -69,12 +69,13 @@ const ListingForm: React.FC<ListingFormProps> = ({
   LECHERIA_CENTER,
   DEFAULT_MAP_OPTIONS,
   user,
+  loadError,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
   
   const [activePaymentType, setActivePaymentType] = useState<PaymentMethodType | null>(null);
-  const [tempPaymentData, setTempPaymentData] = useState<any>({});
+  const [tempPaymentData, setTempPaymentData] = useState<Record<string, string>>({});
   const [step, setStep] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const targetEnvRef = useRef<string | null>(null);
@@ -83,10 +84,35 @@ const ListingForm: React.FC<ListingFormProps> = ({
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+    
+    // Cargar borrador si existe y estamos en modo "nueva propiedad"
+    if (editingListing.id.startsWith('listing-')) {
+      const savedDraft = localStorage.getItem('venestay_draft_listing');
+      if (savedDraft) {
+        try {
+          const draft = JSON.parse(savedDraft);
+          // Solo cargar si el ID coincide o si el ID actual es genérico
+          if (draft.id.startsWith('listing-')) {
+            setEditingListing(draft);
+            toast.info('Borrador recuperado automáticamente');
+          }
+        } catch (e) {
+          console.error('Error loading draft:', e);
+        }
+      }
+    }
+
     return () => {
       document.body.style.overflow = '';
     };
   }, []);
+
+  // Guardar borrador automáticamente
+  useEffect(() => {
+    if (editingListing.id.startsWith('listing-')) {
+      localStorage.setItem('venestay_draft_listing', JSON.stringify(editingListing));
+    }
+  }, [editingListing]);
 
 
 
@@ -96,10 +122,10 @@ const ListingForm: React.FC<ListingFormProps> = ({
       e.stopPropagation();
     }
 
-    if (step === 1) {
-      const isValid = validateStep(1, editingListing);
+    if (step < 4) {
+      const isValid = validateStep(step, editingListing);
       if (!isValid) {
-        toast.error('Por favor corrige los errores antes de continuar', {
+        toast.error('Por favor completa la información requerida de este paso', {
           description: Object.values(errors)[0] || 'Campos requeridos faltantes'
         });
         return;
@@ -260,6 +286,8 @@ const ListingForm: React.FC<ListingFormProps> = ({
     };
 
     await handleUpdateListing(e, finalizedListing);
+    // Limpiar persistencia tras éxito
+    localStorage.removeItem('venestay_draft_listing');
   };
 
   return (
@@ -338,10 +366,14 @@ const ListingForm: React.FC<ListingFormProps> = ({
                           )}
                           value={editingListing.title}
                           onChange={(e) => {
-                            setEditingListing({ ...editingListing, title: e.target.value });
-                            validateField('title', e.target.value);
+                            const val = e.target.value;
+                            setEditingListing({ ...editingListing, title: val });
+                            if (touched.title) validateField('title', val);
                           }}
-                          onBlur={() => setFieldTouched('title')}
+                          onBlur={() => {
+                            setFieldTouched('title');
+                            validateField('title', editingListing.title);
+                          }}
                           placeholder="Ej: Penthouse de Lujo en Lechería"
                         />
                         {touched.title && errors.title && (
@@ -374,10 +406,14 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         )}
                         value={editingListing.description || ''}
                         onChange={(e) => {
-                          setEditingListing({ ...editingListing, description: e.target.value });
-                          validateField('description', e.target.value);
+                          const val = e.target.value;
+                          setEditingListing({ ...editingListing, description: val });
+                          if (touched.description) validateField('description', val);
                         }}
-                        onBlur={() => setFieldTouched('description')}
+                        onBlur={() => {
+                          setFieldTouched('description');
+                          validateField('description', editingListing.description);
+                        }}
                         placeholder="Describe los lujos, la zona y por qué es la mejor opción..."
                       />
                       {touched.description && errors.description && <p className="ml-1 text-[9px] font-bold text-red-500 uppercase tracking-wider">{errors.description}</p>}
@@ -402,9 +438,12 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         onChange={(e) => {
                           const val = Number(e.target.value);
                           setEditingListing({ ...editingListing, pricePerNight: val });
-                          validateField('pricePerNight', val);
+                          if (touched.pricePerNight) validateField('pricePerNight', val);
                         }}
-                        onBlur={() => setFieldTouched('pricePerNight')}
+                        onBlur={() => {
+                          setFieldTouched('pricePerNight');
+                          validateField('pricePerNight', editingListing.pricePerNight);
+                        }}
                       />
                       {touched.pricePerNight && errors.pricePerNight && <p className="ml-1 text-[9px] font-bold text-red-500 uppercase tracking-wider">{errors.pricePerNight}</p>}
                     </div>
@@ -447,7 +486,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                               touched[item.key] && !errors[item.key] ? "border-emerald-100 bg-emerald-50/20" :
                               "border-white bg-white focus:border-brand-500"
                             )}
-                            value={(editingListing as any)[item.key]}
+                            value={(editingListing as Record<string, any>)[item.key]}
                             onChange={(e) => {
                               const val = Number(e.target.value);
                               setEditingListing({ ...editingListing, [item.key]: val });
@@ -478,7 +517,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                                 "w-full rounded-xl border p-3 text-sm font-bold shadow-sm transition-all",
                                 (touched[item.key] && errors[item.key]) || (item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors)) ? "border-red-200 bg-red-50 text-red-600" : "border-white bg-white focus:border-brand-500"
                               )}
-                              value={(editingListing as any)[item.key] || ''}
+                              value={(editingListing as Record<string, any>)[item.key] || ''}
                               onChange={(e) => {
                                 const val = Number(e.target.value);
                                 setEditingListing({ ...editingListing, [item.key]: val });
@@ -945,10 +984,13 @@ const ListingForm: React.FC<ListingFormProps> = ({
                   Continuar editando
                 </button>
                 <button 
-                  onClick={() => setEditingListing(null)}
+                  onClick={() => {
+                    localStorage.removeItem('venestay_draft_listing');
+                    setEditingListing(null);
+                  }}
                   className="w-full py-4 bg-gray-100 text-gray-500 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-red-50 hover:text-red-500 transition-colors"
                 >
-                  Salir sin guardar
+                  Salir y borrar borrador
                 </button>
               </div>
             </motion.div>

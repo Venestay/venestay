@@ -12,6 +12,8 @@ import {
   arrayUnion,
   where,
 } from 'firebase/firestore';
+import { Booking, BookingStatus } from '@/features/bookings/types';
+import { Listing } from '@/features/listings/types';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { ENVIRONMENTS } from '../constants/dashboard.constants';
@@ -36,6 +38,7 @@ import DashboardHeader, { DashboardTab } from './DashboardHeader';
 import BookingList from './BookingList';
 import ListingList from './ListingList';
 import StatsCards from './StatsCards';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
 // Rule: bundle-dynamic-imports
 const ListingForm = React.lazy(() => import('./ListingForm'));
@@ -72,12 +75,12 @@ const AdminDashboard: React.FC = () => {
   const [editingListing, setEditingListing] = useState<Listing | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
 
   const location = useLocation();
   const initialListing = location.state?.initialListing;
 
   const isHost = Boolean(
-    (user as any)?.role === 'host' ||
     profileData?.role === 'host' ||
     (user && listings.some((l) => l.hostId === user.uid)) ||
     initialListing
@@ -128,6 +131,24 @@ const AdminDashboard: React.FC = () => {
     };
   }, [isAdmin, user]);
 
+  // v2.2 Persistencia: Recuperar borrador y reabrir formulario al refrescar
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('venestay_draft_listing');
+    if (savedDraft && !editingListing) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        // Solo reabrimos si es una propiedad nueva (draft) para evitar conflictos con ediciones reales
+        if (draft.id.startsWith('listing-')) {
+          setEditingListing(draft);
+          // Opcional: toast ya se dispara dentro de ListingForm, 
+          // pero aquí aseguramos que el modal se abra.
+        }
+      } catch (e) {
+        console.error('Error auto-reopening draft:', e);
+      }
+    }
+  }, []);
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => {
     const listingId = editingListing?.id;
     if (!listingId || !user) return;
@@ -166,7 +187,7 @@ const AdminDashboard: React.FC = () => {
             });
 
             if (!listingId.startsWith('listing-')) {
-              const updates: any = {
+              const updates: Record<string, any> = {
                 images: arrayUnion(downloadURL),
                 updatedAt: new Date().toISOString(),
               };
@@ -243,8 +264,9 @@ const AdminDashboard: React.FC = () => {
       if (isNew) {
         await setDoc(listingRef, { ...payload, id });
       } else {
-        const { id: _, ...updateData } = payload as any;
-        await updateDoc(listingRef, updateData);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _, ...updateData } = payload;
+        await updateDoc(listingRef, updateData as Record<string, any>);
       }
 
       toast.success(isNew ? '¡Propiedad publicada!' : 'Cambios guardados');
@@ -258,10 +280,10 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleDeleteListing = async (listingId: string) => {
-    if (!window.confirm('¿Deseas eliminar esta propiedad?')) return;
     try {
       await deleteDoc(doc(db, 'listings', listingId));
       toast.success('Propiedad eliminada');
+      setListingToDelete(null);
     } catch (error) {
       toast.error('Error al eliminar');
     }
@@ -381,7 +403,10 @@ const AdminDashboard: React.FC = () => {
                 <ListingList
                   listings={filteredListings}
                   setEditingListing={setEditingListing}
-                  handleDeleteListing={handleDeleteListing}
+                  handleDeleteListing={(id) => {
+                    const listing = listings.find(l => l.id === id);
+                    if (listing) setListingToDelete(listing);
+                  }}
                   user={user}
                 />
               </motion.div>
@@ -433,6 +458,13 @@ const AdminDashboard: React.FC = () => {
           }}
         />
       )}
+
+      <DeleteConfirmationModal
+        isOpen={!!listingToDelete}
+        onClose={() => setListingToDelete(null)}
+        onConfirm={() => listingToDelete && handleDeleteListing(listingToDelete.id)}
+        itemTitle={listingToDelete?.title || ''}
+      />
     </div>
   );
 };
