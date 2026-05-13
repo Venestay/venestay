@@ -1,3 +1,5 @@
+import { CommissionBreakdown } from '@/lib/commission';
+
 export type BookingStatus =
   | 'NEGOTIATING'
   | 'PENDING_PAYMENT'
@@ -18,6 +20,7 @@ export interface Booking {
   totalAmount: number;
   agreedPercentage: number;
   status: BookingStatus;
+  financials?: CommissionBreakdown;
   proofUrl?: string;
   paymentReference?: string;
   paymentSubmittedAt?: string;
@@ -26,11 +29,11 @@ export interface Booking {
   verifiedBy?: string;
   rejectionReason?: string;
   guests: number;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: string | Date;
+  updatedAt: string | Date;
   statusHistory?: {
     status: BookingStatus;
-    timestamp: any;
+    timestamp: string | Date;
     actorId: string;
     actorName: string;
     note?: string;
@@ -55,7 +58,7 @@ export interface PaymentLog {
   proofUrl: string;
   method: string;
   status: 'PENDING' | 'VERIFIED' | 'REJECTED';
-  createdAt: any;
+  createdAt: string | Date;
 }
 
 

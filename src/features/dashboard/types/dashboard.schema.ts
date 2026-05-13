@@ -31,7 +31,7 @@ export const listingSchema = z.object({
     type: z.string(),
     label: z.string(),
     isVerified: z.boolean(),
-    data: z.record(z.string(), z.any()).refine((data: Record<string, any>) => {
+    data: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).refine((data: Record<string, string | number | boolean>) => {
       // Validaciones específicas por método
       if (data.email && typeof data.email === 'string' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return false;
       if (data.accountNumber && typeof data.accountNumber === 'string' && data.accountNumber.replace(/\s/g, '').length !== 20) return false;

@@ -8,7 +8,7 @@ interface ReviewCardProps {
   guestName: string;
   rating: number;
   comment: string;
-  createdAt: any;
+  createdAt: { toDate?: () => Date } | string | Date;
   isVerified?: boolean;
 }
 

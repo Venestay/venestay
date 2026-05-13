@@ -38,7 +38,7 @@ interface MyTripsProps {
   onClose: () => void;
 }
 
-const CountdownTimer: React.FC<{ createdAt: any }> = ({ createdAt }) => {
+const CountdownTimer: React.FC<{ createdAt: { toDate?: () => Date } | string | Date }> = ({ createdAt }) => {
   const [timeLeft, setTimeLeft] = useState<string>('');
 
   useEffect(() => {

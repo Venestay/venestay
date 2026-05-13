@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
-  Upload,
   Loader2,
   Trash2,
   Globe,
@@ -11,18 +10,12 @@ import {
   Landmark,
   ShieldCheck,
   Check,
-  ChevronDown,
   AlertCircle,
-  ArrowRight,
-  ArrowLeft,
   Image as ImageIcon,
-  Sofa,
-  UtensilsCrossed,
-  Bed,
-  BedDouble,
-  Bath,
-  Mountain,
   LayoutGrid,
+  ArrowLeft,
+  ArrowRight,
+  ChevronDown,
 } from 'lucide-react';
 import { ENVIRONMENTS } from '../constants/dashboard.constants';
 import { GoogleMap, Marker, StandaloneSearchBox } from '@react-google-maps/api';
@@ -262,7 +255,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
     const currentMethods = editingListing.paymentMethods || [];
     const filtered = currentMethods.filter(m => m.type !== activePaymentType);
 
-    setEditingListing({ ...editingListing, paymentMethods: [...filtered, newMethod] as any });
+    setEditingListing({ ...editingListing, paymentMethods: [...filtered, newMethod] });
     setActivePaymentType(null);
     setTempPaymentData({});
   };
@@ -485,7 +478,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                                 touched[item.key] && !errors[item.key] ? "border-emerald-100 bg-emerald-50/20" :
                                   "border-white bg-white focus:border-brand-500"
                             )}
-                            value={(editingListing as Record<string, any>)[item.key]}
+                            value={(editingListing as unknown as Record<string, string | number>)[item.key]}
                             onChange={(e) => {
                               const val = Number(e.target.value);
                               setEditingListing({ ...editingListing, [item.key]: val });
@@ -516,7 +509,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                                 "w-full rounded-xl border p-3 text-sm font-bold shadow-sm transition-all",
                                 (touched[item.key] && errors[item.key]) || (item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors)) ? "border-red-200 bg-red-50 text-red-600" : "border-white bg-white focus:border-brand-500"
                               )}
-                              value={(editingListing as Record<string, any>)[item.key] || ''}
+                              value={(editingListing as unknown as Record<string, string | number>)[item.key] || ''}
                               onChange={(e) => {
                                 const val = Number(e.target.value);
                                 setEditingListing({ ...editingListing, [item.key]: val });

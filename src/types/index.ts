@@ -45,7 +45,7 @@ export interface Message {
   imageUrl?: string;
   type: 'text' | 'image';
   status: 'sent' | 'read';
-  createdAt: any;
+  createdAt: string | Date;
 }
 
 

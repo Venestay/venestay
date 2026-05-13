@@ -69,7 +69,7 @@ const Chat: React.FC<ChatProps> = ({
 
         // Sort client-side to avoid index requirement
         const sortedMsgs = msgs.sort((a, b) => {
-          const getTime = (ca: any) => {
+          const getTime = (ca: string | Date | { seconds?: number } | number | undefined | null) => {
             if (!ca) return 0;
             if ((ca as { seconds?: number }).seconds) return (ca as { seconds?: number }).seconds! * 1000;
             if (ca instanceof Date) return ca.getTime();
@@ -123,7 +123,7 @@ const Chat: React.FC<ChatProps> = ({
     if (type === 'text' && !newMessage.trim()) return;
 
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         bookingId,
         senderId,
         senderName,
@@ -176,11 +176,12 @@ const Chat: React.FC<ChatProps> = ({
       try {
         await uploadBytes(storageRef, uploadFile, metadata);
         url = await getDownloadURL(storageRef);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const storageError = err as { code?: string; message?: string };
         if (
-          err?.code === 'storage/unauthorized' ||
-          err?.message?.includes('storage/unauthorized') ||
-          err?.message?.includes('does not have permission')
+          storageError?.code === 'storage/unauthorized' ||
+          storageError?.message?.includes('storage/unauthorized') ||
+          storageError?.message?.includes('does not have permission')
         ) {
           console.warn('Storage upload unauthorized. Using fallback URL.');
         } else {

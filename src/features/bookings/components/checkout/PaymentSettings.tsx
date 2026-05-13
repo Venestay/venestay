@@ -27,7 +27,7 @@ interface PaymentSettingsProps {
 const PAYMENT_OPTIONS: {
   type: PaymentMethodType;
   label: string;
-  icon: any;
+  icon: React.ElementType;
   color: string;
   bgColor: string;
 }[] = [

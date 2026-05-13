@@ -91,30 +91,34 @@ const Navbar: React.FC<NavbarProps> = ({
     };
   }, [isCalendarOpen, isUserMenuOpen]);
 
-  const cities: { name: City; label: string; icon: React.ReactNode }[] = [
-    { name: 'All', label: 'Todos', icon: <Globe className="h-5 w-5" /> },
+  const cities: { name: City; label: string; icon: React.ReactNode; isAvailable: boolean }[] = [
+    { name: 'All', label: 'Todos', icon: <Globe className="h-5 w-5" />, isAvailable: true },
+    { name: 'Lechería', label: 'Lechería', icon: <Ship className="h-5 w-5" />, isAvailable: true },
     {
       name: 'Caracas',
       label: 'Caracas',
       icon: <Building2 className="h-5 w-5" />,
+      isAvailable: false,
     },
     {
       name: 'Margarita',
       label: 'Margarita',
       icon: <Umbrella className="h-5 w-5" />,
+      isAvailable: false,
     },
-    { name: 'Falcon', label: 'Falcon', icon: <Wind className="h-5 w-5" /> },
-    { name: 'Lechería', label: 'Lechería', icon: <Ship className="h-5 w-5" /> },
+    { name: 'Falcon', label: 'Falcon', icon: <Wind className="h-5 w-5" />, isAvailable: false },
     {
       name: 'Maracaibo',
       label: 'Maracaibo',
       icon: <Navigation className="h-5 w-5" />,
+      isAvailable: false,
     },
-    {
+    /* {
       name: 'Petfriendly',
       label: 'Pet-friendly',
       icon: <Dog className="h-5 w-5" />,
-    },
+      isAvailable: false,
+    }, */
   ];
 
   return (
@@ -449,14 +453,22 @@ const Navbar: React.FC<NavbarProps> = ({
           {cities.map((city) => (
             <button
               key={city.name}
-              onClick={() => setActiveCity(city.name)}
+              disabled={!city.isAvailable}
+              onClick={() => city.isAvailable && setActiveCity(city.name)}
               className={cn(
-                'flex items-center space-x-2 rounded-full border-2 px-6 py-3 text-xs font-black tracking-widest whitespace-nowrap uppercase transition-all duration-300',
+                'group relative flex items-center space-x-2 rounded-full border-2 px-6 py-3 text-xs font-black tracking-widest whitespace-nowrap uppercase transition-all duration-300',
                 activeCity === city.name
                   ? 'bg-brand-navy border-brand-navy scale-105 text-white shadow-xl'
-                  : 'hover:border-brand-500 hover:text-brand-navy border-gray-100 bg-white text-gray-400 hover:shadow-md'
+                  : city.isAvailable
+                    ? 'hover:border-brand-500 hover:text-brand-navy border-gray-100 bg-white text-gray-400 hover:shadow-md'
+                    : 'cursor-not-allowed border-gray-50 bg-gray-50/50 text-gray-300 grayscale'
               )}
             >
+              {!city.isAvailable && (
+                <span className="absolute -top-1 -right-1 z-10 rounded-full bg-amber-500 px-1.5 py-0.5 text-[6px] font-black tracking-tighter text-gray-900 shadow-sm transition-transform group-hover:scale-110">
+                  PRÓXIMAMENTE
+                </span>
+              )}
               <div
                 className={cn(
                   'transition-transform duration-300',
