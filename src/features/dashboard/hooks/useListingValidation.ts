@@ -85,6 +85,14 @@ export const useListingValidation = () => {
         isValid = false;
       }
     }
+
+    if (step === 2) {
+      const hasImages = (data.images as string[])?.length > 0 || Object.keys(data.environmentPhotos || {}).length > 0;
+      if (!hasImages) {
+        newErrors['images'] = "Debes subir al menos una imagen a la galería";
+        isValid = false;
+      }
+    }
     
     if (step === 3) {
       if (!data.latitude || !data.longitude) {
@@ -154,6 +162,13 @@ export const useListingValidation = () => {
       const propertyFloor = Number(data.propertyFloor || 0);
       const buildingFloors = Number(data.buildingFloors || 0);
       if (propertyFloor > buildingFloors) {
+        isValid = false;
+      }
+    }
+
+    if (step === 2) {
+      const hasImages = (data.images as string[])?.length > 0 || Object.keys(data.environmentPhotos || {}).length > 0;
+      if (!hasImages) {
         isValid = false;
       }
     }

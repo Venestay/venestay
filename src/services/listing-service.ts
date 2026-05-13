@@ -14,7 +14,10 @@ export const subscribeToListings = (
   onUpdate: (listings: Listing[]) => void,
   onError?: (error: any) => void
 ) => {
-  const q = query(collection(db, 'listings'));
+  const q = query(
+    collection(db, 'listings'),
+    where('isPublishedFromDashboard', '==', true)
+  );
   return onSnapshot(
     q,
     (snapshot) => {

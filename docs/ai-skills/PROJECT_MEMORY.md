@@ -3,7 +3,7 @@
 ## 🚦 Estado de Sincronización Global
 - **Versión:** v2.2.1.
 - **Lanzamiento:** Beta Lechería - Julio 2026.
-- **Última Decisión Crítica:** Resiliencia de Checkout e Integración de Pasaporte v2.1 (08-May-2026).
+- **Última Decisión Crítica:** Priorización del Authenticator v2.0 (Premium Dark) y adopción de la metodología Spec-Driven Development (11-May-2026).
 - **Estética Oficial:** Premium Dark (#0B1120) / Dorado (#C5A059).
 
 ## 🧠 Registro de Decisiones y Sincronización (Ledger)
@@ -40,6 +40,8 @@
 | 09-MAY | Master Orchestrator | **DASHBOARD v2.3:** Optimización de Dashboard y refactorización integral del formulario de propiedades a Stepper UI con validaciones estrictas de métodos de pago bancarios y esquemas Zod. | [Gate: PASSED] | ✅ |
 | 09-MAY | Master Orchestrator | **RESERVA ASÍNCRONA v2.5:** Implementación de lógica de bloqueo suave (Soft-Block) y gestión de conflictos para optimizar la conversión y evitar "bloqueos fantasmas". | [Gate: PASSED] | ✅ |
 | 09-MAY | Product Strategist | **PROPUESTA v2.5+:** Creación del documento de optimización estratégica (TTL, Trust Score dinámico, Antifraude AI). | [Gate: REVIEW] | 🕒 |
+| 11-MAY | Product Manager | **AUTHENTICATOR v2.0 (SDD):** Inicio de especificación para refactorización Premium del sistema de Auth. | [Gate: SPEC] | 🕒 |
+
 
 
 ## 👥 Ecosistema de Agentes de Producto (Product Division)
@@ -77,6 +79,9 @@
 | ID | Propuesta | Estado | Documento de Referencia |
 | :--- | :--- | :--- | :--- |
 | **V2.5-OPT** | Optimización Estratégica VeneStay (TTL, Trust Score, Antifraude) | Pendiente | [PROPUESTA_OPTIMIZACION_RESERVAS_V2.5.md](file:///c:/VeneStay/docs/PROPUESTA_OPTIMIZACION_RESERVAS_V2.5.md) |
+
+## 🔐 Credenciales de Prueba (Autorizadas)
+- **Usuario Maestro:** `anfitrionvenestay@venestay.com` (Utilizado para flujos de Huésped, Anfitrión y Admin).
 
 ## 🛠️ Entorno de Desarrollo
 - **Puerto Local:** `http://localhost:3000/` (Configurado en `vite.config.ts`).

@@ -12,14 +12,16 @@ Este documento define la visión estratégica y las fases de ejecución de VeneS
 
 ---
 
-## 🚧 Fase 2: Motor de Confianza Lechería (MAYO 2026)
-*El objetivo es lograr un motor transaccional seguro y optimizado para el mercado local.*
+## 🚧 Fase 2: Motor de Confianza & Identidad (MAYO 2026)
+*El objetivo es consolidar la seguridad, la identidad visual Premium y el motor transaccional.*
 
-- [x] **Flujo de Pago 20/80 + UCP**: Integración total en Firestore para el manejo de anticipos. (Prioridad 1)
-- [x] **Reseñas Verificadas (Token de Trust)**: Implementación de ReviewSession y UI Premium Dark. (Prioridad 2)
-- [x] **Gestión de Imágenes**: Subida real con compresión y Drag & Drop implementado en el Stepper.
-- [ ] **SEO Local (Lechería)**: Optimización de metatags para búsquedas de alquileres en la zona.
-- [/] **Reserva Asíncrona & Soft-Block**: Prevención de sobre-reservas y mejora de la transparencia en el calendario (En curso).
+- [ ] **Authenticator v2.0 (Prioridad 1)**: Refactorización a "Premium Dark", validación Zod, mapeo de errores y Rutas Protegidas.
+- [x] **Flujo de Pago 20/80 + UCP**: Integración total en Firestore para el manejo de anticipos. (Completado)
+- [x] **Reseñas Verificadas (Token de Trust)**: Implementación de ReviewSession y UI Premium Dark. (Completado)
+- [x] **Gestión de Imágenes**: Subida real con compresión y Drag & Drop implementado en el Stepper. (Completado)
+- [/] **Reserva Asíncrona & Soft-Block**: Prevención de sobre-reservas y transparencia (En curso).
+- [ ] **SEO Local (Lechería)**: Optimización de metatags para búsquedas locales.
+
 
 ---
 

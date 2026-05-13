@@ -73,7 +73,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
-  
+
   const [activePaymentType, setActivePaymentType] = useState<PaymentMethodType | null>(null);
   const [tempPaymentData, setTempPaymentData] = useState<Record<string, string>>({});
   const [step, setStep] = useState(1);
@@ -84,7 +84,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    
+
     // Cargar borrador si existe y estamos en modo "nueva propiedad"
     if (editingListing.id.startsWith('listing-')) {
       const savedDraft = localStorage.getItem('venestay_draft_listing');
@@ -94,7 +94,6 @@ const ListingForm: React.FC<ListingFormProps> = ({
           // Solo cargar si el ID coincide o si el ID actual es genérico
           if (draft.id.startsWith('listing-')) {
             setEditingListing(draft);
-            toast.info('Borrador recuperado automáticamente');
           }
         } catch (e) {
           console.error('Error loading draft:', e);
@@ -131,7 +130,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
         return;
       }
     }
-    
+
     // Evitar la carrera de eventos (Event Bubbling) que dispara el submit del botón en el paso 4
     setTimeout(() => {
       setStep(prev => prev + 1);
@@ -168,10 +167,10 @@ const ListingForm: React.FC<ListingFormProps> = ({
         const location = place.geometry?.location;
         if (location) {
           setEditingListing((prev) =>
-            prev ? { 
-              ...prev, 
-              latitude: location.lat(), 
-              longitude: location.lng(), 
+            prev ? {
+              ...prev,
+              latitude: location.lat(),
+              longitude: location.lng(),
               location: place.formatted_address || prev.location,
               manualAddress: place.formatted_address || prev.manualAddress
             } : null
@@ -183,7 +182,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
 
   const handleGeocodeManualAddress = () => {
     if (!editingListing.manualAddress || !window.google) return;
-    
+
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ address: editingListing.manualAddress }, (results, status) => {
       if (status === 'OK' && results && results[0]) {
@@ -216,7 +215,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
       if (!tempPaymentData.accountHolder || tempPaymentData.accountHolder.trim().length < 3) return "Debe ingresar el nombre del titular para Zelle";
       if (!tempPaymentData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tempPaymentData.email)) return "El correo de Zelle no es válido";
     }
-    
+
     if (activePaymentType === 'Binance') {
       if (!tempPaymentData.binanceId || tempPaymentData.binanceId.trim().length < 6) return "El Binance Pay ID debe tener al menos 6 dígitos";
       if (!tempPaymentData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tempPaymentData.email)) return "Debe ingresar el correo asociado a Binance";
@@ -225,7 +224,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
     if (activePaymentType === 'Transferencia' || activePaymentType === 'PagoMovil') {
       if (!tempPaymentData.bankName || tempPaymentData.bankName.trim() === '') return "Debe especificar el banco";
       if (!tempPaymentData.accountHolder || tempPaymentData.accountHolder.trim() === '') return "Debe ingresar el nombre del titular";
-      
+
       if (!tempPaymentData.idNumber || !/^[VJEG]-?\d{7,10}$/i.test(tempPaymentData.idNumber.trim())) {
         return "Cédula/RIF inválido. Use formato V-12345678, J-123456789";
       }
@@ -251,7 +250,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
       toast.error(error);
       return;
     }
-    
+
     const newMethod = {
       id: Math.random().toString(36).substr(2, 9),
       type: activePaymentType!,
@@ -262,7 +261,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
 
     const currentMethods = editingListing.paymentMethods || [];
     const filtered = currentMethods.filter(m => m.type !== activePaymentType);
-    
+
     setEditingListing({ ...editingListing, paymentMethods: [...filtered, newMethod] as any });
     setActivePaymentType(null);
     setTempPaymentData({});
@@ -298,9 +297,9 @@ const ListingForm: React.FC<ListingFormProps> = ({
         exit={{ opacity: 0, scale: 0.95 }}
         className="flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl md:h-auto md:max-w-5xl md:rounded-[40px]"
       >
-        <form 
-          onSubmit={handleSubmit} 
-          onKeyDown={(e) => { if (e.key === 'Enter' && e.target instanceof HTMLInputElement) e.preventDefault(); }} 
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => { if (e.key === 'Enter' && e.target instanceof HTMLInputElement) e.preventDefault(); }}
           className="flex h-full flex-col md:max-h-[95vh]"
         >
           {/* Header */}
@@ -360,9 +359,9 @@ const ListingForm: React.FC<ListingFormProps> = ({
                           type="text"
                           className={cn(
                             "text-brand-navy w-full rounded-2xl border bg-gray-50 px-6 py-4 font-bold outline-none transition-all",
-                            touched.title && errors.title ? "border-red-200 bg-red-50 focus:border-red-500" : 
-                            touched.title && !errors.title ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
-                            "border-gray-100 focus:border-brand-500"
+                            touched.title && errors.title ? "border-red-200 bg-red-50 focus:border-red-500" :
+                              touched.title && !errors.title ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
+                                "border-gray-100 focus:border-brand-500"
                           )}
                           value={editingListing.title}
                           onChange={(e) => {
@@ -401,8 +400,8 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         className={cn(
                           "text-brand-navy h-32 w-full resize-none rounded-2xl border bg-gray-50 px-6 py-4 text-xs font-bold outline-none transition-all",
                           touched.description && errors.description ? "border-red-200 bg-red-50 focus:border-red-500" :
-                          touched.description && !errors.description ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
-                          "border-gray-100 focus:border-brand-500"
+                            touched.description && !errors.description ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
+                              "border-gray-100 focus:border-brand-500"
                         )}
                         value={editingListing.description || ''}
                         onChange={(e) => {
@@ -431,8 +430,8 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         className={cn(
                           "text-brand-navy w-full rounded-2xl border bg-gray-50 px-6 py-4 font-bold outline-none transition-all",
                           touched.pricePerNight && errors.pricePerNight ? "border-red-200 bg-red-50 focus:border-red-500" :
-                          touched.pricePerNight && !errors.pricePerNight ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
-                          "border-gray-100 focus:border-brand-500"
+                            touched.pricePerNight && !errors.pricePerNight ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
+                              "border-gray-100 focus:border-brand-500"
                         )}
                         value={editingListing.pricePerNight}
                         onChange={(e) => {
@@ -483,8 +482,8 @@ const ListingForm: React.FC<ListingFormProps> = ({
                             className={cn(
                               "w-full rounded-xl border p-3 text-sm font-bold shadow-sm transition-all",
                               touched[item.key] && errors[item.key] ? "border-red-200 bg-red-50 text-red-600 focus:border-red-500" :
-                              touched[item.key] && !errors[item.key] ? "border-emerald-100 bg-emerald-50/20" :
-                              "border-white bg-white focus:border-brand-500"
+                                touched[item.key] && !errors[item.key] ? "border-emerald-100 bg-emerald-50/20" :
+                                  "border-white bg-white focus:border-brand-500"
                             )}
                             value={(editingListing as Record<string, any>)[item.key]}
                             onChange={(e) => {
@@ -602,21 +601,28 @@ const ListingForm: React.FC<ListingFormProps> = ({
                     </div>
                   </div>
 
+                  {errors.images && (
+                    <div className="flex items-center gap-3 rounded-2xl bg-red-50 p-4 text-red-500 border border-red-100 animate-in fade-in slide-in-from-top-1">
+                      <AlertCircle className="h-5 w-5 shrink-0" />
+                      <p className="text-[10px] font-black uppercase tracking-widest">{errors.images}</p>
+                    </div>
+                  )}
+
                   <div className="space-y-6">
                     <div className="text-center">
                       <h4 className="text-brand-navy text-lg font-black tracking-tight">Galería Visual Premium</h4>
                       <p className="text-gray-400 text-xs mt-1">Completa los ambientes sugeridos para una publicación perfecta</p>
                     </div>
-                    
+
                     {/* Guided Environment Slots */}
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                       {ENVIRONMENTS.map((env) => {
                         const photo = editingListing.environmentPhotos?.[env.id];
                         return (
-                          <div 
+                          <div
                             key={env.id}
                             onClick={() => {
-                              if (!photo && !isUploading) {
+                              if (!isUploading) {
                                 targetEnvRef.current = env.id;
                                 fileInputRef.current?.click();
                               }
@@ -624,18 +630,17 @@ const ListingForm: React.FC<ListingFormProps> = ({
                             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                             onDragLeave={() => setIsDragging(false)}
                             onDrop={(e) => handleDrop(e, env.id)}
-                            className={`group relative flex aspect-video cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[24px] border-2 transition-all duration-300 ${
-                              photo 
-                                ? 'border-transparent bg-brand-navy ring-2 ring-emerald-500/30' 
+                            className={`group relative flex aspect-video cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[24px] border-2 transition-all duration-300 ${photo
+                                ? 'border-transparent bg-brand-navy ring-2 ring-emerald-500/30'
                                 : 'border-dashed border-gray-100 bg-white hover:border-brand-500 hover:bg-gray-50'
-                            }`}
+                              }`}
                           >
                             {photo ? (
                               <>
                                 <img src={photo} alt={env.label} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                                 <div className="absolute inset-0 bg-brand-navy/60 opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center backdrop-blur-[2px]">
-                                  <button 
-                                    type="button" 
+                                  <button
+                                    type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       const newEnvPhotos = { ...editingListing.environmentPhotos };
@@ -672,17 +677,20 @@ const ListingForm: React.FC<ListingFormProps> = ({
                       })}
                     </div>
 
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      className="hidden" 
-                      accept="image/*" 
-                      multiple 
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      multiple
                       onChange={(e) => {
                         const envId = targetEnvRef.current;
                         handleImageUpload(e, envId || undefined);
                         targetEnvRef.current = null;
-                      }} 
+                        // Reset input value to allow the same file to be selected again if needed
+                        // and to ensure onChange fires for subsequent selections
+                        e.target.value = '';
+                      }}
                     />
 
                     {/* Extra Photos Dropzone */}
@@ -693,7 +701,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         <div className="h-[1px] flex-grow bg-gray-100" />
                       </div>
 
-                      <div 
+                      <div
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
@@ -734,7 +742,14 @@ const ListingForm: React.FC<ListingFormProps> = ({
                     <h4 className="text-brand-navy text-lg font-black tracking-tight">Ubicación de la Propiedad</h4>
                     <p className="text-gray-400 text-xs mt-1">Verifica la dirección exacta en el mapa</p>
                   </div>
-                  
+
+                  {errors.latitude && (
+                    <div className="flex items-center gap-3 rounded-2xl bg-red-50 p-4 text-red-500 border border-red-100">
+                      <AlertCircle className="h-5 w-5 shrink-0" />
+                      <p className="text-[10px] font-black uppercase tracking-widest">{errors.latitude}</p>
+                    </div>
+                  )}
+
                   <div className="relative h-[400px] overflow-hidden rounded-[32px] border border-gray-100 shadow-inner">
                     {isLoaded ? (
                       <GoogleMap
@@ -748,8 +763,8 @@ const ListingForm: React.FC<ListingFormProps> = ({
                           <input type="text" placeholder="🔍 Buscar dirección..." className="absolute top-4 left-1/2 z-10 w-[90%] max-w-md -translate-x-1/2 rounded-2xl bg-white/95 p-4 text-xs font-bold shadow-xl outline-none border border-gray-100" />
                         </StandaloneSearchBox>
                         {editingListing.latitude && (
-                          <Marker 
-                            position={{ lat: editingListing.latitude, lng: editingListing.longitude! }} 
+                          <Marker
+                            position={{ lat: editingListing.latitude, lng: editingListing.longitude! }}
                             draggable={true}
                             onDragEnd={handleMarkerDragEnd}
                             icon={{
@@ -771,7 +786,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         <div className="space-y-2">
                           <p className="text-brand-navy text-sm font-black">API de Google Maps no disponible</p>
                           <p className="text-gray-400 text-xs font-medium max-w-xs mx-auto mb-4">Usa el botón de bypass temporal para forzar las coordenadas en Lechería mientras se restablece el servicio.</p>
-                          <button 
+                          <button
                             id="bypass-maps-btn"
                             type="button"
                             onClick={() => {
@@ -829,7 +844,14 @@ const ListingForm: React.FC<ListingFormProps> = ({
                     <h4 className="text-brand-navy text-lg font-black tracking-tight">Métodos de Cobro</h4>
                     <p className="text-gray-400 text-xs mt-1 uppercase tracking-widest font-bold">Validación bancaria activa</p>
                   </div>
-                  
+
+                  {errors.paymentMethods && (
+                    <div className="flex items-center gap-3 rounded-2xl bg-red-50 p-4 text-red-500 border border-red-100">
+                      <AlertCircle className="h-5 w-5 shrink-0" />
+                      <p className="text-[10px] font-black uppercase tracking-widest">{errors.paymentMethods}</p>
+                    </div>
+                  )}
+
                   <div className="border-brand-navy/10 rounded-[40px] border bg-gray-50/50 p-8 shadow-sm">
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-6">
                       {PAYMENT_OPTIONS.map((opt) => {
@@ -855,21 +877,21 @@ const ListingForm: React.FC<ListingFormProps> = ({
                               <>
                                 <div className="space-y-2">
                                   <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Banco</label>
-                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" placeholder="Ej: Banesco, Mercantil" value={tempPaymentData.bankName || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, bankName: e.target.value})} />
+                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" placeholder="Ej: Banesco, Mercantil" value={tempPaymentData.bankName || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, bankName: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                   <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Titular</label>
-                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" placeholder="Nombre del propietario" value={tempPaymentData.accountHolder || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, accountHolder: e.target.value})} />
+                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" placeholder="Nombre del propietario" value={tempPaymentData.accountHolder || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, accountHolder: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                   <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Cédula / RIF</label>
-                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" placeholder="V-12345678" value={tempPaymentData.idNumber || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, idNumber: e.target.value.toUpperCase()})} />
+                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" placeholder="V-12345678" value={tempPaymentData.idNumber || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, idNumber: e.target.value.toUpperCase() })} />
                                 </div>
 
                                 {activePaymentType === 'PagoMovil' && (
                                   <div className="space-y-2">
                                     <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Teléfono Celular</label>
-                                    <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" placeholder="04141234567" value={tempPaymentData.phoneNumber || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, phoneNumber: e.target.value})} />
+                                    <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" placeholder="04141234567" value={tempPaymentData.phoneNumber || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, phoneNumber: e.target.value })} />
                                   </div>
                                 )}
 
@@ -877,7 +899,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                                   <>
                                     <div className="space-y-2">
                                       <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Tipo de Cuenta</label>
-                                      <select className="w-full appearance-none rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" value={tempPaymentData.accountType || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, accountType: e.target.value})}>
+                                      <select className="w-full appearance-none rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none focus:bg-gray-100" value={tempPaymentData.accountType || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, accountType: e.target.value })}>
                                         <option value="">Selecciona tipo</option>
                                         <option value="Corriente">Corriente</option>
                                         <option value="Ahorros">Ahorros</option>
@@ -886,7 +908,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                                     </div>
                                     <div className="col-span-2 space-y-2">
                                       <label className={`text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase ${tempPaymentData.accountNumber && tempPaymentData.accountNumber.length !== 20 ? 'text-red-500' : ''}`}>Número de Cuenta (20 dígitos)</label>
-                                      <input type="text" maxLength={20} className={`w-full rounded-2xl px-6 py-4 text-xs font-bold outline-none ${tempPaymentData.accountNumber && tempPaymentData.accountNumber.length !== 20 ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-gray-50 focus:bg-gray-100'}`} placeholder="01020000000000000000" value={tempPaymentData.accountNumber || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, accountNumber: e.target.value.replace(/\D/g, '')})} />
+                                      <input type="text" maxLength={20} className={`w-full rounded-2xl px-6 py-4 text-xs font-bold outline-none ${tempPaymentData.accountNumber && tempPaymentData.accountNumber.length !== 20 ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-gray-50 focus:bg-gray-100'}`} placeholder="01020000000000000000" value={tempPaymentData.accountNumber || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, accountNumber: e.target.value.replace(/\D/g, '') })} />
                                     </div>
                                   </>
                                 )}
@@ -895,22 +917,22 @@ const ListingForm: React.FC<ListingFormProps> = ({
                               <>
                                 <div className="space-y-2">
                                   <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Titular de la Cuenta</label>
-                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="Nombre completo" value={tempPaymentData.accountHolder || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, accountHolder: e.target.value})} />
+                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="Nombre completo" value={tempPaymentData.accountHolder || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, accountHolder: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                   <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Correo Zelle</label>
-                                  <input type="email" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="nombre@ejemplo.com" value={tempPaymentData.email || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, email: e.target.value})} />
+                                  <input type="email" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="nombre@ejemplo.com" value={tempPaymentData.email || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, email: e.target.value })} />
                                 </div>
                               </>
                             ) : (
                               <>
                                 <div className="space-y-2">
                                   <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Binance Pay ID</label>
-                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="ID de 9 dígitos" value={tempPaymentData.binanceId || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, binanceId: e.target.value})} />
+                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="ID de 9 dígitos" value={tempPaymentData.binanceId || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, binanceId: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                   <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Correo asociado</label>
-                                  <input type="email" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="nombre@ejemplo.com" value={tempPaymentData.email || ''} onChange={(e) => setTempPaymentData({...tempPaymentData, email: e.target.value})} />
+                                  <input type="email" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="nombre@ejemplo.com" value={tempPaymentData.email || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, email: e.target.value })} />
                                 </div>
                               </>
                             )}
@@ -935,16 +957,16 @@ const ListingForm: React.FC<ListingFormProps> = ({
             ) : (
               <div className="w-1/3"></div>
             )}
-            
+
             {step < 4 ? (
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleNextStep}
                 disabled={!isStepValid(step, editingListing)}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
-                  isStepValid(step, editingListing) 
-                    ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy" 
+                  isStepValid(step, editingListing)
+                    ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                 )}
               >
@@ -977,20 +999,20 @@ const ListingForm: React.FC<ListingFormProps> = ({
                 <p className="text-sm text-gray-500 mt-2 font-medium">Los cambios que hayas realizado se perderán. ¿Estás seguro que deseas salir?</p>
               </div>
               <div className="flex flex-col gap-3">
-                <button 
+                <button
                   onClick={() => setShowWarningModal(false)}
                   className="w-full py-4 bg-brand-navy text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-brand-500 transition-colors"
                 >
                   Continuar editando
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     localStorage.removeItem('venestay_draft_listing');
                     setEditingListing(null);
                   }}
                   className="w-full py-4 bg-gray-100 text-gray-500 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-red-50 hover:text-red-500 transition-colors"
                 >
-                  Salir y borrar borrador
+                  Salir sin guardar
                 </button>
               </div>
             </motion.div>

@@ -23,6 +23,8 @@ import {
   Share2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { normalizeString } from '@/utils/string-utils';
+
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -113,16 +115,20 @@ const Home: React.FC = () => {
 
   const filteredListings = useMemo(() => {
     return listings.filter((listing) => {
+      const normalizedActiveCity = normalizeString(activeCity);
+      const normalizedListingCity = normalizeString(listing.city);
+
       const matchesCity =
         activeCity === 'All' ||
         (activeCity === 'Petfriendly'
           ? listing.isPetFriendly
-          : listing.city === activeCity);
+          : normalizedListingCity === normalizedActiveCity);
 
+      const normalizedSearch = normalizeString(searchQuery);
       const matchesSearch =
-        listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        listing.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        listing.city.toLowerCase().includes(searchQuery.toLowerCase());
+        normalizeString(listing.title).includes(normalizedSearch) ||
+        normalizeString(listing.location).includes(normalizedSearch) ||
+        normalizeString(listing.city).includes(normalizedSearch);
 
       const isAvailable =
         !startDate ||
@@ -132,6 +138,7 @@ const Home: React.FC = () => {
       return matchesCity && matchesSearch && isAvailable;
     });
   }, [activeCity, searchQuery, startDate, listings]);
+
 
   return (
     <div className="text-brand-navy min-h-screen bg-white">
