@@ -104,7 +104,7 @@ const Navbar: React.FC<NavbarProps> = ({
       icon: <Umbrella className="h-5 w-5" />,
     },
     { name: 'Falcon', label: 'Falcon', icon: <Wind className="h-5 w-5" /> },
-    { name: 'Lecheria', label: 'Lecheria', icon: <Ship className="h-5 w-5" /> },
+    { name: 'Lechería', label: 'Lechería', icon: <Ship className="h-5 w-5" /> },
     {
       name: 'Maracaibo',
       label: 'Maracaibo',

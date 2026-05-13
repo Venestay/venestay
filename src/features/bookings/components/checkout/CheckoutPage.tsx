@@ -638,8 +638,6 @@ const CheckoutPage: React.FC = () => {
     const end = parseLocalDate(booking.endDate);
     if (!start || !end) return false;
     
-    // Use imported date-fns functions for conflict check
-
     
     return softReservedDates.some((range) => {
       // Check if any day in the softReserved range falls inside our booking range

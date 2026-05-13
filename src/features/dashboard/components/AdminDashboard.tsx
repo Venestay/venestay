@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense, useMemo } from 'react';
+import React, { useEffect, useState, Suspense, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   collection,
@@ -114,7 +114,11 @@ const AdminDashboard: React.FC = () => {
         })
       : () => {};
 
-    const lQuery = query(collection(db, 'listings'), orderBy('updatedAt', 'desc'));
+    const lQuery = query(
+      collection(db, 'listings'),
+      where('isPublishedFromDashboard', '==', true),
+      orderBy('updatedAt', 'desc')
+    );
     const unsubscribeListings = onSnapshot(lQuery, (snapshot) => {
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Listing[];
         setListings(data);
@@ -149,12 +153,16 @@ const AdminDashboard: React.FC = () => {
     }
   }, []);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => {
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => {
     const listingId = editingListing?.id;
     if (!listingId || !user) return;
 
-    const files = 'target' in e ? e.target.files : (e as any).files;
-    if (!files || files.length === 0) return;
+    const fileList = 'target' in e ? e.target.files : (e as any).files;
+    if (!fileList || fileList.length === 0) return;
+    
+    // CRITICAL: Convert FileList to Array synchronously before any 'await' 
+    // to prevent losing references if the input value is reset in the UI.
+    const files = Array.from(fileList);
 
     setIsUploading(true);
 
@@ -162,15 +170,15 @@ const AdminDashboard: React.FC = () => {
       const imageCompression = (await import('browser-image-compression')).default;
       const options = { maxSizeMB: 0.6, maxWidthOrHeight: 1600, useWebWorker: true, initialQuality: 0.75 };
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (const file of files) {
         try {
           let uploadFile: File | Blob = file;
           if (file.type.startsWith('image/')) {
             uploadFile = await imageCompression(file, options);
           }
 
-          const fileName = `${Date.now()}-${i}-${file.name.replace(/\s+/g, '_')}`;
+          const uniqueId = Math.random().toString(36).substring(2, 8);
+          const fileName = `${Date.now()}-${uniqueId}-${file.name.replace(/\s+/g, '_')}`;
           const storageRef = ref(storage, `listings/${listingId}/${fileName}`);
           const metadata = { contentType: file.type, cacheControl: 'public,max-age=31536000' };
 
@@ -216,7 +224,7 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [user?.uid, editingListing?.id]);
 
   const removeImage = (index: number) => {
     setEditingListing((prev) => {
@@ -257,7 +265,11 @@ const AdminDashboard: React.FC = () => {
     try {
       const { id, ...data } = listing;
       const isNew = id.startsWith('listing-');
-      const payload = { ...data, updatedAt: new Date().toISOString() };
+      const payload = { 
+        ...data, 
+        updatedAt: new Date().toISOString(),
+        isPublishedFromDashboard: true 
+      };
       if (isNew) (payload as any).createdAt = new Date().toISOString();
 
       const listingRef = doc(db, 'listings', id);

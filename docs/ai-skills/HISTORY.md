@@ -125,3 +125,22 @@ Este archivo registra las fallas detectadas por las Quality Gates y las leccione
 **Lección de IA:** "Los flujos de carga asíncrona deben tener siempre un disparador de cierre (`finally` o control de errores) y la lógica de fetching debe estar blindada contra reemplazos parciales que omitan hooks esenciales".
 
 **Acción Correctiva:** Restauración de la importación de `auth-service` y reimplementación del `useEffect` de recuperación de perfil. [Gate: PASSED].
+
+---
+
+## [09-MAY-2026] - HITO: RESERVA ASÍNCRONA v2.5 (SOFT-BLOCKING)
+
+**Contexto:** Optimización del embudo de conversión y prevención de conflictos de fechas.
+
+**Acciones Realizadas:**
+1.  **Capa de Datos:** Refactorización de `booking-service.ts` para distinguir entre estados `CONFIRMED` y `AWAITING_VERIFICATION`.
+2.  **Transparencia UI:** Implementación de estilos visuales "Soft-Block" (ámbar/punteado) en el calendario para informar sobre procesos de pago en curso.
+3.  **Gestión de Conflictos:** 
+    *   `CheckoutPage.tsx`: Inyección de banners de advertencia de "Alta Demanda".
+    *   `BookingList.tsx`: Implementación de lógica de solapamiento con badges de "CONFLICTO DE FECHAS" en rojo parpadeante.
+4.  **Gobernanza:** Sincronización completa de `PROJECT_MEMORY.md`, `ROADMAP.md` y `SKILL_agent_browser.md`.
+
+**Resultado:** El sistema permite que las fechas permanezcan disponibles hasta la validación del pago, maximizando la conversión mientras protege la integridad mediante alertas visuales tanto para el huésped como para el anfitrión.
+
+---
+*Memoria de sesión v2.5 consolidada para sincronización multi-equipo.*

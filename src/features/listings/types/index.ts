@@ -4,12 +4,12 @@ export type City =
   | 'Caracas'
   | 'Margarita'
   | 'Falcon'
-  | 'Lecheria'
+  | 'Lechería'
   | 'Maracaibo'
   | 'All'
   | 'Petfriendly'
-  | 'Puerto La Cruz'
-  | 'Lechería';
+  | 'Puerto La Cruz';
+
 
 export interface Listing {
   id: string;
@@ -48,6 +48,7 @@ export interface Listing {
   manualAddress?: string;
   environmentPhotos?: Record<string, string>;
   paymentMethods?: PaymentMethod[];
+  isPublishedFromDashboard?: boolean;
   bankDetails?: {
     bankName: string;
     accountHolder: string;
