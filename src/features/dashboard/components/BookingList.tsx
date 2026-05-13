@@ -13,16 +13,16 @@ import {
 import { format, parseISO, isWithinInterval, startOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Booking, BookingStatus } from '@/types';
-import { calculateCommission, getCommissionTier } from '@/lib/commission';
+import { calculateCommission, getCommissionTier, CommissionTier } from '@/lib/commission';
 
 interface BookingListProps {
   bookings: Booking[];
   isAdmin: boolean;
-  user: any;
+  user: { uid: string; displayName?: string | null } | null;
   handleUpdateStatus: (booking: Booking, newStatus: BookingStatus, note?: string) => Promise<void>;
   setActiveChatId: (id: string | null) => void;
   setActiveChatBooking: (booking: Booking | null) => void;
-  tier: number;
+  tier: CommissionTier;
 }
 
 const BookingList: React.FC<BookingListProps> = ({
@@ -182,7 +182,7 @@ const BookingList: React.FC<BookingListProps> = ({
                     </span>
                   </div>
                   <span className="text-2xl font-black">
-                    ${calculateCommission(booking.totalAmount, tier as any).hostNetProfit.toFixed(2)}
+                    ${calculateCommission(booking.totalAmount, tier).hostNetProfit.toFixed(2)}
                   </span>
                   <span className="text-[9px] font-bold text-gray-400">Total: ${booking.totalAmount}</span>
                 </div>
@@ -190,11 +190,11 @@ const BookingList: React.FC<BookingListProps> = ({
                 <div className="space-y-2 border-t border-white/10 pt-4">
                   <div className="flex items-center justify-between">
                     <span className="text-[8px] font-bold text-gray-400 uppercase">Cobro Check-in (80%)</span>
-                    <span className="text-xs font-black text-emerald-400">${calculateCommission(booking.totalAmount, tier as any).ucpBalance.toFixed(2)}</span>
+                    <span className="text-xs font-black text-emerald-400">${calculateCommission(booking.totalAmount, tier).ucpBalance.toFixed(2)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[8px] font-bold text-gray-400 uppercase">Liquidación Garantía</span>
-                    <span className="text-xs font-black text-brand-500">${calculateCommission(booking.totalAmount, tier as any).settlementAmount.toFixed(2)}</span>
+                    <span className="text-xs font-black text-brand-500">${calculateCommission(booking.totalAmount, tier).settlementAmount.toFixed(2)}</span>
                   </div>
                 </div>
 

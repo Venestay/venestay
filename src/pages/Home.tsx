@@ -190,11 +190,12 @@ const Home: React.FC = () => {
       {!isLoadingListings ? (
         <div className="animate-fade-in">
           <main className="mx-auto max-w-7xl px-4 pt-6 pb-20 sm:px-6 lg:px-8">
-            {/* Gatillo de Autoridad */}
+            {/* Gatillo de Autoridad 
             <div className="mb-6 flex items-center justify-center gap-2 text-sm font-medium tracking-wide text-gray-600">
               <span>🛡️</span> Más de 500 estancias verificadas en toda la
               región.
             </div>
+            */}
 
             {/* Hero Section */}
             {!isPropertyView &&

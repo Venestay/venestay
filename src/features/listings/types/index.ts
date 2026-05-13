@@ -33,8 +33,8 @@ export interface Listing {
   isPetFriendly: boolean;
   blockedDates?: string[];
   paymentInstructions?: string;
-  createdAt?: any;
-  updatedAt?: any;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
   minNights?: number;
   maxNights?: number;
   propertyType?: string;

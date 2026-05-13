@@ -12,7 +12,7 @@ import { Listing } from '@/types';
 
 export const subscribeToListings = (
   onUpdate: (listings: Listing[]) => void,
-  onError?: (error: any) => void
+  onError?: (error: Error) => void
 ) => {
   const q = query(
     collection(db, 'listings'),

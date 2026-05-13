@@ -34,6 +34,7 @@ import {
   ExchangeRates,
   UCPTransactionPayload,
 } from '@/types';
+import { CommissionTier } from '@/lib/commission';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
 import { db, storage } from '@/lib/firebase';
 import {
@@ -62,7 +63,7 @@ const CheckoutPage: React.FC = () => {
   const location = useLocation();
   const { user, profileData, loading: authLoading } = useAuth();
 
-  const [booking, setBooking] = useState<any | null>(null);
+  const [booking, setBooking] = useState<Booking | null>(null);
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +122,7 @@ const CheckoutPage: React.FC = () => {
           setListing(lData);
 
           // v2.2 Host Audit for Commission Tier (Resilient Mode)
-          let hostTier: any = 12;
+          let hostTier: CommissionTier = 12;
           if (lData.hostId) {
             try {
               const hostSnap = await getDoc(doc(db, 'users', lData.hostId));

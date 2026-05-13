@@ -4,7 +4,7 @@ export interface UserProfile {
   displayName: string;
   photoURL: string;
   role: 'user' | 'host' | 'admin';
-  createdAt: any;
+  createdAt: string | Date;
   phoneNumber?: string;
   // Host Info
   about?: string;

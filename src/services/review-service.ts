@@ -19,7 +19,7 @@ export interface ReviewSession {
   status: 'PENDING' | 'SUBMITTED' | 'EXPIRED';
   ucpVerified: boolean;
   expiresAt: Timestamp;
-  createdAt: any;
+  createdAt: Timestamp;
 }
 
 export interface Review {
@@ -28,7 +28,7 @@ export interface Review {
   guestName: string;
   rating: number;
   comment: string;
-  createdAt: any;
+  createdAt: Timestamp;
   reviewSessionId: string;
 }
 

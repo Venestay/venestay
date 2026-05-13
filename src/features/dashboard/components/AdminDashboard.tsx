@@ -17,7 +17,7 @@ import { Listing } from '@/features/listings/types';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { ENVIRONMENTS } from '../constants/dashboard.constants';
-import { Search, ShieldCheck } from 'lucide-react';
+import { Search, ShieldCheck, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -157,7 +157,7 @@ const AdminDashboard: React.FC = () => {
     const listingId = editingListing?.id;
     if (!listingId || !user) return;
 
-    const fileList = 'target' in e ? e.target.files : (e as any).files;
+    const fileList = 'target' in e ? e.target.files : (e as { files: FileList }).files;
     if (!fileList || fileList.length === 0) return;
     
     // CRITICAL: Convert FileList to Array synchronously before any 'await' 
@@ -195,7 +195,7 @@ const AdminDashboard: React.FC = () => {
             });
 
             if (!listingId.startsWith('listing-')) {
-              const updates: Record<string, any> = {
+              const updates: Record<string, string | ReturnType<typeof arrayUnion>> = {
                 images: arrayUnion(downloadURL),
                 updatedAt: new Date().toISOString(),
               };
@@ -251,7 +251,7 @@ const AdminDashboard: React.FC = () => {
         statusHistory: [...(booking.statusHistory || []), historyEntry],
       });
       toast.success('Estado actualizado');
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar estado');
     }
   };
@@ -265,12 +265,12 @@ const AdminDashboard: React.FC = () => {
     try {
       const { id, ...data } = listing;
       const isNew = id.startsWith('listing-');
-      const payload = { 
+      const payload: Partial<Listing> & { isPublishedFromDashboard: boolean } = { 
         ...data, 
         updatedAt: new Date().toISOString(),
         isPublishedFromDashboard: true 
       };
-      if (isNew) (payload as any).createdAt = new Date().toISOString();
+      if (isNew) payload.createdAt = new Date().toISOString();
 
       const listingRef = doc(db, 'listings', id);
       if (isNew) {
@@ -278,13 +278,13 @@ const AdminDashboard: React.FC = () => {
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: _, ...updateData } = payload;
-        await updateDoc(listingRef, updateData as Record<string, any>);
+        await updateDoc(listingRef, updateData as unknown as Record<string, string | number | boolean>);
       }
 
       toast.success(isNew ? '¡Propiedad publicada!' : 'Cambios guardados');
       setEditingListing(null);
       if (isNew) navigate('/admin/mis-propiedades');
-    } catch (error) {
+    } catch {
       toast.error('Error al guardar la propiedad');
     } finally {
       setIsSaving(false);
@@ -296,7 +296,7 @@ const AdminDashboard: React.FC = () => {
       await deleteDoc(doc(db, 'listings', listingId));
       toast.success('Propiedad eliminada');
       setListingToDelete(null);
-    } catch (error) {
+    } catch {
       toast.error('Error al eliminar');
     }
   };
@@ -370,6 +370,85 @@ const AdminDashboard: React.FC = () => {
         {/* List Content */}
         <div className="no-scrollbar flex-grow overflow-y-auto bg-gray-50/20 p-6 md:p-8">
           <AnimatePresence mode="wait">
+            {/* Herramienta de Migración Temporal - Visible para Admins y Hosts en cualquier pestaña */}
+            {(isAdmin || isHost) && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mb-8 overflow-hidden"
+              >
+                <div className="rounded-3xl border-2 border-dashed border-brand-500/20 bg-brand-500/5 p-6 text-center">
+                  <div className="flex flex-col items-center justify-between gap-4 md:flex-row md:text-left">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/20">
+                        <RefreshCcw className="text-brand-500 h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-brand-navy text-sm font-black">¿No ves tus propiedades?</h4>
+                        <p className="text-[10px] font-medium text-gray-500">
+                          Usa esta utilidad para activar la visibilidad de listados antiguos en el nuevo sistema.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const confirm = window.confirm('¿Deseas migrar todos los listados para asegurar su visibilidad?');
+                        if (!confirm) return;
+                        
+                        const toastId = toast.loading('Sincronizando visibilidad...');
+                        try {
+                          const { getDocs, collection, updateDoc, doc } = await import('firebase/firestore');
+                          const snapshot = await getDocs(collection(db, 'listings'));
+                          let updated = 0;
+                          let errors = 0;
+                          
+                          for (const lDoc of snapshot.docs) {
+                            const data = lDoc.data();
+                            if (!data.isPublishedFromDashboard) {
+                              try {
+                                // Asegurar que el documento cumple con isValidListing de firestore.rules
+                                const updatePayload: any = {
+                                  isPublishedFromDashboard: true,
+                                  updatedAt: new Date().toISOString()
+                                };
+
+                                // Rellenar campos críticos si faltan (para pasar isValidListing)
+                                if (!data.city) updatePayload.city = 'Caracas';
+                                if (!data.images) updatePayload.images = [];
+                                if (!data.maxGuests) updatePayload.maxGuests = 1;
+                                if (!data.description) updatePayload.description = 'Propiedad importada';
+                                if (!data.location) updatePayload.location = 'Ubicación no especificada';
+                                if (!data.pricePerNight) updatePayload.pricePerNight = 0;
+                                if (!data.hostId && user) updatePayload.hostId = user.uid;
+
+                                await updateDoc(doc(db, 'listings', lDoc.id), updatePayload);
+                                updated++;
+                              } catch (e) {
+                                console.error(`Error migrando ${lDoc.id}:`, e);
+                                errors++;
+                              }
+                            }
+                          }
+                          
+                          if (errors > 0) {
+                            toast.error(`Sincronización parcial: ${updated} éxito, ${errors} fallos. Verifica tus permisos de Admin.`, { id: toastId });
+                          } else {
+                            toast.success(`Sincronización completada: ${updated} listados actualizados`, { id: toastId });
+                          }
+                        } catch (err) {
+                          console.error(err);
+                          toast.error('Error crítico al acceder a la base de datos', { id: toastId });
+                        }
+                      }}
+                      className="bg-brand-navy text-white whitespace-nowrap rounded-xl px-6 py-2 text-[10px] font-black tracking-widest uppercase shadow-md hover:bg-brand-500 hover:text-brand-navy transition-all"
+                    >
+                      Sincronizar Visibilidad
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {loading ? (
               <motion.div
                 key="loading"
@@ -403,6 +482,7 @@ const AdminDashboard: React.FC = () => {
                   setActiveChatBooking={setActiveChatBooking}
                   tier={currentTier}
                 />
+                
               </motion.div>
             ) : activeTab === 'listings' ? (
               <motion.div

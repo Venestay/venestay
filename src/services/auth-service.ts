@@ -1,6 +1,5 @@
 import {
   signOut as firebaseSignOut,
-  onAuthStateChanged,
   User as FirebaseUser,
 } from 'firebase/auth';
 import {
@@ -34,7 +33,7 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
 export const subscribeToProfile = (
   uid: string,
   onUpdate: (profile: UserProfile | null) => void,
-  onError?: (error: any) => void
+  onError?: (error: Error) => void
 ) => {
   const userDocRef = doc(db, 'users', uid);
   return onSnapshot(

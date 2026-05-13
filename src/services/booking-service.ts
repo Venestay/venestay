@@ -5,12 +5,10 @@ import {
   query,
   where,
   getDocs,
-  doc,
-  getDoc,
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Booking, BookingStatus } from '@/types';
+import { Booking } from '@/types';
 import { parseISO } from 'date-fns';
 
 export const getReservedDates = async (listingId: string): Promise<{ start: Date; end: Date; type: 'confirmed' | 'pending' }[]> => {
@@ -42,7 +40,7 @@ export const createBooking = async (bookingData: Partial<Booking>) => {
 export const subscribeToUserBookings = (
   userId: string,
   onUpdate: (bookings: Booking[]) => void,
-  onError?: (error: any) => void
+  onError?: (error: Error) => void
 ) => {
   const q = query(
     collection(db, 'bookings'),
