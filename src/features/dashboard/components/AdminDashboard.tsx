@@ -407,7 +407,7 @@ const AdminDashboard: React.FC = () => {
                             if (!data.isPublishedFromDashboard) {
                               try {
                                 // Asegurar que el documento cumple con isValidListing de firestore.rules
-                                const updatePayload: any = {
+                                const updatePayload: Partial<Listing> = {
                                   isPublishedFromDashboard: true,
                                   updatedAt: new Date().toISOString()
                                 };

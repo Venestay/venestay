@@ -19,7 +19,14 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   createdAt,
   isVerified = true 
 }) => {
-  const date = createdAt?.toDate ? createdAt.toDate() : new Date();
+  const date = (() => {
+    if (createdAt instanceof Date) return createdAt;
+    if (typeof createdAt === 'string') return new Date(createdAt);
+    if (createdAt && typeof createdAt === 'object' && 'toDate' in createdAt && typeof createdAt.toDate === 'function') {
+      return (createdAt as { toDate: () => Date }).toDate();
+    }
+    return new Date();
+  })();
 
   return (
     <motion.div 

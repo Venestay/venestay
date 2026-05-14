@@ -95,7 +95,7 @@ const Home: React.FC = () => {
       },
       (error) => {
         console.error('App: Error fetching listings:', error);
-        if (error.code === 'unavailable') {
+        if ((error as { code?: string }).code === 'unavailable') {
           setConnectionError(true);
         }
       }
