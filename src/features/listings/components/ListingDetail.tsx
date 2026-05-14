@@ -467,6 +467,13 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
 
           {/* Mobile swipeable gallery */}
           <div className="relative h-[400px] w-full md:hidden">
+            {/* Floating Back Button for Mobile */}
+            <button
+              onClick={handleClose}
+              className="absolute left-4 top-4 z-[70] flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-transform active:scale-90"
+            >
+              <ArrowLeft className="h-5 w-5 text-brand-navy" />
+            </button>
             <motion.div
               className="flex h-full w-full"
               drag="x"
@@ -1223,23 +1230,32 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
       </div>
       {/* Sticky Mobile CTA Bar */}
       <div className="fixed right-0 bottom-0 left-0 z-[70] flex items-center justify-between border-t border-gray-100 bg-white/95 px-6 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl lg:hidden">
-        <div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-brand-navy text-lg font-black">
-              ${currentListing.pricePerNight}
-            </span>
-            <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-              / noche
-            </span>
-          </div>
+        <div className="flex items-center gap-4">
           <button
-            onClick={() => setIsCalendarOpen(true)}
-            className="text-brand-500 text-[10px] font-black tracking-widest uppercase hover:underline"
+            onClick={() => navigate('/')}
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-brand-navy shadow-sm transition-transform active:scale-90"
+            aria-label="Volver al inicio"
           >
-            {startDate && endDate
-              ? `${format(startDate, 'dd MMM', { locale: es })} - ${format(endDate, 'dd MMM', { locale: es })}`
-              : 'Elegir fechas'}
+            <Globe className="h-5 w-5" />
           </button>
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-brand-navy text-lg font-black">
+                ${currentListing.pricePerNight}
+              </span>
+              <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                / noche
+              </span>
+            </div>
+            <button
+              onClick={() => setIsCalendarOpen(true)}
+              className="text-brand-500 text-[10px] font-black tracking-widest uppercase hover:underline"
+            >
+              {startDate && endDate
+                ? `${format(startDate, 'dd MMM', { locale: es })} - ${format(endDate, 'dd MMM', { locale: es })}`
+                : 'Elegir fechas'}
+            </button>
+          </div>
         </div>
         <button
           id="reserve-button-mobile"

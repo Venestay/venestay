@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -74,6 +75,8 @@ const ListingForm: React.FC<ListingFormProps> = ({
   const targetEnvRef = useRef<string | null>(null);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const { errors, touched, validateField, setFieldTouched, validateStep, isStepValid } = useListingValidation();
+  const [isPublished, setIsPublished] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -280,6 +283,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
     await handleUpdateListing(e, finalizedListing);
     // Limpiar persistencia tras éxito
     localStorage.removeItem('venestay_draft_listing');
+    setIsPublished(true);
   };
 
   return (
@@ -290,11 +294,17 @@ const ListingForm: React.FC<ListingFormProps> = ({
         exit={{ opacity: 0, scale: 0.95 }}
         className="flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl md:h-auto md:max-w-5xl md:rounded-[40px]"
       >
-        <form
-          onSubmit={handleSubmit}
-          onKeyDown={(e) => { if (e.key === 'Enter' && e.target instanceof HTMLInputElement) e.preventDefault(); }}
-          className="flex h-full flex-col md:max-h-[95vh]"
-        >
+        <AnimatePresence mode="wait">
+          {!isPublished ? (
+            <motion.form
+              key="listing-form-content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onSubmit={handleSubmit}
+              onKeyDown={(e) => { if (e.key === 'Enter' && e.target instanceof HTMLInputElement) e.preventDefault(); }}
+              className="flex h-full flex-col md:max-h-[95vh]"
+            >
           {/* Header */}
           <div className="bg-brand-navy flex shrink-0 items-center justify-between p-6 text-white md:p-8">
             <div>
@@ -955,10 +965,10 @@ const ListingForm: React.FC<ListingFormProps> = ({
               <button
                 type="button"
                 onClick={handleNextStep}
-                disabled={!isStepValid(step, editingListing)}
+                disabled={!isStepValid(step, editingListing as any)}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
-                  isStepValid(step, editingListing)
+                  isStepValid(step, editingListing as any)
                     ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                 )}
@@ -971,7 +981,52 @@ const ListingForm: React.FC<ListingFormProps> = ({
               </button>
             )}
           </div>
-        </form>
+            </motion.form>
+          ) : (
+            <motion.div
+              key="success-screen"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex h-full flex-col items-center justify-center p-8 text-center space-y-8 min-h-[400px]"
+            >
+              <div className="relative">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
+                  className="bg-brand-500 text-white p-6 rounded-full shadow-2xl shadow-brand-500/40"
+                >
+                  <Check className="h-16 w-16 stroke-[3]" />
+                </motion.div>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="absolute inset-0 bg-brand-500 rounded-full -z-10"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-3xl font-black text-brand-navy">¡Propiedad Publicada!</h3>
+                <p className="text-gray-500 font-medium max-w-sm">Tu propiedad ya está disponible para recibir reservaciones. ¡Felicidades!</p>
+              </div>
+
+              <div className="flex flex-col w-full gap-4 max-w-sm">
+                <button
+                  onClick={() => navigate('/')}
+                  className="w-full py-5 bg-brand-navy text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-brand-500 hover:text-brand-navy transition-all shadow-xl active:scale-95"
+                >
+                  Volver al Inicio
+                </button>
+                <button
+                  onClick={() => setEditingListing(null)}
+                  className="w-full py-5 bg-gray-100 text-brand-navy rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all active:scale-95"
+                >
+                  Ver mis Propiedades
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Warning Modal for Unsaved Changes */}
