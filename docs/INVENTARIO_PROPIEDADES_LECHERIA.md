@@ -38,6 +38,8 @@ Este documento centraliza el inventario de propiedades para ser subidas al siste
 | LC-002 | Beach Loft Maremares | Relax | $120 | Complejo Turístico | Pendiente |
 | LC-003 | Townhouse Náutico Canal | Familiar | $180 | Canales | Pendiente |
 | LC-004 | Suite Vista Playa Mansa | Ejecutivo | $95 | Playa Mansa | Pendiente |
+| LC-005 | Marina Garden Villa | Lujo | $320 | Canales | Pendiente |
+| LC-006 | Skyline Studio Plaza Mayor | Ejecutivo | $110 | Plaza Mayor | Pendiente |
 
 ---
 
@@ -111,3 +113,43 @@ Este documento centraliza el inventario de propiedades para ser subidas al siste
 **Paso 4: Pagos**
 - **Binance Pay:** id: 987654321 | email: pagos@marinabay.com
 - **Pago Móvil:** 0424-7654321 | Banco BNC | V-10987654
+
+---
+
+### 5. Marina Garden Villa [LC-005]
+**Paso 1: General**
+- **Título:** Marina Garden Villa: Elegancia y Muelle Privado
+- **Descripción:** Villa de super-lujo con arquitectura minimalista frente al canal. Cuenta con amplios jardines, muelle privado para embarcaciones de hasta 50 pies y piscina infinita con vista a la marina.
+- **Precio:** $320 / noche
+- **Capacidad:** 10 huéspedes | 5 Dormitorios | 7 Camas | 6 Baños
+- **Edificación:** Quinta de 2 niveles | Año 2023
+- **Comodidades:** Planta Eléctrica Total, Tanque de 30.000L, Muelle Privado, Piscina, Área de BBQ, WiFi Starlink.
+- **Entorno:** Ubicación privilegiada en el canal principal del Complejo Turístico.
+
+**Paso 3: Ubicación**
+- **Dirección:** Av. Américo Vespucio, Residencias Villa Marina, Lechería.
+- **Referencia:** Frente a la Marina Américo Vespucio.
+
+**Paso 4: Pagos**
+- **Zelle:** luxury@venestay.com (Titular: Marina Properties Corp)
+- **Binance Pay:** id: 1122334455
+
+---
+
+### 6. Skyline Studio Plaza Mayor [LC-006]
+**Paso 1: General**
+- **Título:** Skyline Studio: Estilo Industrial y Vista a la Ciudad
+- **Descripción:** Moderno studio con diseño industrial en el epicentro comercial de Lechería. Ideal para nómadas digitales y viajeros de negocios. Equipado con workstation y balcón panorámico.
+- **Precio:** $110 / noche
+- **Capacidad:** 2 huéspedes | 1 Dormitorio | 1 Cama | 1 Baño
+- **Edificación:** Edificio de 15 pisos | Piso 10 | Año 2020
+- **Comodidades:** WiFi Fibra Óptica (200 Mbps), A/A Central, Gym en el edificio, Coworking space, Seguridad 24/7.
+- **Entorno:** A pasos del C.C. Plaza Mayor y los mejores bancos y oficinas de la ciudad.
+
+**Paso 3: Ubicación**
+- **Dirección:** Calle Arismendi, Torre Empresarial Skyline, Lechería.
+- **Referencia:** Detrás del Banco de Venezuela.
+
+**Paso 4: Pagos**
+- **Zelle:** pagos@skylinestudio.com
+- **Pago Móvil:** 0412-9876543 | Banco Banesco | V-20333444

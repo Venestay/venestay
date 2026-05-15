@@ -32,6 +32,8 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import Chat from '@/components/Chat';
 import FloatingChat from '@/components/FloatingChat';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface MyTripsProps {
   isOpen: boolean;
@@ -84,6 +86,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const [activeChatBooking, setActiveChatBooking] = useState<Booking | null>(
     null
   );
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isOpen || !user) {
@@ -153,7 +156,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
       setPaymentRef('');
     } catch (error) {
       console.error('Error updating payment info:', error);
-      alert('Hubo un error al subir el comprobante. Inténtalo de nuevo.');
+      toast.error('Hubo un error al subir el comprobante. Inténtalo de nuevo.');
     } finally {
       setSubmitting(false);
     }
@@ -390,10 +393,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                     </button>
                                     <button
                                       onClick={() =>
-                                        window.open(
-                                          `/checkout/${booking.id}`,
-                                          '_blank'
-                                        )
+                                        navigate(`/checkout/${booking.id}`)
                                       }
                                       className="text-brand-500 text-[10px] font-black tracking-widest uppercase hover:underline"
                                     >
@@ -413,10 +413,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                   </motion.button>
                                   <button
                                     onClick={() =>
-                                      window.open(
-                                        `/checkout/${booking.id}`,
-                                        '_blank'
-                                      )
+                                      navigate(`/checkout/${booking.id}`)
                                     }
                                     className="text-brand-navy w-full rounded-2xl border-2 border-gray-100 bg-white py-4 text-[10px] font-black tracking-widest uppercase transition-all hover:bg-gray-50"
                                   >
