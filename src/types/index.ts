@@ -6,7 +6,8 @@ export type PaymentMethodType =
   | 'Zelle'
   | 'Binance'
   | 'PagoMovil'
-  | 'Transferencia';
+  | 'Transferencia'
+  | 'Otro';
 
 export interface PaymentMethod {
   id: string;
@@ -21,6 +22,8 @@ export interface PaymentMethod {
     idNumber?: string;
     phoneNumber?: string;
     binanceId?: string;
+    otherName?: string;
+    otherDetails?: string;
   };
 }
 
