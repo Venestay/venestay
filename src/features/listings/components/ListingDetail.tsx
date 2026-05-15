@@ -14,6 +14,7 @@ import {
   UserProfile,
 } from '@/types';
 import CalendarComponent from '@/features/bookings/components/Calendar';
+import Navbar from '@/components/ui/Navbar';
 import { getLocalInsights } from '@/services/gemini-service';
 import ExchangeCalculator from '@/features/bookings/components/checkout/ExchangeCalculator';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
@@ -101,6 +102,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
   );
   const [startDate, setStartDate] = useState<Date | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [guests, setGuests] = useState(2);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -304,6 +306,16 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
     }
   };
 
+  const handleSearchSubmit = () => {
+    navigate('/', { 
+      state: { 
+        searchQuery, 
+        startDate: startDate?.toISOString(), 
+        endDate: endDate?.toISOString() 
+      } 
+    });
+  };
+
   return (
     <div className="animate-fade-in relative min-h-screen bg-white pb-32">
 
@@ -338,18 +350,33 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
       ) : (
         <>
 
-      <div className="mx-auto flex max-w-7xl flex-col pt-4">
-        {/* Navigation / Back Button (Desktop) - Now Sticky */}
-        <div className="sticky top-0 z-[60] -mx-4 mb-6 hidden bg-white/80 px-4 py-4 backdrop-blur-md sm:-mx-6 sm:px-6 lg:block lg:-mx-8 lg:px-8">
-          <button
-            onClick={handleClose}
-            className="group hover:bg-brand-navy text-brand-navy flex items-center space-x-3 rounded-2xl border border-gray-100 bg-white p-3 px-5 shadow-lg transition-all duration-300 hover:text-white"
-          >
-            <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-            <span className="text-xs font-black tracking-widest uppercase">
-              Regresar
-            </span>
-          </button>
+      <div className="mx-auto flex max-w-7xl flex-col pt-0 sm:pt-4">
+        {/* Navigation / Navbar (Desktop & Mobile) */}
+        <div className="-mx-4 mb-6 bg-white sm:-mx-6 lg:-mx-8">
+          <Navbar
+            activeCity={currentListing.city || 'All'}
+            setActiveCity={(city) => {
+              if (city === 'All') navigate('/');
+              // If we want to filter by city on home, we can pass it in state
+            }}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            startDate={startDate}
+            endDate={endDate}
+            setDates={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+              onDatesChange?.(start, end);
+            }}
+            onOpenAdmin={() => navigate('/dashboard')}
+            onOpenAuth={(view) => {
+              if (onOpenAuth) onOpenAuth(view);
+              else navigate('/'); // Fallback if no modal handler
+            }}
+            hideFilters={true}
+            onSearchSubmit={handleSearchSubmit}
+            onLogoClick={() => navigate('/')}
+          />
         </div>
 
         <AnimatePresence>

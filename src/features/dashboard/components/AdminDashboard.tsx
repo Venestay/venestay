@@ -379,14 +379,16 @@ const AdminDashboard: React.FC = () => {
           isHost={isHost}
         />
 
-        <div className="px-6 pt-6">
-          <StatsCards 
-            bookings={bookings} 
-            listings={listings} 
-            isVerified={profileData?.isVerified || false} 
-            tier={currentTier}
-          />
-        </div>
+        {activeTab === 'bookings' && (
+          <div className="px-6 pt-6">
+            <StatsCards 
+              bookings={bookings} 
+              listings={listings} 
+              isVerified={profileData?.isVerified || false} 
+              tier={currentTier}
+            />
+          </div>
+        )}
 
         {/* Toolbar */}
         <div className="flex flex-col gap-4 border-b border-gray-100 bg-gray-50/50 p-6 lg:flex-row">
