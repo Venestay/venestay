@@ -1,22 +1,31 @@
 import { useState, useCallback } from 'react';
 import { z } from 'zod';
-import { listingSchema } from '../types/dashboard.schema';
+import { listingSchema, ListingSchema } from '../types/dashboard.schema';
 
-export type FormErrors = Record<string, string>;
+export type FormErrors = Partial<Record<keyof ListingSchema, string>>;
+
+export type FieldValidation<T> = {
+  isValid: boolean;
+  errors: Partial<Record<keyof T, string>>;
+};
+
+export type FormStepState =
+  | { step: 1; data: Partial<Pick<ListingSchema, 'title' | 'description' | 'pricePerNight' | 'city' | 'maxGuests' | 'bedrooms' | 'beds' | 'baths' | 'buildingFloors' | 'propertyFloor' | 'constructionYear'>> }
+  | { step: 2; data: Partial<Pick<ListingSchema, 'images' | 'environmentPhotos'>> }
+  | { step: 3; data: Partial<Pick<ListingSchema, 'latitude' | 'longitude' | 'manualAddress'>> }
+  | { step: 4; data: Partial<Pick<ListingSchema, 'paymentMethods'>> };
 
 export const useListingValidation = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const validateField = useCallback((field: keyof typeof listingSchema.shape, value: unknown) => {
+  const validateField = useCallback(<K extends keyof ListingSchema>(field: K, value: unknown) => {
     try {
       const fieldSchema = listingSchema.shape[field];
-      
       if (!fieldSchema) return;
 
       fieldSchema.parse(value);
       
-      // Si pasa la validación, eliminamos el error
       setErrors((prev) => {
         const next = { ...prev };
         delete next[field];
@@ -36,36 +45,18 @@ export const useListingValidation = () => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
 
-  const validateStep = useCallback((step: number, data: Record<string, unknown>) => {
-    const stepFields: Record<number, string[]> = {
-      1: [
-        'title', 
-        'description', 
-        'pricePerNight', 
-        'city', 
-        'maxGuests', 
-        'bedrooms', 
-        'beds', 
-        'baths', 
-        'buildingFloors', 
-        'propertyFloor', 
-        'constructionYear'
-      ],
-      2: ['images'],
-      3: ['latitude', 'longitude', 'manualAddress'],
-      4: ['paymentMethods'],
-    };
-
-    const fieldsToValidate = stepFields[step] || [];
+  const validateStep = useCallback((stepState: FormStepState): boolean => {
+    const { step, data } = stepState;
     const newErrors: FormErrors = {};
     let isValid = true;
+    
+    const fieldsToValidate = Object.keys(data) as Array<keyof typeof data>;
 
     fieldsToValidate.forEach((field) => {
       try {
         const fieldSchema = listingSchema.shape[field as keyof typeof listingSchema.shape];
         if (fieldSchema) {
           fieldSchema.parse(data[field]);
-          // Si pasa la validación individual, lo quitamos de los nuevos errores
           delete newErrors[field];
         }
       } catch (error) {
@@ -76,7 +67,6 @@ export const useListingValidation = () => {
       }
     });
 
-    // Validaciones refinadas
     if (step === 1) {
       const propertyFloor = Number(data.propertyFloor || 0);
       const buildingFloors = Number(data.buildingFloors || 0);
@@ -87,8 +77,9 @@ export const useListingValidation = () => {
     }
 
     if (step === 2) {
-      const hasImages = (data.images as string[])?.length > 0 || Object.keys(data.environmentPhotos || {}).length > 0;
-      if (!hasImages) {
+      const imagesLength = data.images?.length || 0;
+      const envPhotosLength = Object.keys(data.environmentPhotos || {}).length;
+      if (imagesLength === 0 && envPhotosLength === 0) {
         newErrors['images'] = "Debes subir al menos una imagen a la galería";
         isValid = false;
       }
@@ -110,42 +101,21 @@ export const useListingValidation = () => {
 
     setErrors((prev) => {
       const next = { ...prev };
-      // Limpiamos los errores de los campos que estamos validando en este paso
       fieldsToValidate.forEach(f => delete next[f]);
-      // Añadimos los nuevos errores encontrados
       return { ...next, ...newErrors };
     });
     
-    // Marcamos todos los campos del paso como tocados para mostrar errores
     const newTouched = { ...touched };
-    fieldsToValidate.forEach(f => newTouched[f] = true);
+    fieldsToValidate.forEach(f => newTouched[f as string] = true);
     setTouched(newTouched);
 
     return isValid;
   }, [touched]);
 
-  const isStepValid = useCallback((step: number, data: Record<string, unknown>) => {
-    const stepFields: Record<number, string[]> = {
-      1: [
-        'title', 
-        'description', 
-        'pricePerNight', 
-        'city', 
-        'maxGuests', 
-        'bedrooms', 
-        'beds', 
-        'baths', 
-        'buildingFloors', 
-        'propertyFloor', 
-        'constructionYear'
-      ],
-      2: ['images'],
-      3: ['latitude', 'longitude', 'manualAddress'],
-      4: ['paymentMethods'],
-    };
-
-    const fieldsToValidate = stepFields[step] || [];
+  const isStepValid = useCallback((stepState: FormStepState): boolean => {
+    const { step, data } = stepState;
     let isValid = true;
+    const fieldsToValidate = Object.keys(data) as Array<keyof typeof data>;
 
     fieldsToValidate.forEach((field) => {
       try {
@@ -161,28 +131,21 @@ export const useListingValidation = () => {
     if (step === 1) {
       const propertyFloor = Number(data.propertyFloor || 0);
       const buildingFloors = Number(data.buildingFloors || 0);
-      if (propertyFloor > buildingFloors) {
-        isValid = false;
-      }
+      if (propertyFloor > buildingFloors) isValid = false;
     }
 
     if (step === 2) {
-      const hasImages = (data.images as string[])?.length > 0 || Object.keys(data.environmentPhotos || {}).length > 0;
-      if (!hasImages) {
-        isValid = false;
-      }
+      const imagesLength = data.images?.length || 0;
+      const envPhotosLength = Object.keys(data.environmentPhotos || {}).length;
+      if (imagesLength === 0 && envPhotosLength === 0) isValid = false;
     }
 
     if (step === 3) {
-      if (!data.latitude || !data.longitude) {
-        isValid = false;
-      }
+      if (!data.latitude || !data.longitude) isValid = false;
     }
 
     if (step === 4) {
-      if (!data.paymentMethods || data.paymentMethods.length === 0) {
-        isValid = false;
-      }
+      if (!data.paymentMethods || data.paymentMethods.length === 0) isValid = false;
     }
 
     return isValid;

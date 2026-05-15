@@ -104,6 +104,19 @@ const Home: React.FC = () => {
     return () => unsubscribe();
   }, [location.search]);
 
+  // Sync search state from location.state (e.g. when searching from ListingDetail)
+  useEffect(() => {
+    if (location.state) {
+      const state = location.state as any;
+      if (state.searchQuery !== undefined) setSearchQuery(state.searchQuery);
+      if (state.startDate) setStartDate(new Date(state.startDate));
+      if (state.endDate) setEndDate(new Date(state.endDate));
+      
+      // Clear state to avoid infinite loop or re-applying stale state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   const handleListingClick = (listing: Listing) => {
     navigate(`/listing/${listing.id}`);
   };

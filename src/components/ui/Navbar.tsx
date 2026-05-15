@@ -38,6 +38,9 @@ interface NavbarProps {
   setDates: (start: Date | null, end: Date | null) => void;
   onOpenAdmin?: () => void;
   onOpenAuth: (view?: 'login' | 'register') => void;
+  hideFilters?: boolean;
+  onSearchSubmit?: () => void;
+  onLogoClick?: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -50,6 +53,9 @@ const Navbar: React.FC<NavbarProps> = ({
   setDates,
   onOpenAdmin,
   onOpenAuth,
+  hideFilters = false,
+  onSearchSubmit,
+  onLogoClick,
 }) => {
   const navigate = useNavigate();
   const { user, signOut, isAdmin, profileData } = useAuth();
@@ -128,7 +134,11 @@ const Navbar: React.FC<NavbarProps> = ({
           {/* Logo */}
           <div
             className="group flex shrink-0 cursor-pointer items-center"
-            onClick={() => setActiveCity('All')}
+            onClick={() => {
+              setActiveCity('All');
+              if (onLogoClick) onLogoClick();
+              else navigate('/');
+            }}
           >
             <div className="relative mr-2 flex h-10 w-10 items-center justify-center transition-transform group-hover:scale-110">
               <svg
@@ -196,6 +206,11 @@ const Navbar: React.FC<NavbarProps> = ({
                   className="w-full bg-transparent text-base font-medium text-gray-900 placeholder:text-gray-500 focus:outline-none"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && onSearchSubmit) {
+                      onSearchSubmit();
+                    }
+                  }}
                 />
               </div>
               <div
@@ -236,7 +251,10 @@ const Navbar: React.FC<NavbarProps> = ({
               </div>
               <div
                 className="group flex cursor-pointer items-center py-1.5 pr-2 pl-4"
-                onClick={() => setIsCalendarOpen(false)}
+                onClick={() => {
+                  setIsCalendarOpen(false);
+                  if (onSearchSubmit) onSearchSubmit();
+                }}
               >
                 <div className="bg-brand-500 rounded-full p-2.5 text-white transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <Search className="h-5 w-5 text-white" />
@@ -402,6 +420,11 @@ const Navbar: React.FC<NavbarProps> = ({
               className="w-full bg-transparent text-base font-medium text-gray-900 placeholder:text-gray-500 focus:outline-none"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && onSearchSubmit) {
+                  onSearchSubmit();
+                }
+              }}
             />
           </div>
 
@@ -449,7 +472,8 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* City Filters */}
-        <div className="no-scrollbar mt-1 flex items-center space-x-4 overflow-x-auto border-t border-gray-50 py-4">
+        {!hideFilters && (
+          <div className="no-scrollbar mt-1 flex items-center space-x-4 overflow-x-auto border-t border-gray-50 py-4">
           {cities.map((city) => (
             <button
               key={city.name}
@@ -481,6 +505,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </button>
           ))}
         </div>
+        )}
       </div>
 
       <MyTrips isOpen={isMyTripsOpen} onClose={() => setIsMyTripsOpen(false)} />
