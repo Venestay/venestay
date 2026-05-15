@@ -1010,10 +1010,10 @@ const ListingForm: React.FC<ListingFormProps> = ({
               <button
                 type="button"
                 onClick={handleNextStep}
-                disabled={!isStepValid(step, editingListing as any)}
+                disabled={!isStepValid(step, editingListing as Listing)}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
-                  isStepValid(step, editingListing as any)
+                  isStepValid(step, editingListing as Listing)
                     ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                 )}

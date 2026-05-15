@@ -17,7 +17,7 @@ import { Listing } from '@/features/listings/types';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { ENVIRONMENTS } from '../constants/dashboard.constants';
-import { Search, ShieldCheck, RefreshCcw } from 'lucide-react';
+import { Search, ShieldCheck, RefreshCcw, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -68,6 +68,7 @@ const AdminDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [activeChatBooking, setActiveChatBooking] = useState<Booking | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   
   // v2.2 Centralized Financial Intelligence
   const confirmedCount = bookings.filter(b => b.status === 'CONFIRMED').length;
@@ -316,7 +317,7 @@ const AdminDashboard: React.FC = () => {
         if (!data.isPublishedFromDashboard) {
           try {
             // Asegurar que el documento cumple con isValidListing de firestore.rules
-            const updatePayload: any = {
+            const updatePayload: Record<string, unknown> = {
               isPublishedFromDashboard: true,
               updatedAt: new Date().toISOString()
             };
@@ -351,13 +352,15 @@ const AdminDashboard: React.FC = () => {
   };
 
   const filteredBookings = useMemo(() => {
-    return bookings.filter((b) => {
+    const base = bookings.filter((b) => {
       if (!isAdmin && b.ownerId !== user?.uid) return false;
       const matchesFilter = filter === 'ALL' || b.status === filter;
       const matchesSearch = b.listingTitle.toLowerCase().includes(searchTerm.toLowerCase()) || b.id.includes(searchTerm);
       return matchesFilter && matchesSearch;
     });
-  }, [bookings, isAdmin, user?.uid, filter, searchTerm]);
+    
+    return showHistory ? base : base.slice(0, 10);
+  }, [bookings, isAdmin, user?.uid, filter, searchTerm, showHistory]);
 
   const filteredListings = useMemo(() => {
     return listings.filter((l) => {
@@ -412,6 +415,29 @@ const AdminDashboard: React.FC = () => {
                   {f === 'ALL' ? 'Todos' : f === 'AWAITING_VERIFICATION' ? 'Por Verificar' : f === 'CONFIRMED' ? 'Confirmados' : 'Pendientes'}
                 </button>
               ))}
+              <div className="ml-auto flex items-center border-l border-gray-200 pl-4">
+                <button
+                  onClick={() => setShowHistory(!showHistory)}
+                  className={cn(
+                    'flex items-center gap-2 rounded-xl px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all',
+                    showHistory 
+                      ? 'bg-amber-50 text-amber-600 border border-amber-100' 
+                      : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                  )}
+                >
+                  {showHistory ? (
+                    <>
+                      <Clock className="h-3.5 w-3.5" />
+                      Ocultar Histórico
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="h-3.5 w-3.5" />
+                      Ver Histórico ({bookings.length})
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )}
         </div>
