@@ -27,6 +27,8 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { ImageModal } from '@/components/ui/ImageModal';
 
 interface ChatProps {
   bookingId: string;
@@ -47,6 +49,7 @@ const Chat: React.FC<ChatProps> = ({
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -191,7 +194,7 @@ const Chat: React.FC<ChatProps> = ({
       await handleSendMessage(undefined, 'image', url);
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Error al subir el comprobante.');
+      toast.error('Error al subir el comprobante.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -273,7 +276,10 @@ const Chat: React.FC<ChatProps> = ({
                         src={(msg as { imageUrl?: string }).imageUrl}
                         alt="Comprobante"
                         className="max-w-full cursor-pointer rounded-lg transition-opacity hover:opacity-90"
-                        onClick={() => window.open((msg as { imageUrl?: string }).imageUrl, '_blank')}
+                        onClick={() => {
+                          const url = (msg as { imageUrl?: string }).imageUrl;
+                          if (url) setViewingImage(url);
+                        }}
                       />
                       <p className="text-[10px] font-black tracking-widest uppercase opacity-60">
                         Comprobante de Pago
@@ -393,6 +399,13 @@ const Chat: React.FC<ChatProps> = ({
           </button>
         </div>
       </form>
+
+      <ImageModal
+        isOpen={!!viewingImage}
+        onClose={() => setViewingImage(null)}
+        imageUrl={viewingImage || ''}
+        altText="Comprobante de Pago"
+      />
     </div>
   );
 };

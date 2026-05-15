@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ChevronDown,
+  PlusCircle,
 } from 'lucide-react';
 import { ENVIRONMENTS } from '../constants/dashboard.constants';
 import { GoogleMap, Marker, StandaloneSearchBox } from '@react-google-maps/api';
@@ -49,6 +50,7 @@ const PAYMENT_OPTIONS = [
   { type: 'Binance', label: 'BINANCE PAY', icon: Sparkles, color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
   { type: 'PagoMovil', label: 'PAGO MÓVIL', icon: Smartphone, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
   { type: 'Transferencia', label: 'TRANSFERENCIA', icon: Landmark, color: 'text-brand-500', bgColor: 'bg-brand-50' },
+  { type: 'Otro', label: 'OTRO', icon: PlusCircle, color: 'text-gray-500', bgColor: 'bg-gray-100' },
 ] as const;
 
 const ListingForm: React.FC<ListingFormProps> = ({
@@ -78,7 +80,25 @@ const ListingForm: React.FC<ListingFormProps> = ({
   const [isPublished, setIsPublished] = useState(false);
   const navigate = useNavigate();
 
+  const handlePaymentTypeSelect = (type: PaymentMethodType) => {
+    if (activePaymentType === type) {
+      setActivePaymentType(null);
+      setTempPaymentData({});
+      return;
+    }
+
+    const existingMethod = editingListing.paymentMethods?.find(m => m.type === type);
+    if (existingMethod) {
+      setTempPaymentData({ ...existingMethod.data });
+    } else {
+      setTempPaymentData({});
+    }
+    setActivePaymentType(type);
+  };
+
   useEffect(() => {
+    const currentCount = parseInt(document.body.dataset.modalCount || '0', 10);
+    document.body.dataset.modalCount = String(currentCount + 1);
     document.body.style.overflow = 'hidden';
 
     // Cargar borrador si existe y estamos en modo "nueva propiedad"
@@ -98,7 +118,12 @@ const ListingForm: React.FC<ListingFormProps> = ({
     }
 
     return () => {
-      document.body.style.overflow = '';
+      const newCount = parseInt(document.body.dataset.modalCount || '1', 10) - 1;
+      document.body.dataset.modalCount = String(newCount);
+      if (newCount <= 0) {
+        document.body.style.overflow = '';
+        document.body.removeAttribute('data-modal-count');
+      }
     };
   }, []);
 
@@ -207,6 +232,11 @@ const ListingForm: React.FC<ListingFormProps> = ({
   };
 
   const validatePaymentInput = (): string | null => {
+    if (activePaymentType === 'Otro') {
+      if (!tempPaymentData.otherName || tempPaymentData.otherName.trim().length < 2) return "Debe ingresar el nombre del método de pago";
+      if (!tempPaymentData.email && !tempPaymentData.otherDetails) return "Debe proveer un correo o detalles de la cuenta";
+    }
+
     if (activePaymentType === 'Zelle') {
       if (!tempPaymentData.accountHolder || tempPaymentData.accountHolder.trim().length < 3) return "Debe ingresar el nombre del titular para Zelle";
       if (!tempPaymentData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tempPaymentData.email)) return "El correo de Zelle no es válido";
@@ -861,7 +891,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                         const isActive = activePaymentType === opt.type;
                         const isSaved = editingListing.paymentMethods?.some(m => m.type === opt.type);
                         return (
-                          <button key={opt.type} type="button" onClick={() => setActivePaymentType(isActive ? null : opt.type)} className={`group relative flex flex-col items-center gap-3 rounded-[2rem] border-2 p-5 transition-all ${isActive ? 'bg-brand-navy border-brand-navy text-white shadow-xl -translate-y-1' : 'bg-white border-transparent text-brand-navy hover:border-brand-500/20 shadow-sm'}`}>
+                          <button key={opt.type} type="button" onClick={() => handlePaymentTypeSelect(opt.type)} className={`group relative flex flex-col items-center gap-3 rounded-[2rem] border-2 p-5 transition-all ${isActive ? 'bg-brand-navy border-brand-navy text-white shadow-xl -translate-y-1' : 'bg-white border-transparent text-brand-navy hover:border-brand-500/20 shadow-sm'}`}>
                             <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${isActive ? 'bg-white/10' : opt.bgColor}`}>
                               <opt.icon className={`h-6 w-6 ${isActive ? 'text-brand-500' : opt.color}`} />
                             </div>
@@ -927,6 +957,21 @@ const ListingForm: React.FC<ListingFormProps> = ({
                                   <input type="email" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="nombre@ejemplo.com" value={tempPaymentData.email || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, email: e.target.value })} />
                                 </div>
                               </>
+                            ) : activePaymentType === 'Otro' ? (
+                              <>
+                                <div className="space-y-2">
+                                  <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Nombre del Método (Ej: PayPal)</label>
+                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="Nombre de la billetera o banco" value={tempPaymentData.otherName || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, otherName: e.target.value })} />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Correo asociado</label>
+                                  <input type="email" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="Opcional" value={tempPaymentData.email || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, email: e.target.value })} />
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                  <label className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Detalles / Cuenta</label>
+                                  <input type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none" placeholder="Número de cuenta o detalles adicionales" value={tempPaymentData.otherDetails || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, otherDetails: e.target.value })} />
+                                </div>
+                              </>
                             ) : (
                               <>
                                 <div className="space-y-2">
@@ -941,7 +986,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                             )}
                           </div>
                           <button type="button" onClick={confirmPaymentMethod} className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy mt-4 flex w-full items-center justify-center gap-2 rounded-2xl py-5 text-[10px] font-black tracking-widest text-white uppercase shadow-xl transition-all">
-                            Confirmar {activePaymentType} <ChevronDown className="h-4 w-4" />
+                            {editingListing.paymentMethods?.some(m => m.type === activePaymentType) ? 'Actualizar' : 'Confirmar'} {activePaymentType} <ChevronDown className="h-4 w-4" />
                           </button>
                         </motion.div>
                       )}

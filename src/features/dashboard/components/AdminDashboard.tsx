@@ -39,6 +39,7 @@ import BookingList from './BookingList';
 import ListingList from './ListingList';
 import StatsCards from './StatsCards';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 // Rule: bundle-dynamic-imports
 const ListingForm = React.lazy(() => import('./ListingForm'));
@@ -76,6 +77,7 @@ const AdminDashboard: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
+  const [isSyncConfirmOpen, setIsSyncConfirmOpen] = useState(false);
 
   const location = useLocation();
   const initialListing = location.state?.initialListing;
@@ -301,6 +303,53 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleSyncListings = async () => {
+    const toastId = toast.loading('Sincronizando visibilidad...');
+    try {
+      const { getDocs, collection, updateDoc, doc } = await import('firebase/firestore');
+      const snapshot = await getDocs(collection(db, 'listings'));
+      let updated = 0;
+      let errors = 0;
+      
+      for (const lDoc of snapshot.docs) {
+        const data = lDoc.data();
+        if (!data.isPublishedFromDashboard) {
+          try {
+            // Asegurar que el documento cumple con isValidListing de firestore.rules
+            const updatePayload: any = {
+              isPublishedFromDashboard: true,
+              updatedAt: new Date().toISOString()
+            };
+
+            // Rellenar campos críticos si faltan (para pasar isValidListing)
+            if (!data.city) updatePayload.city = 'Caracas';
+            if (!data.images) updatePayload.images = [];
+            if (!data.maxGuests) updatePayload.maxGuests = 1;
+            if (!data.description) updatePayload.description = 'Propiedad importada';
+            if (!data.location) updatePayload.location = 'Ubicación no especificada';
+            if (!data.pricePerNight) updatePayload.pricePerNight = 0;
+            if (!data.hostId && user) updatePayload.hostId = user.uid;
+
+            await updateDoc(doc(db, 'listings', lDoc.id), updatePayload);
+            updated++;
+          } catch (e) {
+            console.error(`Error migrando ${lDoc.id}:`, e);
+            errors++;
+          }
+        }
+      }
+      
+      if (errors > 0) {
+        toast.error(`Sincronización parcial: ${updated} éxito, ${errors} fallos. Verifica tus permisos de Admin.`, { id: toastId });
+      } else {
+        toast.success(`Sincronización completada: ${updated} listados actualizados`, { id: toastId });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error crítico al acceder a la base de datos', { id: toastId });
+    }
+  };
+
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
       if (!isAdmin && b.ownerId !== user?.uid) return false;
@@ -391,55 +440,7 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     </div>
                     <button
-                      onClick={async () => {
-                        const confirm = window.confirm('¿Deseas migrar todos los listados para asegurar su visibilidad?');
-                        if (!confirm) return;
-                        
-                        const toastId = toast.loading('Sincronizando visibilidad...');
-                        try {
-                          const { getDocs, collection, updateDoc, doc } = await import('firebase/firestore');
-                          const snapshot = await getDocs(collection(db, 'listings'));
-                          let updated = 0;
-                          let errors = 0;
-                          
-                          for (const lDoc of snapshot.docs) {
-                            const data = lDoc.data();
-                            if (!data.isPublishedFromDashboard) {
-                              try {
-                                // Asegurar que el documento cumple con isValidListing de firestore.rules
-                                const updatePayload: Partial<Listing> = {
-                                  isPublishedFromDashboard: true,
-                                  updatedAt: new Date().toISOString()
-                                };
-
-                                // Rellenar campos críticos si faltan (para pasar isValidListing)
-                                if (!data.city) updatePayload.city = 'Caracas';
-                                if (!data.images) updatePayload.images = [];
-                                if (!data.maxGuests) updatePayload.maxGuests = 1;
-                                if (!data.description) updatePayload.description = 'Propiedad importada';
-                                if (!data.location) updatePayload.location = 'Ubicación no especificada';
-                                if (!data.pricePerNight) updatePayload.pricePerNight = 0;
-                                if (!data.hostId && user) updatePayload.hostId = user.uid;
-
-                                await updateDoc(doc(db, 'listings', lDoc.id), updatePayload);
-                                updated++;
-                              } catch (e) {
-                                console.error(`Error migrando ${lDoc.id}:`, e);
-                                errors++;
-                              }
-                            }
-                          }
-                          
-                          if (errors > 0) {
-                            toast.error(`Sincronización parcial: ${updated} éxito, ${errors} fallos. Verifica tus permisos de Admin.`, { id: toastId });
-                          } else {
-                            toast.success(`Sincronización completada: ${updated} listados actualizados`, { id: toastId });
-                          }
-                        } catch (err) {
-                          console.error(err);
-                          toast.error('Error crítico al acceder a la base de datos', { id: toastId });
-                        }
-                      }}
+                      onClick={() => setIsSyncConfirmOpen(true)}
                       className="bg-brand-navy text-white whitespace-nowrap rounded-xl px-6 py-2 text-[10px] font-black tracking-widest uppercase shadow-md hover:bg-brand-500 hover:text-brand-navy transition-all"
                     >
                       Sincronizar Visibilidad
@@ -556,6 +557,14 @@ const AdminDashboard: React.FC = () => {
         onClose={() => setListingToDelete(null)}
         onConfirm={() => listingToDelete && handleDeleteListing(listingToDelete.id)}
         itemTitle={listingToDelete?.title || ''}
+      />
+
+      <ConfirmDialog
+        isOpen={isSyncConfirmOpen}
+        onClose={() => setIsSyncConfirmOpen(false)}
+        onConfirm={handleSyncListings}
+        title="Sincronizar Visibilidad"
+        message="¿Deseas migrar todos los listados para asegurar su visibilidad en la nueva plataforma? Esto actualizará la base de datos."
       />
     </div>
   );
