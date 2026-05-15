@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   CheckCircle2,
@@ -14,6 +14,8 @@ import { format, parseISO, isWithinInterval, startOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Booking, BookingStatus } from '@/types';
 import { calculateCommission, getCommissionTier, CommissionTier } from '@/lib/commission';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { PromptDialog } from '@/components/ui/PromptDialog';
 
 interface BookingListProps {
   bookings: Booking[];
@@ -34,6 +36,9 @@ const BookingList: React.FC<BookingListProps> = ({
   setActiveChatBooking,
   tier,
 }) => {
+  const [bookingToReject, setBookingToReject] = useState<Booking | null>(null);
+  const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
+
   if (bookings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -226,17 +231,7 @@ const BookingList: React.FC<BookingListProps> = ({
                     Validar Pago
                   </button>
                   <button
-                    onClick={() => {
-                      const reason = window.prompt(
-                        'Indica la razón del rechazo:'
-                      );
-                      if (reason)
-                        handleUpdateStatus(
-                          booking,
-                          'REJECTED',
-                          reason
-                        );
-                    }}
+                    onClick={() => setBookingToReject(booking)}
                     className="transform rounded-2xl border-2 border-red-100 px-6 py-3 text-[10px] font-black tracking-widest text-red-500 uppercase transition-all hover:bg-red-50 active:scale-95"
                   >
                     Rechazar
@@ -323,19 +318,7 @@ const BookingList: React.FC<BookingListProps> = ({
                 </span>
                 <div className="mt-2">
                   <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          '¿Deseas cancelar esta reserva por falta de pago?'
-                        )
-                      ) {
-                        handleUpdateStatus(
-                          booking,
-                          'CANCELLED',
-                          'Cancelada por administrador'
-                        );
-                      }
-                    }}
+                    onClick={() => setBookingToCancel(booking)}
                     className="text-[8px] font-black tracking-tighter text-amber-700 uppercase underline"
                   >
                     Forzar Cancelación
@@ -346,6 +329,35 @@ const BookingList: React.FC<BookingListProps> = ({
           </div>
         </motion.div>
       )})}
+      
+      <PromptDialog
+        isOpen={!!bookingToReject}
+        onClose={() => setBookingToReject(null)}
+        onConfirm={(reason) => {
+          if (bookingToReject) {
+            handleUpdateStatus(bookingToReject, 'REJECTED', reason);
+          }
+        }}
+        title="Rechazar Reserva"
+        message="Indica la razón del rechazo para que el huésped esté informado:"
+        placeholder="Razón del rechazo..."
+        confirmText="Rechazar Pago"
+        required
+      />
+
+      <ConfirmDialog
+        isOpen={!!bookingToCancel}
+        onClose={() => setBookingToCancel(null)}
+        onConfirm={() => {
+          if (bookingToCancel) {
+            handleUpdateStatus(bookingToCancel, 'CANCELLED', 'Cancelada por administrador');
+          }
+        }}
+        title="Forzar Cancelación"
+        message="¿Deseas cancelar esta reserva por falta de pago? Esta acción no se puede deshacer."
+        confirmText="Sí, Cancelar"
+        isDestructive
+      />
     </div>
   );
 };
