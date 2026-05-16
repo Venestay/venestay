@@ -16,7 +16,7 @@ interface StatsCardsProps {
   tier: number;
 }
 
-const StatsCards: React.FC<StatsCardsProps> = ({ bookings, listings, tier }) => {
+const StatsCards: React.FC<StatsCardsProps> = ({ bookings, listings, tier, isVerified }) => {
   const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED');
   const pendingBookings = bookings.filter(b => b.status === 'AWAITING_VERIFICATION');
   
@@ -57,9 +57,13 @@ const StatsCards: React.FC<StatsCardsProps> = ({ bookings, listings, tier }) => 
       label: 'Comisión Actual',
       value: `${currentTier}%`,
       icon: Award,
-      color: isMaxTier ? 'text-brand-500' : 'text-purple-500',
-      bgColor: isMaxTier ? 'bg-brand-50' : 'bg-purple-50',
-      subtext: isMaxTier ? 'Nivel Superhost Max Alcanzado' : `Faltan ${10 - confirmedBookings.length} reservas para 8%`,
+      color: isMaxTier ? 'text-brand-500' : (isVerified ? 'text-purple-500' : 'text-red-500'),
+      bgColor: isMaxTier ? 'bg-brand-50' : (isVerified ? 'bg-purple-50' : 'bg-red-50'),
+      subtext: isMaxTier 
+        ? 'Nivel Superhost Max Alcanzado' 
+        : isVerified 
+          ? `Faltan ${10 - confirmedBookings.length} reservas para 8%`
+          : 'Completa tu Pasaporte para bajar al 10%',
       isGlow: isMaxTier
     }
   ];

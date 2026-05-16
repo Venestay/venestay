@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { Listing } from '@/types';
-import { useListingValidation } from '../../hooks/useListingValidation';
+import { useListingValidation } from '../hooks/useListingValidation';
 
 interface ListingFormContextValue {
   editingListing: Listing;

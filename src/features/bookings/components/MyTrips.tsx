@@ -40,14 +40,15 @@ interface MyTripsProps {
   onClose: () => void;
 }
 
-const CountdownTimer: React.FC<{ createdAt: { toDate?: () => Date } | string | Date }> = ({ createdAt }) => {
+const CountdownTimer: React.FC<{ createdAt: { toDate?: () => Date; seconds?: number } | string | Date | any }> = ({ createdAt }) => {
   const [timeLeft, setTimeLeft] = useState<string>('');
 
   useEffect(() => {
     const calculateTime = () => {
-      const createdDate = createdAt?.toDate
-        ? createdAt.toDate()
-        : new Date(createdAt);
+      const ca = createdAt as any;
+      const createdDate = ca?.toDate
+        ? ca.toDate()
+        : new Date(createdAt as string | Date);
       const expiryDate = new Date(createdDate.getTime() + 60 * 60 * 1000); // 1 hour later
       const now = new Date();
       const diff = expiryDate.getTime() - now.getTime();
@@ -112,8 +113,8 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
         // Sort in memory (safe for both local and server timestamps)
         const sortedData = data.sort((a, b) => {
-          const timeA = (a as { createdAt?: { seconds: number } }).createdAt?.seconds || Date.now() / 1000;
-          const timeB = (b as { createdAt?: { seconds: number } }).createdAt?.seconds || Date.now() / 1000;
+          const timeA = (a as unknown as { createdAt?: { seconds: number } }).createdAt?.seconds || Date.now() / 1000;
+          const timeB = (b as unknown as { createdAt?: { seconds: number } }).createdAt?.seconds || Date.now() / 1000;
           return timeB - timeA;
         });
 

@@ -12,6 +12,7 @@ export interface CommissionBreakdown {
   ucpDeposit: number; // 20% paid to platform
   ucpBalance: number; // 80% paid to host at check-in
   settlementAmount: number; // ucpDeposit - platformFee (What VeneStay owes the host)
+  commissionTier: CommissionTier; // Persistent record of the rate applied
 }
 
 /**
@@ -36,6 +37,7 @@ export const calculateCommission = (
     ucpDeposit,
     ucpBalance,
     settlementAmount,
+    commissionTier: tier,
   };
 };
 
@@ -44,10 +46,10 @@ export const calculateCommission = (
  * Rule: New = 12%, Verified = 10%, Superhost (>10 bookings) = 8%
  */
 export const getCommissionTier = (
-  isVerified: boolean,
+  isIdentityVerified: boolean,
   completedBookings: number
 ): CommissionTier => {
   if (completedBookings >= 10) return 8;
-  if (isVerified) return 10;
+  if (isIdentityVerified) return 10;
   return 12;
 };

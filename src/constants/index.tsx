@@ -90,7 +90,7 @@ export const LISTINGS: Listing[] = [
     title: 'Apartamento Moderno en los Canales de Lechería',
     description:
       'Exclusivo apartamento con muelle privado en el Complejo El Morro. Ideal para amantes de la navegación y la vida nocturna. Estilo minimalista con acabados de primera.',
-    city: 'Lecheria',
+    city: 'Lechería',
     location: 'Complejo Turístico El Morro, Lechería',
     pricePerNight: 150,
     rating: 4.95,
@@ -148,7 +148,7 @@ export const LISTINGS: Listing[] = [
     title: 'TEST: Villa Náutica Premium',
     description:
       'ESTA ES UNA PROPIEDAD DE PRUEBA. Magnífica villa con canales privados, muelle y piscina. Perfecta para probar el sistema de reservas y pagos.',
-    city: 'Lecheria',
+    city: 'Lechería',
     location: 'Cerro El Morro, Lechería',
     pricePerNight: 200,
     rating: 5.0,

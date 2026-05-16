@@ -106,8 +106,14 @@ const Home: React.FC = () => {
 
   // Sync search state from location.state (e.g. when searching from ListingDetail)
   useEffect(() => {
+    interface LocationState {
+      searchQuery?: string;
+      startDate?: string | Date;
+      endDate?: string | Date;
+    }
+
     if (location.state) {
-      const state = location.state as any;
+      const state = location.state as LocationState;
       if (state.searchQuery !== undefined) setSearchQuery(state.searchQuery);
       if (state.startDate) setStartDate(new Date(state.startDate));
       if (state.endDate) setEndDate(new Date(state.endDate));

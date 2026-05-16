@@ -27,3 +27,5 @@ dist-ssr
 
 # Firebase Credentials
 src/lib/firebase-applet-config.json
+serviceAccountKey.json
+gen-lang-client-0727178605-firebase-adminsdk-fbsvc-e992033e91.json

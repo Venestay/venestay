@@ -9,7 +9,7 @@ interface VerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
-  onVerified: () => void;
+  onVerified: (data: Partial<import('../types').UserProfile>) => void;
 }
 
 const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, userId, onVerified }) => {
@@ -36,9 +36,12 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
       setStep('success');
       toast.success('Documento enviado correctamente');
       setTimeout(() => {
-        onVerified();
+        onVerified({ 
+          kycStatus: 'PENDING_REVIEW',
+          isIdentityVerified: false // Still false until admin reviews
+        });
         onClose();
-      }, 2000);
+      }, 2500);
     } catch (error) {
       console.error('Error uploading document:', error);
       toast.error('No se pudo subir el documento');

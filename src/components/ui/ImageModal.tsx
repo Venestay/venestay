@@ -91,7 +91,7 @@ export function ImageModal({ isOpen, onClose, imageUrl, altText = 'Imagen' }: Im
                 src={imageUrl}
                 alt={altText}
                 className="max-w-full max-h-full object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
-                style={{ WebkitUserDrag: 'none' }}
+                style={{ WebkitUserDrag: 'none' } as any}
               />
             </div>
           </motion.div>

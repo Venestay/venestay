@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import {
   Listing,
+  Booking,
   BookingDetails,
   BookingStatus,
   PaymentMethod,
@@ -55,6 +56,7 @@ import AuthModal from '@/features/auth/components/AuthModal';
 import Calendar from '@/features/bookings/components/Calendar';
 import PaymentBanner from '@/features/bookings/components/checkout/PaymentBanner';
 import { checkProfileCompletion } from '@/lib/user-utils';
+import { calculateTrustScore } from '@/services/user-service';
 import { useLocation } from 'react-router-dom';
 
 const CheckoutPage: React.FC = () => {
@@ -91,6 +93,15 @@ const CheckoutPage: React.FC = () => {
     null
   );
   const [rates, setRates] = useState<ExchangeRates | null>(null);
+
+  const trustScore = useMemo(() => {
+    if (!profileData) return 0;
+    return calculateTrustScore(profileData);
+  }, [profileData]);
+
+  const isBlockedByTrust = useMemo(() => {
+    return trustScore < 40;
+  }, [trustScore]);
 
   useEffect(() => {
     const fetchDraftData = async () => {
@@ -160,9 +171,9 @@ const CheckoutPage: React.FC = () => {
             guests: parseInt(guests || '2'),
             totalAmount: total,
             financials, // Persist current financial law
-            status: 'PENDING_PAYMENT',
+            status: 'PENDING_PAYMENT' as BookingStatus,
             isDraft: true,
-          });
+          } as Booking);
 
           if (lData.paymentMethods && lData.paymentMethods.length > 0) {
             setSelectedMethod(lData.paymentMethods[0]);
@@ -184,7 +195,7 @@ const CheckoutPage: React.FC = () => {
         async (docSnap) => {
           if (docSnap.exists()) {
             const bookingData = docSnap.data();
-            setBooking({ id: docSnap.id, ...bookingData });
+            setBooking({ id: docSnap.id, ...bookingData } as Booking);
 
             if (!listing) {
               const listingSnap = await getDoc(
@@ -378,7 +389,7 @@ const CheckoutPage: React.FC = () => {
         guests: booking.guests,
         statusHistory: [
           {
-            status: 'PENDING_PAYMENT',
+            status: 'PENDING_PAYMENT' as BookingStatus,
             timestamp: new Date().toISOString(),
             actorId: user.uid,
             actorName: user.displayName || 'Huésped',
@@ -388,7 +399,7 @@ const CheckoutPage: React.FC = () => {
       };
 
       const docRef = await addDoc(collection(db, 'bookings'), bookingData);
-      setBooking({ id: docRef.id, ...bookingData, isDraft: false });
+      setBooking({ id: docRef.id, ...bookingData, isDraft: false } as Booking);
       navigate(`/checkout/${docRef.id}`, { replace: true });
       return docRef.id;
     } catch (err) {
@@ -467,17 +478,13 @@ const CheckoutPage: React.FC = () => {
       return;
     }
 
-    // 3. Check Profile completion
-    // TODO: Re-habilitar validación KYC una vez implementado el módulo de perfil
-    /*
-    if (profileData) {
-      const completion = checkProfileCompletion(profileData);
-      if (completion < 100) {
-        setError("Perfil incompleto. Para reservar debes subir una foto real, verificar tu teléfono y escribir una biografía de al menos 50 caracteres.");
-        return;
-      }
+    // 3. Check Trust Score Gatekeeper (VeneStay Passport)
+    if (isBlockedByTrust) {
+      setError(
+        `Tu nivel de confianza (${trustScore}%) es insuficiente para reservar. El mínimo requerido es 40%.`
+      );
+      return;
     }
-    */
 
     setIsSubmitting(true);
     setError(null);
@@ -815,6 +822,55 @@ const CheckoutPage: React.FC = () => {
                     <div className="flex items-center text-xs font-bold text-gray-400">
                       <MapPin className="mr-1 h-3 w-3" />
                       {listing.location}
+                    </div>
+
+                    {/* User Passport Check Section */}
+                    <div className={cn(
+                      "mt-4 flex items-center gap-4 rounded-3xl p-4 border transition-all",
+                      isBlockedByTrust 
+                        ? "bg-red-50 border-red-100" 
+                        : "bg-emerald-50 border-emerald-100"
+                    )}>
+                      <div className={cn(
+                        "h-10 w-10 flex items-center justify-center rounded-2xl shadow-sm",
+                        isBlockedByTrust ? "bg-red-500 text-white" : "bg-emerald-500 text-white"
+                      )}>
+                        <ShieldCheck className="h-5 w-5" />
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex items-center justify-between">
+                          <p className={cn(
+                            "text-[10px] font-black tracking-widest uppercase",
+                            isBlockedByTrust ? "text-red-600" : "text-emerald-600"
+                          )}>
+                            Pasaporte VeneStay
+                          </p>
+                          <span className={cn(
+                            "text-xs font-black",
+                            isBlockedByTrust ? "text-red-700" : "text-emerald-700"
+                          )}>
+                            {trustScore}%
+                          </span>
+                        </div>
+                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${trustScore}%` }}
+                            className={cn(
+                              "h-full rounded-full",
+                              isBlockedByTrust ? "bg-red-500" : "bg-emerald-500"
+                            )}
+                          />
+                        </div>
+                        {isBlockedByTrust && (
+                          <button 
+                            onClick={() => navigate('/mi-pasaporte')}
+                            className="mt-2 text-[9px] font-black text-red-600 underline decoration-2 underline-offset-2 hover:text-red-700 uppercase"
+                          >
+                            Completar Pasaporte para Reservar
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1436,7 +1492,7 @@ const CheckoutPage: React.FC = () => {
                   )}
                   <button
                     id="payment-submit-button-desktop"
-                    disabled={isSubmitting || !reference.trim() || !file}
+                    disabled={isSubmitting || !reference.trim() || !file || isBlockedByTrust}
                     onClick={handleSubmitPayment}
                     className="bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400 flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase shadow-2xl transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                   >
@@ -1518,7 +1574,7 @@ const CheckoutPage: React.FC = () => {
         <div className="pointer-events-none fixed right-0 bottom-16 left-0 z-[60] p-4 md:hidden">
           <button
             id="payment-submit-button-mobile"
-            disabled={isSubmitting || !reference.trim() || !file}
+            disabled={isSubmitting || !reference.trim() || !file || isBlockedByTrust}
             onClick={handleSubmitPayment}
             className="bg-brand-500 text-brand-navy shadow-brand-500/40 pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
           >

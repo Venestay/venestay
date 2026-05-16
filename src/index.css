@@ -50,6 +50,39 @@
       opacity: 1;
     }
   }
+
+  /* Sprint 3 — VFX Premium */
+  --animate-shimmer: shimmer 2s ease-in-out 1.2s 1 both;
+  --animate-passport-in: passport-section-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes shimmer {
+    from {
+      background-position: -200% center;
+    }
+    to {
+      background-position: 200% center;
+    }
+  }
+
+  @keyframes passport-section-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes trust-glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 10px 1px rgba(197, 160, 89, 0.35);
+    }
+    50% {
+      box-shadow: 0 0 22px 4px rgba(197, 160, 89, 0.55);
+    }
+  }
 }
 
 @layer base {
@@ -73,5 +106,22 @@
 
   .brand-gradient {
     @apply from-brand-navy via-brand-navy bg-gradient-to-tr to-[#1a2b4a];
+  }
+
+  /* Sprint 3: Secciones con entrada animada escalonada */
+  .passport-section {
+    animation: passport-section-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-fill-mode: both;
+  }
+  .passport-section--d1 { animation-delay: 100ms; }
+  .passport-section--d2 { animation-delay: 190ms; }
+  .passport-section--d3 { animation-delay: 280ms; }
+  .passport-section--d4 { animation-delay: 370ms; }
+  .passport-section--d5 { animation-delay: 460ms; }
+  .passport-section--d6 { animation-delay: 550ms; }
+
+  /* Sprint 3: Barra de Trust Score con glow pulsante */
+  .trust-bar-fill {
+    animation: trust-glow-pulse 3s ease-in-out 1.5s infinite;
   }
 }

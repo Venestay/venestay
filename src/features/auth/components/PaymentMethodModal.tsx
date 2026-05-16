@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, CreditCard, Globe, Sparkles, Landmark, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PaymentMethodType } from '@/types';
+import { PaymentMethod } from '@/features/auth/types';
 import { toast } from 'sonner';
 
 interface PaymentMethodModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (method: any) => void;
+  onAdd: (method: PaymentMethod) => void;
 }
 
 const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ isOpen, onClose, onAdd }) => {

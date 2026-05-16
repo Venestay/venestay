@@ -4,11 +4,13 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion } from 'motion/react';
 
+import { FieldValue } from 'firebase/firestore';
+
 interface ReviewCardProps {
   guestName: string;
   rating: number;
   comment: string;
-  createdAt: { toDate?: () => Date } | string | Date;
+  createdAt: { toDate?: () => Date } | string | Date | FieldValue;
   isVerified?: boolean;
 }
 

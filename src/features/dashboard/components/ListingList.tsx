@@ -6,7 +6,7 @@ interface ListingListProps {
   listings: Listing[];
   setEditingListing: (listing: Listing | null) => void;
   handleDeleteListing: (id: string) => Promise<void>;
-  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => Promise<void>;
+  handleImageUpload?: (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => Promise<void>;
   user: { uid?: string; displayName?: string; photoURL?: string } | null;
 }
 
