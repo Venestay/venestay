@@ -60,6 +60,34 @@ export const uploadListingImage = async (listingId: string, file: File): Promise
 };
 
 /**
+ * Uploads a user identity document (KYC).
+ * Path: kyc/{userId}/{timestamp}_{filename}
+ */
+export const uploadUserDocument = async (userId: string, file: File): Promise<string> => {
+  // 1. Compression only for images
+  let finalFile = file;
+  if (file.type.startsWith('image/')) {
+    finalFile = await compressImage(file);
+  }
+  
+  // 2. Create Reference
+  const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+  const storageRef = ref(storage, `kyc/${userId}/${fileName}`);
+  
+  // 3. Upload
+  const snapshot = await uploadBytes(storageRef, finalFile, {
+    contentType: file.type,
+    customMetadata: {
+      userId: userId,
+      type: 'kyc_document'
+    }
+  });
+  
+  // 4. Get URL
+  return getDownloadURL(snapshot.ref);
+};
+
+/**
  * Deletes an image from Firebase Storage using its download URL.
  * @param url The full download URL of the image.
  */
