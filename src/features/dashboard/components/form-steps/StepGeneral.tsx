@@ -261,9 +261,9 @@ const StepGeneral: React.FC = () => {
         <div className="space-y-4 border-t border-gray-200/60 pt-6 mt-2">
           <div className="grid grid-cols-3 gap-6">
             {[
-              { label: 'Pisos Edificio', key: 'buildingFloors' as const },
-              { label: 'Piso Propiedad', key: 'propertyFloor' as const },
-              { label: 'Año Const.', key: 'constructionYear' as const },
+              { label: 'Pisos Edificio', key: 'buildingFloors' as const, min: 1, max: 200 },
+              { label: 'Piso Propiedad', key: 'propertyFloor' as const, min: 0, max: 200 },
+              { label: 'Año Const.', key: 'constructionYear' as const, min: 1900, max: new Date().getFullYear() },
             ].map(item => (
               <div key={item.key} className="space-y-3">
                 <label htmlFor={`listing-${item.key}`} className={cn(
@@ -275,6 +275,8 @@ const StepGeneral: React.FC = () => {
                 <NumberStepper
                   id={`listing-${item.key}`}
                   value={Number(editingListing[item.key]) || 0}
+                  min={item.min}
+                  max={item.max}
                   hasError={!!((touched[item.key] && errors[item.key]) || (item.key === 'propertyFloor' && Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors)))}
                   onChange={(val) => {
                     setEditingListing(prev => prev ? { ...prev, [item.key]: val } : null);
