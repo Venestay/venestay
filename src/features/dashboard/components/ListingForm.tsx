@@ -40,7 +40,43 @@ const ListingFormContent: React.FC<{
   const { isStepValid, validateStep, errors } = validation;
   const navigate = useNavigate();
 
-  // Helper inside to use the context properly
+  // Extracts only the fields relevant to the current step for scoped validation
+  const getStepData = (currentStep: number) => {
+    switch (currentStep) {
+      case 1:
+        return {
+          title: editingListing.title,
+          description: editingListing.description,
+          pricePerNight: editingListing.pricePerNight,
+          city: editingListing.city,
+          maxGuests: editingListing.maxGuests,
+          bedrooms: editingListing.bedrooms,
+          beds: editingListing.beds,
+          baths: editingListing.baths,
+          buildingFloors: editingListing.buildingFloors,
+          propertyFloor: editingListing.propertyFloor,
+          constructionYear: editingListing.constructionYear,
+        };
+      case 2:
+        return {
+          images: editingListing.images,
+          environmentPhotos: editingListing.environmentPhotos,
+        };
+      case 3:
+        return {
+          latitude: editingListing.latitude,
+          longitude: editingListing.longitude,
+          manualAddress: editingListing.manualAddress,
+        };
+      case 4:
+        return {
+          paymentMethods: editingListing.paymentMethods,
+        };
+      default:
+        return {};
+    }
+  };
+
   const handleNextStep = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
@@ -48,7 +84,7 @@ const ListingFormContent: React.FC<{
     }
 
     if (step < 4) {
-      const stepState = { step: step as 1 | 2 | 3 | 4, data: editingListing };
+      const stepState = { step: step as 1 | 2 | 3 | 4, data: getStepData(step) };
       const isValid = validateStep(stepState);
       if (!isValid) {
         toast.error('Por favor completa la información requerida de este paso', {
@@ -176,10 +212,10 @@ const ListingFormContent: React.FC<{
               <button
                 type="button"
                 onClick={handleNextStep}
-                disabled={!isStepValid({ step: step as 1 | 2 | 3 | 4, data: editingListing })}
+                disabled={!isStepValid({ step: step as 1 | 2 | 3 | 4, data: getStepData(step) })}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
-                  isStepValid({ step: step as 1 | 2 | 3 | 4, data: editingListing })
+                  isStepValid({ step: step as 1 | 2 | 3 | 4, data: getStepData(step) })
                     ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                 )}
