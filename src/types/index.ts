@@ -2,30 +2,6 @@ export * from '@/features/auth/types';
 export * from '@/features/bookings/types';
 export * from '@/features/listings/types';
 
-export type PaymentMethodType =
-  | 'Zelle'
-  | 'Binance'
-  | 'PagoMovil'
-  | 'Transferencia'
-  | 'Otro';
-
-export interface PaymentMethod {
-  id: string;
-  type: PaymentMethodType;
-  label: string;
-  isVerified: boolean;
-  data: {
-    email?: string;
-    accountHolder: string;
-    bankName?: string;
-    accountNumber?: string;
-    idNumber?: string;
-    phoneNumber?: string;
-    binanceId?: string;
-    otherName?: string;
-    otherDetails?: string;
-  };
-}
 
 export interface LocalInsight {
   city: string;

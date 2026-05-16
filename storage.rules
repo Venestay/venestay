@@ -18,6 +18,21 @@ service firebase.storage {
              && request.resource.contentType.matches('image/.*');
     }
 
+    // Verifica si el usuario autenticado tiene rol de administrador en Firestore
+    function isAdmin() {
+      return isAuthenticated() && 
+             firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Verifica si el email del usuario está en la lista blanca de autorizados
+    function isAuthorizedEmail() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'anfitrionvenesta@venestay.com' || 
+        request.auth.token.email == 'admin@venestay.com'
+      );
+    }
+
     // =========================================================================
     // 1. DIRECTORIO DE PERFILES Y KYC
     // =========================================================================
@@ -30,8 +45,8 @@ service firebase.storage {
       allow create, update: if isAuthenticated() 
                            && request.auth.uid == userId 
                            && isValidImage();
-      // Solo el propietario puede eliminar sus imágenes
-      allow delete: if isAuthenticated() && request.auth.uid == userId;
+      // Solo administradores o correos autorizados pueden eliminar imágenes
+      allow delete: if isAdmin() || isAuthorizedEmail();
     }
 
     match /profiles/{userId}/{fileName} {
@@ -39,7 +54,25 @@ service firebase.storage {
       allow create, update: if isAuthenticated() 
                            && request.auth.uid == userId 
                            && isValidImage();
-      allow delete: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAdmin() || isAuthorizedEmail();
+    }
+
+    match /avatars/{userId}/{fileName} {
+      allow read: if true;
+      allow create, update: if isAuthenticated() 
+                           && request.auth.uid == userId 
+                           && isValidImage();
+      allow delete: if isAdmin() || isAuthorizedEmail();
+    }
+
+    match /kyc/{userId}/{fileName} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+      allow create, update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
     }
 
     // =========================================================================

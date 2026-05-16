@@ -35,7 +35,7 @@ export const useListingValidation = () => {
       if (error instanceof z.ZodError) {
         setErrors((prev) => ({
           ...prev,
-          [field]: error.errors?.[0]?.message || 'Valor inválido',
+          [field]: (error as any).errors?.[0]?.message || 'Valor inválido',
         }));
       }
     }
@@ -61,7 +61,7 @@ export const useListingValidation = () => {
         }
       } catch (error) {
         if (error instanceof z.ZodError) {
-          newErrors[field] = error.errors?.[0]?.message || 'Valor inválido';
+          newErrors[field as keyof ListingSchema] = (error as any).errors?.[0]?.message || 'Valor inválido';
           isValid = false;
         }
       }

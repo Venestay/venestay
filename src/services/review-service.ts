@@ -8,6 +8,7 @@ import {
   doc,
   updateDoc,
   Timestamp,
+  FieldValue,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -18,8 +19,8 @@ export interface ReviewSession {
   propertyId: string;
   status: 'PENDING' | 'SUBMITTED' | 'EXPIRED';
   ucpVerified: boolean;
-  expiresAt: Timestamp;
-  createdAt: Timestamp;
+  expiresAt: Timestamp | FieldValue;
+  createdAt: Timestamp | FieldValue;
 }
 
 export interface Review {
@@ -28,7 +29,7 @@ export interface Review {
   guestName: string;
   rating: number;
   comment: string;
-  createdAt: Timestamp;
+  createdAt: Timestamp | FieldValue;
   reviewSessionId: string;
 }
 

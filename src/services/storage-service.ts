@@ -88,6 +88,31 @@ export const uploadUserDocument = async (userId: string, file: File): Promise<st
 };
 
 /**
+ * Uploads a user avatar.
+ * Path: avatars/{userId}/{timestamp}_{filename}
+ */
+export const uploadAvatar = async (userId: string, file: File): Promise<string> => {
+  // 1. Proactive Compression (Avatar needs to be fast and small)
+  const compressedFile = await compressImage(file);
+  
+  // 2. Create Reference
+  const fileName = `avatar_${Date.now()}`;
+  const storageRef = ref(storage, `avatars/${userId}/${fileName}`);
+  
+  // 3. Upload
+  const snapshot = await uploadBytes(storageRef, compressedFile, {
+    contentType: file.type,
+    customMetadata: {
+      userId: userId,
+      type: 'avatar'
+    }
+  });
+  
+  // 4. Get URL
+  return getDownloadURL(snapshot.ref);
+};
+
+/**
  * Deletes an image from Firebase Storage using its download URL.
  * @param url The full download URL of the image.
  */

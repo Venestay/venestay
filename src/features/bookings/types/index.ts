@@ -1,4 +1,5 @@
 import { CommissionBreakdown } from '@/lib/commission';
+import { FieldValue } from 'firebase/firestore';
 
 export type BookingStatus =
   | 'NEGOTIATING'
@@ -29,11 +30,12 @@ export interface Booking {
   verifiedBy?: string;
   rejectionReason?: string;
   guests: number;
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  isDraft?: boolean;
+  createdAt: string | Date | FieldValue;
+  updatedAt: string | Date | FieldValue;
   statusHistory?: {
     status: BookingStatus;
-    timestamp: string | Date;
+    timestamp: string | Date | FieldValue;
     actorId: string;
     actorName: string;
     note?: string;

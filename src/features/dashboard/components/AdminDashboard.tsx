@@ -72,7 +72,7 @@ const AdminDashboard: React.FC = () => {
   
   // v2.2 Centralized Financial Intelligence
   const confirmedCount = bookings.filter(b => b.status === 'CONFIRMED').length;
-  const currentTier = (profileData?.isVerified || isAdmin) ? (confirmedCount >= 10 ? 8 : 10) : 12;
+  const currentTier = (profileData?.isIdentityVerified || isAdmin) ? (confirmedCount >= 10 ? 8 : 10) : 12;
 
   const [editingListing, setEditingListing] = useState<Listing | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -384,7 +384,7 @@ const AdminDashboard: React.FC = () => {
             <StatsCards 
               bookings={bookings} 
               listings={listings} 
-              isVerified={profileData?.isVerified || false} 
+              isVerified={profileData?.isIdentityVerified || false} 
               tier={currentTier}
             />
           </div>
@@ -524,7 +524,7 @@ const AdminDashboard: React.FC = () => {
                 <ListingList
                   listings={filteredListings}
                   setEditingListing={setEditingListing}
-                  handleDeleteListing={(id) => {
+                  handleDeleteListing={async (id) => {
                     const listing = listings.find(l => l.id === id);
                     if (listing) setListingToDelete(listing);
                   }}

@@ -94,7 +94,14 @@ const App: React.FC = () => {
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
-          <Route path="/test-profile" element={<ProfileSettings />} />
+          <Route
+            path="/mi-pasaporte"
+            element={
+              <ProtectedRoute>
+                <ProfileSettings />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Suspense>
       <Toaster position="top-right" richColors />

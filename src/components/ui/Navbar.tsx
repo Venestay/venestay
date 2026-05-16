@@ -360,14 +360,12 @@ const Navbar: React.FC<NavbarProps> = ({
                         </div>
                         <div className="py-2">
                           <Link
-                            to="/dashboard"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            to="/mi-pasaporte"
                             onClick={() => setIsUserMenuOpen(false)}
                             className="text-brand-navy hover:bg-brand-500/10 flex w-full items-center space-x-3 px-5 py-2.5 text-sm font-bold transition-colors"
                           >
-                            <User className="text-brand-navy/70 h-4 w-4" />
-                            <span>Mi Perfil</span>
+                            <ShieldCheck className="text-brand-500 h-4 w-4" />
+                            <span>Mi Pasaporte</span>
                           </Link>
                           <button
                             onClick={() => {

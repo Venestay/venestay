@@ -39,6 +39,22 @@ const BookingList: React.FC<BookingListProps> = ({
   const [bookingToReject, setBookingToReject] = useState<Booking | null>(null);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
 
+  const getSafeDate = (dateVal: any): Date | null => {
+    if (!dateVal) return null;
+    if (dateVal instanceof Date) return dateVal;
+    if (typeof dateVal === 'string') {
+      const d = new Date(dateVal);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    if (dateVal && typeof dateVal === 'object' && 'seconds' in dateVal) {
+      return new Date(dateVal.seconds * 1000);
+    }
+    if (dateVal && typeof dateVal === 'object' && 'toDate' in dateVal && typeof dateVal.toDate === 'function') {
+      return dateVal.toDate();
+    }
+    return null;
+  };
+
   if (bookings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -266,13 +282,10 @@ const BookingList: React.FC<BookingListProps> = ({
                           {h.status}
                         </span>
                         <span className="text-[8px] text-gray-400">
-                          {h.timestamp &&
-                          !isNaN(new Date(h.timestamp).getTime())
-                            ? format(
-                                new Date(h.timestamp),
-                                'dd/MM HH:mm'
-                              )
-                            : ''}
+                          {(() => {
+                            const d = getSafeDate(h.timestamp);
+                            return d ? format(d, 'dd/MM HH:mm') : '';
+                          })()}
                         </span>
                       </div>
                       {h.note && (

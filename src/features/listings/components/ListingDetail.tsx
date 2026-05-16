@@ -716,15 +716,23 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       ) : (
                         <>
                           <div>
-                            <div className="mb-2 flex items-center justify-center gap-3 md:justify-start">
+                            <div className="mb-2 flex flex-wrap items-center justify-center gap-3 md:justify-start">
                               <h3 className="text-brand-navy text-3xl font-black tracking-tight">
                                 Conoce a{' '}
                                 {hostProfile?.displayName?.split(' ')[0] ||
                                   currentListing.hostName.split(' ')[0]}
                               </h3>
-                              <span className="bg-brand-navy text-brand-500 border-brand-navy rounded-lg border px-3 py-1 text-[9px] font-black tracking-widest uppercase">
-                                Superanfitrión
-                              </span>
+                              <div className="flex gap-2">
+                                <span className="bg-brand-navy text-brand-500 border-brand-navy rounded-lg border px-3 py-1 text-[9px] font-black tracking-widest uppercase">
+                                  Superanfitrión
+                                </span>
+                                {hostProfile?.isIdentityVerified && (
+                                  <span className="bg-emerald-500 text-white rounded-lg px-3 py-1 text-[9px] font-black tracking-widest uppercase flex items-center gap-1 shadow-lg shadow-emerald-500/20">
+                                    <ShieldCheck className="h-3 w-3" />
+                                    Pasaporte Verificado
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div className="flex flex-wrap justify-center gap-4 text-[10px] font-black tracking-widest text-gray-400 uppercase md:justify-start">
                               <span className="flex items-center gap-1.5">

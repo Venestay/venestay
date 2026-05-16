@@ -202,18 +202,24 @@ const UserProfileSetup: React.FC = () => {
                 <span className="flex items-center gap-2 rounded-2xl border border-gray-100 bg-gray-50 px-5 py-2 text-[10px] font-black tracking-widest text-gray-400 uppercase">
                   <Calendar className="h-4 w-4" />
                   Miembro desde{' '}
-                  {profileData.createdAt
-                    ? (() => {
-                        const dateVal = profileData.createdAt.seconds
-                          ? profileData.createdAt.seconds * 1000
-                          : profileData.createdAt;
-                        if (!dateVal) return '2024';
-                        const date = new Date(dateVal);
-                        return !isNaN(date.getTime())
-                          ? format(date, 'yyyy')
-                          : '2024';
-                      })()
-                    : '2024'}
+                  {(() => {
+                    if (!profileData?.createdAt) return '2024';
+                    
+                    let date: Date | null = null;
+                    const val = profileData.createdAt;
+                    
+                    if (val instanceof Date) date = val;
+                    else if (typeof val === 'string') date = new Date(val);
+                    else if (typeof val === 'number') date = new Date(val);
+                    else if (val && typeof val === 'object' && 'seconds' in val) {
+                      date = new Date((val as any).seconds * 1000);
+                    } else if (val && typeof val === 'object' && 'toDate' in val && typeof (val as any).toDate === 'function') {
+                      date = (val as any).toDate();
+                    }
+
+                    if (!date || isNaN(date.getTime())) return '2024';
+                    return format(date, 'yyyy');
+                  })()}
                 </span>
               </div>
             </div>
@@ -367,11 +373,11 @@ const UserProfileSetup: React.FC = () => {
                 <Globe className="absolute top-1/2 left-6 h-4 w-4 -translate-y-1/2 text-gray-300" />
                 <input
                   type="text"
-                  value={editingProfile.languages || ''}
+                  value={Array.isArray(editingProfile.languages) ? editingProfile.languages.join(', ') : (editingProfile.languages || '')}
                   onChange={(e) =>
                     setEditingProfile({
                       ...editingProfile,
-                      languages: e.target.value,
+                      languages: e.target.value.split(',').map(s => s.trim()).filter(Boolean),
                     })
                   }
                   className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-14 py-5 font-bold transition-all placeholder:text-gray-300 focus:outline-none"

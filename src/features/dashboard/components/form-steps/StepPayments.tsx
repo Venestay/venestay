@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertCircle, Check, ChevronDown, Globe, Sparkles, Smartphone, Landmark, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { PaymentMethodType } from '@/types';
+import { PaymentMethodType, PaymentMethod } from '@/types';
 import { useListingForm } from '../ListingFormContext';
 
 const PAYMENT_OPTIONS = [
@@ -86,12 +86,12 @@ const StepPayments: React.FC = () => {
       return;
     }
 
-    const newMethod = {
+    const newMethod: PaymentMethod = {
       id: Math.random().toString(36).substr(2, 9),
       type: activePaymentType!,
       label: PAYMENT_OPTIONS.find(o => o.type === activePaymentType)?.label || activePaymentType!,
       isVerified: true,
-      data: { ...tempPaymentData }
+      data: { ...tempPaymentData } as any
     };
 
     const currentMethods = editingListing.paymentMethods || [];
