@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . && tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "sdd-verify": "node scripts/verify-sdd.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

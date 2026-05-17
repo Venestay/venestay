@@ -17,6 +17,21 @@ Este documento define como trabajar con especificaciones pequenas y claras para 
 - Toda integracion externa (APIs, Firebase, SDKs) debe encapsularse en `services/`.
 - Organizar el codigo por features (modulos funcionales), no por tipo tecnico global.
 
+## 1.2 Gobernanza de Agentes (Skills & Roles)
+
+Para garantizar la máxima calidad técnica del proyecto, toda interacción de los agentes autónomos de Antigravity (y desarrolladores en general) debe regirse por el mapeo de roles y habilidades del equipo detallado en:
+- **[operational_model_sdd.md](file:///C:/Users/rodri/.gemini/antigravity/brain/b44bfa71-d346-461a-9a4c-dd2bc8127991/operational_model_sdd.md)**
+- **[connection_report_sdd.md](file:///C:/Users/rodri/.gemini/antigravity/brain/b44bfa71-d346-461a-9a4c-dd2bc8127991/connection_report_sdd.md)**
+
+Cualquier cambio de código o refactorización debe consultar explícitamente las habilidades asignadas al rol asignado a la tarea para asegurar la correcta aplicación de:
+- `react-best-practices`
+- `typescript-advanced-types`
+- `zod`
+- `tailwind-css-patterns`
+- `composition-patterns`
+- `accessibility` (WCAG 2.2)
+- `nodejs-best-practices` (Seguridad y Secrets)
+
 ## 2) Objetivo de trabajo (SDD)
 
 Antes de tocar codigo, toda tarea debe tener una mini especificacion que responda:

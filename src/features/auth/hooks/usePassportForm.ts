@@ -100,21 +100,50 @@ export const usePassportForm = (): UsePassportFormReturn => {
   const [errors, setErrors] = useState<PassportFormErrors>({});
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // ── Sincronización desde Firestore ─────────────────────────────────────────
-  // skill: rerender-derived-state-no-effect → solo sincronizamos al cargar,
-  // no en cada render (profile como única dependencia)
+  // Resetear inicialización cuando cambia el ID de usuario
+  useEffect(() => {
+    setIsInitialized(false);
+  }, [profile?.uid]);
+
+  // ── Sincronización desde Firestore y Borrador Local ────────────────────────
   useEffect(() => {
     if (!profile) return;
 
-    setDisplayName(profile.displayName || '');
-    setBio(profile.bio || '');
-    setCurrency(profile.currency || 'USD');
-    setSelectedInterests((profile.selectedInterests as TravelInterest[]) || []);
-    setLanguages(profile.languages || ['Español']);
-    if (profile.notifications) {
-      setNotifications(profile.notifications as NotificationPreferences);
+    // Verificar si hay un borrador local para este usuario
+    const savedDraft = localStorage.getItem(`venestay_passport_draft_${profile.uid}`);
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        setDisplayName(draft.displayName !== undefined ? draft.displayName : (profile.displayName || ''));
+        setBio(draft.bio !== undefined ? draft.bio : (profile.bio || ''));
+        setCurrency(draft.currency !== undefined ? draft.currency : (profile.currency || 'USD'));
+        setSelectedInterests(draft.selectedInterests !== undefined ? draft.selectedInterests : ((profile.selectedInterests as TravelInterest[]) || []));
+        setLanguages(draft.languages !== undefined ? draft.languages : (profile.languages || ['Español']));
+        setNotifications(draft.notifications !== undefined ? draft.notifications : ((profile.notifications as NotificationPreferences) || DEFAULT_NOTIFICATIONS));
+      } catch (e) {
+        console.warn('[Passport] Error al parsear el borrador local:', e);
+        setDisplayName(profile.displayName || '');
+        setBio(profile.bio || '');
+        setCurrency(profile.currency || 'USD');
+        setSelectedInterests((profile.selectedInterests as TravelInterest[]) || []);
+        setLanguages(profile.languages || ['Español']);
+        if (profile.notifications) {
+          setNotifications(profile.notifications as NotificationPreferences);
+        }
+      }
+    } else {
+      setDisplayName(profile.displayName || '');
+      setBio(profile.bio || '');
+      setCurrency(profile.currency || 'USD');
+      setSelectedInterests((profile.selectedInterests as TravelInterest[]) || []);
+      setLanguages(profile.languages || ['Español']);
+      if (profile.notifications) {
+        setNotifications(profile.notifications as NotificationPreferences);
+      }
     }
+    setIsInitialized(true);
   }, [profile]);
 
   // ── Derived state ──────────────────────────────────────────────────────────
@@ -126,15 +155,35 @@ export const usePassportForm = (): UsePassportFormReturn => {
    * useMemo para no recalcular en renders no relacionados.
    */
   const isDirty = useMemo(() => {
-    if (!profile) return false;
+    if (!profile || !isInitialized) return false;
     return (
       displayName !== (profile.displayName ?? '') ||
       bio !== (profile.bio ?? '') ||
       currency !== (profile.currency ?? 'USD') ||
       JSON.stringify(selectedInterests) !== JSON.stringify(profile.selectedInterests ?? []) ||
-      JSON.stringify(languages) !== JSON.stringify(profile.languages ?? ['Español'])
+      JSON.stringify(languages) !== JSON.stringify(profile.languages ?? ['Español']) ||
+      JSON.stringify(notifications) !== JSON.stringify(profile.notifications ?? DEFAULT_NOTIFICATIONS)
     );
-  }, [profile, displayName, bio, currency, selectedInterests, languages]);
+  }, [profile, isInitialized, displayName, bio, currency, selectedInterests, languages, notifications]);
+
+  // ── Guardado de Borrador Reactivo ──────────────────────────────────────────
+  useEffect(() => {
+    if (!profile?.uid || !isInitialized) return;
+
+    if (isDirty) {
+      const draft = {
+        displayName,
+        bio,
+        currency,
+        selectedInterests,
+        languages,
+        notifications,
+      };
+      localStorage.setItem(`venestay_passport_draft_${profile.uid}`, JSON.stringify(draft));
+    } else {
+      localStorage.removeItem(`venestay_passport_draft_${profile.uid}`);
+    }
+  }, [isInitialized, isDirty, displayName, bio, currency, selectedInterests, languages, notifications, profile?.uid]);
 
   // ── Acciones de formulario ─────────────────────────────────────────────────
 
@@ -256,6 +305,10 @@ export const usePassportForm = (): UsePassportFormReturn => {
       languages,
       notifications,
     });
+
+    if (profile?.uid) {
+      localStorage.removeItem(`venestay_passport_draft_${profile.uid}`);
+    }
   };
 
   return {
