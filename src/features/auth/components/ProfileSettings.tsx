@@ -8,10 +8,12 @@
  * - Orquestación de nuevas acciones del hook usePassportForm.
  */
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Loader2, Sparkles } from 'lucide-react';
 import { usePassportForm, ALL_INTERESTS } from '../hooks/usePassportForm';
 import VerificationModal from './VerificationModal';
 import PaymentMethodModal from './PaymentMethodModal';
+import Navbar from '@/components/ui/Navbar';
 
 // Sub-componentes
 import { PassportHeader } from './passport/PassportHeader';
@@ -20,11 +22,15 @@ import { SecuritySection } from './passport/SecuritySection';
 import { PublicProfile } from './passport/PublicProfile';
 import { TravelerDNA } from './passport/TravelerDNA';
 import { NotificationChannels } from './passport/NotificationChannels';
+import { toast } from 'sonner';
 
 const ProfileSettings: React.FC = () => {
+  const navigate = useNavigate();
+
   // Estados de UI locales (apertura de modales)
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isGeneratingQA, setIsGeneratingQA] = useState(false);
 
   // Toda la lógica de negocio y estado del formulario viene del hook
   const {
@@ -48,6 +54,7 @@ const ProfileSettings: React.FC = () => {
     errors,
     isPreviewMode,
     setIsPreviewMode,
+    isDirty,
     handleSubmit,
     handleAvatarChange,
     handleRemoveAvatar,
@@ -55,6 +62,60 @@ const ProfileSettings: React.FC = () => {
     handleRemovePaymentMethod,
     updateProfile,
   } = usePassportForm();
+
+  // Interceptar la recarga/cierre de la pestaña si el formulario tiene cambios
+  React.useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = 'Tienes cambios sin guardar en tu pasaporte.';
+        return 'Tienes cambios sin guardar en tu pasaporte.';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  const handleLogoClick = () => {
+    if (isDirty) {
+      const confirmExit = window.confirm(
+        'Tienes cambios sin guardar en tu pasaporte. ¿Estás seguro de que deseas salir? Los datos no guardados se mantendrán como borrador.'
+      );
+      if (!confirmExit) return;
+    }
+    navigate('/');
+  };
+
+  const handleGenerateQAProfile = async () => {
+    setIsGeneratingQA(true);
+    try {
+      if (profile?.uid) {
+        localStorage.removeItem(`venestay_passport_draft_${profile.uid}`);
+      }
+      await updateProfile({
+        displayName: 'Carlos Zabala (QA)',
+        bio: 'Viajero verificado de VeneStay. Apasionado por conocer las hermosas playas de Lechería, explorar la gastronomía local y disfrutar de estancias de lujo de forma segura y confiable.',
+        selectedInterests: ['Playa', 'Lujo', 'Aventura'],
+        languages: ['Español', 'Inglés'],
+        location: 'Lechería, Anzoátegui',
+        isEmailVerified: true,
+        isPhoneVerified: true,
+        isIdentityVerified: true,
+        kycStatus: 'VERIFIED',
+        notifications: { email: true, whatsapp: true, push: true },
+        phoneNumber: '+58 414 1234567',
+      });
+      toast.success('¡Pasaporte QA Generado con 100% de Trust Score!', {
+        description: 'La identidad y reputación han sido actualizadas con éxito.',
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('Error generating QA profile:', error);
+      toast.error('Error al generar el perfil de prueba.');
+    } finally {
+      setIsGeneratingQA(false);
+    }
+  };
 
   // ─── Skeleton de carga ───
   if (loading) {
@@ -74,8 +135,13 @@ const ProfileSettings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6 text-brand-navy md:p-12 selection:bg-brand-500/30">
-      <div className="mx-auto max-w-2xl space-y-6">
+    <div className="min-h-screen bg-white text-brand-navy selection:bg-brand-500/30">
+      <Navbar
+        logoOnly={true}
+        onLogoClick={handleLogoClick}
+        onOpenAuth={() => {}}
+      />
+      <div className="mx-auto max-w-2xl px-6 py-12 space-y-6">
 
         {/* 
           ── HEADER ──
@@ -89,6 +155,8 @@ const ProfileSettings: React.FC = () => {
           isAvatarUploading={isAvatarUploading}
           onAvatarChange={handleAvatarChange}
           onRemoveAvatar={handleRemoveAvatar}
+          onGenerateQAProfile={handleGenerateQAProfile}
+          isGeneratingQA={isGeneratingQA}
         />
 
         {/* 

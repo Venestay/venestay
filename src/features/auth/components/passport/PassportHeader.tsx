@@ -12,7 +12,7 @@
  * AGENTS.md §5.1 — Componentes enfocados en presentación.
  */
 import React, { useEffect, useState } from 'react';
-import { User, Camera, ShieldCheck, Trash2 } from 'lucide-react';
+import { User, Camera, ShieldCheck, Trash2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserProfile } from '@/features/auth/types';
 import { useCountUp } from '../../hooks/usePassportAnimations';
@@ -25,6 +25,8 @@ interface PassportHeaderProps {
   isAvatarUploading?: boolean;
   onAvatarChange?: (file: File) => void;
   onRemoveAvatar?: () => Promise<void>;
+  onGenerateQAProfile?: () => Promise<void>;
+  isGeneratingQA?: boolean;
 }
 
 export const PassportHeader: React.FC<PassportHeaderProps> = ({
@@ -35,6 +37,8 @@ export const PassportHeader: React.FC<PassportHeaderProps> = ({
   isAvatarUploading,
   onAvatarChange,
   onRemoveAvatar,
+  onGenerateQAProfile,
+  isGeneratingQA,
 }) => {
   const [mounted, setMounted] = useState(false);
   const animatedScore = useCountUp(trustScore, 1400, mounted);
@@ -81,6 +85,21 @@ export const PassportHeader: React.FC<PassportHeaderProps> = ({
               >
                 {isPreviewMode ? 'Vista Edición' : 'Vista Pública'}
               </button>
+              {onGenerateQAProfile && (
+                <button
+                  type="button"
+                  onClick={onGenerateQAProfile}
+                  disabled={isGeneratingQA}
+                  className={cn(
+                    'rounded-full border border-brand-500/30 bg-brand-500/10 hover:bg-brand-500 hover:text-brand-navy px-3 py-1 text-[9px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 text-brand-500 font-bold',
+                    'focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 focus:ring-offset-brand-navy',
+                    'disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-brand-500/5 cursor-pointer'
+                  )}
+                >
+                  <Sparkles className="h-3 w-3 animate-[pulse_2s_infinite]" />
+                  {isGeneratingQA ? 'Generando...' : 'Generar 100% Score'}
+                </button>
+              )}
             </div>
             <p className="text-sm font-medium text-gray-400">
               Nivel de confianza en el ecosistema exclusivo.

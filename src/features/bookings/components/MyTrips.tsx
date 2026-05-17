@@ -40,12 +40,12 @@ interface MyTripsProps {
   onClose: () => void;
 }
 
-const CountdownTimer: React.FC<{ createdAt: { toDate?: () => Date; seconds?: number } | string | Date | any }> = ({ createdAt }) => {
+const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
   const [timeLeft, setTimeLeft] = useState<string>('');
 
   useEffect(() => {
     const calculateTime = () => {
-      const ca = createdAt as any;
+      const ca = createdAt as { toDate?: () => Date };
       const createdDate = ca?.toDate
         ? ca.toDate()
         : new Date(createdAt as string | Date);
