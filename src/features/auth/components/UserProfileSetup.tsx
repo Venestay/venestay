@@ -212,9 +212,9 @@ const UserProfileSetup: React.FC = () => {
                     else if (typeof val === 'string') date = new Date(val);
                     else if (typeof val === 'number') date = new Date(val);
                     else if (val && typeof val === 'object' && 'seconds' in val) {
-                      date = new Date((val as any).seconds * 1000);
-                    } else if (val && typeof val === 'object' && 'toDate' in val && typeof (val as any).toDate === 'function') {
-                      date = (val as any).toDate();
+                      date = new Date((val as { seconds: number }).seconds * 1000);
+                    } else if (val && typeof val === 'object' && 'toDate' in val && typeof (val as { toDate: () => Date }).toDate === 'function') {
+                      date = (val as { toDate: () => Date }).toDate();
                     }
 
                     if (!date || isNaN(date.getTime())) return '2024';

@@ -91,7 +91,7 @@ const StepPayments: React.FC = () => {
       type: activePaymentType!,
       label: PAYMENT_OPTIONS.find(o => o.type === activePaymentType)?.label || activePaymentType!,
       isVerified: true,
-      data: { ...tempPaymentData } as any
+      data: { ...tempPaymentData } as Record<string, string>
     };
 
     const currentMethods = editingListing.paymentMethods || [];

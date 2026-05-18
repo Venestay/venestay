@@ -21,6 +21,8 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ isOpen, onClose
     binanceId: '',
     accountHolder: '',
     phoneNumber: '',
+    bankName: '',
+    idNumber: '',
   });
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -34,9 +36,20 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ isOpen, onClose
       const newMethod = {
         id: Math.random().toString(36).substr(2, 9),
         type,
-        label: formData.label || (type === 'Zelle' ? formData.email : formData.binanceId),
+        label: formData.label || (
+          type === 'Zelle' ? formData.email :
+          type === 'Binance' ? formData.binanceId :
+          `${formData.bankName} - ${formData.phoneNumber}`
+        ),
         isVerified: true,
-        data: { ...formData }
+        data: {
+          email: type === 'Zelle' ? formData.email : undefined,
+          binanceId: type === 'Binance' ? formData.binanceId : undefined,
+          accountHolder: formData.accountHolder,
+          bankName: type === 'PagoMovil' ? formData.bankName : undefined,
+          idNumber: type === 'PagoMovil' ? formData.idNumber : undefined,
+          phoneNumber: type === 'PagoMovil' ? formData.phoneNumber : undefined,
+        }
       };
 
       onAdd(newMethod);
@@ -122,6 +135,60 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ isOpen, onClose
                         className="w-full rounded-2xl border border-gray-200 bg-white p-4 text-sm text-brand-navy focus:border-brand-500 focus:outline-none"
                       />
                     </div>
+                  )}
+
+                  {type === 'PagoMovil' && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Banco</label>
+                        <div className="relative">
+                          <select
+                            required
+                            value={formData.bankName}
+                            onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                            className="w-full rounded-2xl border border-gray-200 bg-white p-4 pr-10 text-sm text-brand-navy focus:border-brand-500 focus:outline-none appearance-none cursor-pointer"
+                          >
+                            <option value="">Selecciona tu banco...</option>
+                            <option value="Banesco">Banesco</option>
+                            <option value="Banco de Venezuela">Banco de Venezuela</option>
+                            <option value="Mercantil">Mercantil</option>
+                            <option value="Provincial">Provincial</option>
+                            <option value="BNC">BNC (Banco Nacional de Crédito)</option>
+                            <option value="Bancamiga">Bancamiga</option>
+                            <option value="Bancaribe">Bancaribe</option>
+                            <option value="Otros Bancos">Otros Bancos</option>
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400">
+                            <Landmark className="h-5 w-5" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Cédula de Identidad</label>
+                          <input
+                            required
+                            value={formData.idNumber}
+                            onChange={(e) => setFormData({ ...formData, idNumber: e.target.value })}
+                            placeholder="V-12345678"
+                            className="w-full rounded-2xl border border-gray-200 bg-white p-4 text-sm text-brand-navy focus:border-brand-500 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Teléfono Pago Móvil</label>
+                          <input
+                            required
+                            type="tel"
+                            value={formData.phoneNumber}
+                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                            placeholder="0414-1234567"
+                            className="w-full rounded-2xl border border-gray-200 bg-white p-4 text-sm text-brand-navy focus:border-brand-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   <div className="space-y-2">
