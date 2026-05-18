@@ -39,18 +39,21 @@ const BookingList: React.FC<BookingListProps> = ({
   const [bookingToReject, setBookingToReject] = useState<Booking | null>(null);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
 
-  const getSafeDate = (dateVal: any): Date | null => {
+  const getSafeDate = (dateVal: Date | string | { seconds: number } | null | undefined | unknown): Date | null => {
     if (!dateVal) return null;
     if (dateVal instanceof Date) return dateVal;
     if (typeof dateVal === 'string') {
       const d = new Date(dateVal);
       return isNaN(d.getTime()) ? null : d;
     }
-    if (dateVal && typeof dateVal === 'object' && 'seconds' in dateVal) {
-      return new Date(dateVal.seconds * 1000);
-    }
-    if (dateVal && typeof dateVal === 'object' && 'toDate' in dateVal && typeof dateVal.toDate === 'function') {
-      return dateVal.toDate();
+    if (dateVal && typeof dateVal === 'object') {
+      const obj = dateVal as { seconds?: number; toDate?: () => Date };
+      if (typeof obj.seconds === 'number') {
+        return new Date(obj.seconds * 1000);
+      }
+      if (typeof obj.toDate === 'function') {
+        return obj.toDate();
+      }
     }
     return null;
   };

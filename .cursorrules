@@ -21,3 +21,8 @@
 
 ## RBAC (Control de Acceso Basado en Roles)
 - Roles de usuario soportados: `admin`, `host`, y `user`.
+
+## Gobernanza SDD y Roles de Ingeniería
+- **Gobernanza Mandatoria**: Todo desarrollo técnico debe estar guiado por una especificación (Spec) corta previa, de acuerdo a `agents.md`.
+- **Mapeo de Roles y Habilidades**: Las decisiones técnicas se guían por las asignaciones de skills en [operational_model_sdd.md](file:///C:/Users/rodri/.gemini/antigravity/brain/b44bfa71-d346-461a-9a4c-dd2bc8127991/operational_model_sdd.md).
+- **Seguridad SRE Obligatoria**: No exponer jamás secretos en código, usar `.env` y auditar accesos en Firestore según `nodejs-best-practices` (Sección 7).

@@ -84,7 +84,7 @@ const ListingFormContent: React.FC<{
     }
 
     if (step < 4) {
-      const stepState = { step, data: getStepData(step) } as any as FormStepState;
+      const stepState = { step, data: getStepData(step) } as unknown as FormStepState;
       const isValid = validateStep(stepState);
       if (!isValid) {
         toast.error('Por favor completa la información requerida de este paso', {
@@ -212,10 +212,10 @@ const ListingFormContent: React.FC<{
               <button
                 type="button"
                 onClick={handleNextStep}
-                disabled={!isStepValid({ step, data: getStepData(step) } as any as FormStepState)}
+                disabled={!isStepValid({ step, data: getStepData(step) } as unknown as FormStepState)}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
-                  isStepValid({ step, data: getStepData(step) } as any as FormStepState)
+                  isStepValid({ step, data: getStepData(step) } as unknown as FormStepState)
                     ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                 )}
