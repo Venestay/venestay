@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ExchangeRates } from '@/types';
+import { getExchangeRates } from '@/services/exchange-service';
 
 // Custom Hook to manage exchange rates
 export const useExchangeRate = () => {
@@ -8,21 +9,11 @@ export const useExchangeRate = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Mocking an API call
     const fetchRates = async () => {
       try {
         setLoading(true);
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
-
-        // Mock data based on current Venezuelan context
-        const mockRates: ExchangeRates = {
-          bcv: 36.45,
-          p2p: 41.2,
-          lastUpdated: new Date().toLocaleString(),
-        };
-
-        setRates(mockRates);
+        const realRates = await getExchangeRates();
+        setRates(realRates);
       } catch (err) {
         setError('Error al cargar las tasas de cambio');
       } finally {

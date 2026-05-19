@@ -44,7 +44,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const role = isHardcodedAdmin ? 'admin' : 'user';
               await authService.createUserProfile(firebaseUser, role);
             } else {
-              setProfileData(profile);
+              // Override display name for the demo user to prevent personal name leakage
+              const isDemoUser = firebaseUser.email?.toLowerCase() === 'anfitrionvenestay@venestay.com';
+              const finalProfile = isDemoUser 
+                ? { ...profile, displayName: 'Anfitrión VeneStay' }
+                : profile;
+
+              setProfileData(finalProfile);
               setIsAdmin(profile.role === 'admin' || isHardcodedAdmin);
 
               if (isHardcodedAdmin && profile.role !== 'admin') {

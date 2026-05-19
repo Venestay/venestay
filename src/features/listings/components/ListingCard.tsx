@@ -45,7 +45,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
 
         <div className="absolute top-4 left-4 z-10 flex flex-col items-start gap-2">
           <div className="flex items-center gap-1 rounded-md bg-orange-50/90 px-2 py-1 text-[11px] font-semibold text-orange-700 shadow-sm backdrop-blur-sm sm:text-xs">
-            <span>🔥</span> Muy solicitado: Solo queda 1
+            <span>🔥</span> Muy solicitado: Pocas fechas disponibles
           </div>
           {listing.isVerified && (
             <div className="bg-brand-navy/80 animate-slide-up flex items-center rounded-md border border-white/20 px-2 py-1 shadow-md backdrop-blur-md">

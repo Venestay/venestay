@@ -147,9 +147,9 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    'pointer-events-none absolute top-1 h-4 w-4 rounded-full bg-white shadow-md',
-                    'transition-all duration-300 ease-in-out',
-                    isActive ? 'translate-x-6' : 'translate-x-1',
+                    'pointer-events-none absolute top-1 left-1 h-4 w-4 rounded-full bg-white shadow-md',
+                    'transition-transform duration-300 ease-in-out',
+                    isActive ? 'translate-x-5' : 'translate-x-0',
                   )}
                 />
               </button>

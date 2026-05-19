@@ -88,30 +88,51 @@ const ProfileSettings: React.FC = () => {
 
   const handleGenerateQAProfile = async () => {
     setIsGeneratingQA(true);
+    const isQAActive = profile?.isIdentityVerified === true && profile?.kycStatus === 'VERIFIED';
     try {
       if (profile?.uid) {
         localStorage.removeItem(`venestay_passport_draft_${profile.uid}`);
       }
-      await updateProfile({
-        displayName: 'Carlos Zabala (QA)',
-        bio: 'Viajero verificado de VeneStay. Apasionado por conocer las hermosas playas de Lechería, explorar la gastronomía local y disfrutar de estancias de lujo de forma segura y confiable.',
-        selectedInterests: ['Playa', 'Lujo', 'Aventura'],
-        languages: ['Español', 'Inglés'],
-        location: 'Lechería, Anzoátegui',
-        isEmailVerified: true,
-        isPhoneVerified: true,
-        isIdentityVerified: true,
-        kycStatus: 'VERIFIED',
-        notifications: { email: true, whatsapp: true, push: true },
-        phoneNumber: '+58 414 1234567',
-      });
-      toast.success('¡Pasaporte QA Generado con 100% de Trust Score!', {
-        description: 'La identidad y reputación han sido actualizadas con éxito.',
-        duration: 5000,
-      });
+
+      if (isQAActive) {
+        // TURN OFF (Reset to 0% and deactivate validations)
+        await updateProfile({
+          displayName: 'Anfitrión VeneStay',
+          bio: '',
+          selectedInterests: [],
+          languages: [],
+          location: '',
+          isEmailVerified: false,
+          isPhoneVerified: false,
+          isIdentityVerified: false,
+          kycStatus: 'UNVERIFIED',
+          notifications: { email: false, whatsapp: false, push: false },
+          phoneNumber: '',
+        });
+        toast.success('¡Pasaporte restablecido! Score de confianza al 0% y validaciones activas.');
+      } else {
+        // TURN ON (Activate to 100% QA profile)
+        await updateProfile({
+          displayName: 'Anfitrión VeneStay',
+          bio: 'Viajero verificado de VeneStay. Apasionado por conocer las hermosas playas de Lechería, explorar la gastronomía local y disfrutar de estancias de lujo de forma segura y confiable.',
+          selectedInterests: ['Playa', 'Lujo', 'Aventura'],
+          languages: ['Español', 'Inglés'],
+          location: 'Lechería, Anzoátegui',
+          isEmailVerified: true,
+          isPhoneVerified: true,
+          isIdentityVerified: true,
+          kycStatus: 'VERIFIED',
+          notifications: { email: true, whatsapp: true, push: true },
+          phoneNumber: '+58 414 1234567',
+        });
+        toast.success('¡Pasaporte QA Generado con 100% de Trust Score!', {
+          description: 'La identidad y reputación han sido actualizadas con éxito.',
+          duration: 5000,
+        });
+      }
     } catch (error) {
-      console.error('Error generating QA profile:', error);
-      toast.error('Error al generar el perfil de prueba.');
+      console.error('Error toggling QA profile:', error);
+      toast.error('Error al cambiar el estado del perfil de prueba.');
     } finally {
       setIsGeneratingQA(false);
     }

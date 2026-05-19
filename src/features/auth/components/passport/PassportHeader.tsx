@@ -91,13 +91,16 @@ export const PassportHeader: React.FC<PassportHeaderProps> = ({
                   onClick={onGenerateQAProfile}
                   disabled={isGeneratingQA}
                   className={cn(
-                    'rounded-full border border-brand-500/30 bg-brand-500/10 hover:bg-brand-500 hover:text-brand-navy px-3 py-1 text-[9px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 text-brand-500 font-bold',
+                    'rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 font-bold',
                     'focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 focus:ring-offset-brand-navy',
-                    'disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-brand-500/5 cursor-pointer'
+                    'disabled:opacity-40 disabled:cursor-not-allowed shadow-md cursor-pointer',
+                    profile?.isIdentityVerified && profile?.kycStatus === 'VERIFIED'
+                      ? 'border-brand-500 bg-brand-500 text-brand-navy shadow-lg shadow-brand-500/25'
+                      : 'border-white/20 bg-white/5 text-gray-400 hover:border-brand-500/40 hover:bg-brand-500/10 hover:text-white'
                   )}
                 >
-                  <Sparkles className="h-3 w-3 animate-[pulse_2s_infinite]" />
-                  {isGeneratingQA ? 'Generando...' : 'Generar 100% Score'}
+                  <Sparkles className={cn("h-3 w-3", profile?.isIdentityVerified && profile?.kycStatus === 'VERIFIED' ? "text-brand-navy" : "text-brand-500 animate-[pulse_2s_infinite]")} />
+                  {isGeneratingQA ? 'Generando...' : (profile?.isIdentityVerified && profile?.kycStatus === 'VERIFIED' ? 'Score 100% Activo' : 'Generar 100% Score')}
                 </button>
               )}
             </div>
