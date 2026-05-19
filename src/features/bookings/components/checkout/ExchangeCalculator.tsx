@@ -1,306 +1,185 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ExchangeRates } from '@/types';
-import {
-  Building2,
-  CheckCircle2,
-  ShieldCheck,
-  Zap,
-  Sparkles,
-  TrendingUp,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'motion/react';
+import { ExchangeRates, PaymentMethod } from '@/types';
+import { ShieldCheck, Info } from 'lucide-react';
 import { getExchangeRates } from '@/services/exchange-service';
 
 interface ExchangeCalculatorProps {
-  basePriceUSD: number; // This is the 20% deposit amount calculated by ListingDetail
+  totalPrice: number;
+  depositAmount: number;
+  remainingAmount: number;
+  paymentMethods?: PaymentMethod[];
 }
 
-type PaymentOption = 'VES' | 'USDT';
-
 const ExchangeCalculator: React.FC<ExchangeCalculatorProps> = ({
-  basePriceUSD,
+  totalPrice,
+  depositAmount,
+  remainingAmount,
+  paymentMethods,
 }) => {
   const [rates, setRates] = useState<ExchangeRates | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedOption, setSelectedOption] = useState<PaymentOption>('USDT');
-  const [showFlash, setShowFlash] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date());
+  const [timeAgoMsg, setTimeAgoMsg] = useState('Recién');
 
-  useEffect(() => {
-    const fetchRates = async () => {
-      try {
-        setLoading(true);
-        const fetchedRates = await getExchangeRates();
-        setRates(fetchedRates);
-      } catch (error) {
-        console.error('Error in ExchangeCalculator fetching rates:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRates();
-  }, []);
-
-  const handleSelect = (option: PaymentOption) => {
-    setSelectedOption(option);
-    setShowFlash(true);
-    setTimeout(() => setShowFlash(false), 500);
+  const fetchRates = async (bypass = false) => {
+    try {
+      const fetchedRates = await getExchangeRates(bypass);
+      setRates(fetchedRates);
+      setLastRefreshedAt(new Date());
+      setTimeAgoMsg('Recién');
+    } catch (error) {
+      console.error('Error fetching exchange rates in ExchangeCalculator:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const calculations = useMemo(() => {
-    if (!rates) return null;
+  useEffect(() => {
+    fetchRates(false);
 
-    const depositVES = basePriceUSD * rates.bcv;
-    const depositUSDT = basePriceUSD * 1; // USDT is 1:1 with USD
+    // Auto-refresh the BCV exchange rate every 5 minutes
+    const pollInterval = setInterval(() => {
+      fetchRates(true);
+    }, 300000);
 
-    // The remaining 80% and 100% total
-    const remaining80USD = basePriceUSD * 4;
-    const total100USD = basePriceUSD * 5;
+    return () => clearInterval(pollInterval);
+  }, []);
 
-    const remaining80VES = remaining80USD * rates.bcv;
-    const total100VES = total100USD * rates.bcv;
+  useEffect(() => {
+    const timeInterval = setInterval(() => {
+      const diffMs = Date.now() - lastRefreshedAt.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins === 0) {
+        setTimeAgoMsg('Recién');
+      } else {
+        setTimeAgoMsg(`hace ${diffMins} min`);
+      }
+    }, 30000);
 
-    return {
-      depositVES,
-      depositUSDT,
-      remaining80USD,
-      total100USD,
-      remaining80VES,
-      total100VES,
-    };
-  }, [rates, basePriceUSD]);
+    return () => clearInterval(timeInterval);
+  }, [lastRefreshedAt]);
 
-  if (loading || !rates || !calculations) {
+  const acceptedMethodsList = useMemo(() => {
+    const list = paymentMethods || [];
+    if (list.length === 0) {
+      return [
+        { id: 'def_zelle', type: 'Zelle', label: 'Zelle (USD)', isVerified: true, data: {} },
+        { id: 'def_pmovil', type: 'PagoMovil', label: 'Pago Móvil (VES)', isVerified: true, data: {} }
+      ] as PaymentMethod[];
+    }
+    return list;
+  }, [paymentMethods]);
+
+  const supportsVES = useMemo(() => {
+    return acceptedMethodsList.some(m => m.type === 'PagoMovil' || m.type === 'Transferencia');
+  }, [acceptedMethodsList]);
+
+  const supportsUSDT = useMemo(() => {
+    return acceptedMethodsList.some(m => m.type === 'Binance');
+  }, [acceptedMethodsList]);
+
+  const supportsZelleUSD = useMemo(() => {
+    return acceptedMethodsList.some(m => m.type === 'Zelle');
+  }, [acceptedMethodsList]);
+
+  if (loading || !rates) {
     return (
-      <div className="w-full animate-pulse space-y-4">
-        <div className="h-4 w-32 rounded bg-gray-100" />
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-32 rounded-3xl bg-gray-50 animate-pulse" />
-          <div className="h-32 rounded-3xl bg-gray-50 animate-pulse" />
-        </div>
+      <div className="w-full animate-pulse space-y-4 py-2">
+        <div className="h-6 w-1/3 rounded bg-gray-100" />
+        <div className="h-20 w-full rounded bg-gray-50" />
+        <div className="h-16 w-full rounded bg-gray-50" />
       </div>
     );
   }
 
+  // Calculate dynamic equivalencies
+  const depositVES = depositAmount * rates.bcv;
+
   return (
-    <div className="w-full space-y-5">
-      {/* Header and rate bar */}
-      <div className="flex items-center justify-between px-1">
-        <h4 className="text-brand-navy/60 text-[10px] font-black tracking-widest uppercase">
-          Asegurar con Anticipo (20%)
-        </h4>
-        <div className="flex items-center space-x-1 text-[10px] font-bold text-gray-400 uppercase">
-          <TrendingUp className="h-3.5 w-3.5 text-brand-500" />
-          <span>Tasa BCV: {rates.bcv.toFixed(2)}</span>
-        </div>
-      </div>
-
-      {/* Cards: VES & USDT Option Selectors */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {/* VES Card */}
-        <button
-          onClick={() => handleSelect('VES')}
-          className={cn(
-            'group relative flex flex-col items-start rounded-[24px] border-2 p-5 text-left transition-all duration-300 w-full',
-            selectedOption === 'VES'
-              ? 'border-brand-navy bg-white shadow-xl scale-[1.01]'
-              : 'border-gray-100 bg-gray-50/50 hover:border-gray-200'
-          )}
-        >
-          <div className="mb-3 flex w-full items-center justify-between">
-            <div className={cn(
-              "rounded-xl p-2 transition-colors duration-300",
-              selectedOption === 'VES' ? "bg-brand-navy text-brand-500" : "bg-gray-200 text-gray-500"
-            )}>
-              <Building2 className="h-4.5 w-4.5" />
+    <div className="w-full space-y-4">
+      {/* 3. BLOQUE DE PAGO: Pagas hoy vs Saldo restante al llegar */}
+      <div className="space-y-3.5">
+        {/* ROW 1: Pagas Hoy (Highlighted & clean) */}
+        <div className="relative overflow-hidden rounded-[20px] border border-brand-navy/[0.06] bg-brand-navy/[0.02] p-4 transition-all duration-300 hover:border-brand-navy/[0.1] shadow-[0_2px_12px_rgba(5,11,24,0.01)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black tracking-widest text-brand-navy/60 uppercase">
+                Pagas hoy para reservar
+              </p>
+              <p className="text-2xl font-black text-brand-navy font-sans tracking-tight mt-0.5">
+                ${depositAmount.toFixed(2)}{' '}
+                <span className="text-xs font-bold text-brand-navy/60">USD</span>
+              </p>
             </div>
-            {selectedOption === 'VES' && (
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                <CheckCircle2 className="text-brand-navy h-5 w-5" />
-              </motion.div>
-            )}
-          </div>
-
-          <div className="space-y-0.5">
-            <p className="text-[9px] font-black tracking-widest text-gray-400 uppercase">
-              Pago en VES
-            </p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-black text-brand-navy">
-                {calculations.depositVES.toLocaleString('es-VE', {
-                  maximumFractionDigits: 0,
-                })}
+            <div className="text-right select-none">
+              <span className="inline-block rounded-full bg-brand-navy text-white text-[8px] font-black tracking-widest uppercase px-3 py-1.5 leading-none">
+                Anticipo 20%
               </span>
-              <span className="text-xs font-black text-brand-navy/40 uppercase">VES</span>
             </div>
-            <p className="text-[9px] font-bold text-gray-400 leading-none">
-              Monto al cambio oficial
-            </p>
           </div>
-        </button>
 
-        {/* USDT Card */}
-        <button
-          onClick={() => handleSelect('USDT')}
-          className={cn(
-            'group relative flex flex-col items-start rounded-[24px] border-2 p-5 text-left transition-all duration-300 w-full',
-            selectedOption === 'USDT'
-              ? 'border-brand-500 bg-white shadow-xl scale-[1.01]'
-              : 'border-gray-100 bg-gray-50/50 hover:border-brand-200'
-          )}
-        >
-          <div className="mb-3 flex w-full items-center justify-between">
-            <div className={cn(
-              "rounded-xl p-2 transition-colors duration-300",
-              selectedOption === 'USDT' ? "bg-brand-500 text-brand-navy" : "bg-gray-200 text-gray-500"
-            )}>
-              <Zap className="h-4.5 w-4.5" />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="bg-emerald-50 text-emerald-600 rounded-full px-2 py-0.5 text-[8px] font-black tracking-widest uppercase">
-                Mejor Precio
+          {/* Dynamic equivalents (VES / USDT) shown cleanly beneath the USD amount */}
+          <div className="mt-3.5 pt-3 border-t border-brand-navy/[0.04] space-y-2">
+            {supportsVES && (
+              <div className="flex justify-between items-center text-[11px] font-medium text-slate-500">
+                <span className="text-slate-500">Equivalente en Bolívares (VES)</span>
+                <span className="text-brand-navy font-extrabold font-sans">
+                  {depositVES.toLocaleString('es-VE', { maximumFractionDigits: 2 })}{' '}
+                  <span className="text-[9px] text-slate-400 font-bold">VES</span>
+                </span>
               </div>
-              {selectedOption === 'USDT' && (
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                  <CheckCircle2 className="text-brand-500 h-5 w-5" />
-                </motion.div>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-0.5">
-            <p className="text-[9px] font-black tracking-widest text-gray-400 uppercase">
-              Cripto (Binance)
-            </p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-black text-brand-navy">
-                {calculations.depositUSDT.toFixed(2)}
-              </span>
-              <span className="text-xs font-black text-brand-navy/40 uppercase">USDT</span>
-            </div>
-            <p className="text-[9px] font-bold text-gray-400 leading-none">
-              Confirmación instantánea 24/7
-            </p>
-          </div>
-
-          {/* Flash Effect */}
-          <AnimatePresence>
-            {showFlash && selectedOption === 'USDT' && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 0.15, scale: 1.1 }}
-                exit={{ opacity: 0 }}
-                className="bg-brand-500 absolute inset-0 rounded-[24px]"
-              />
             )}
-          </AnimatePresence>
-        </button>
-      </div>
 
-      {/* Security Shield Banner */}
-      <motion.div 
-        layout
-        className="bg-brand-navy brand-gradient relative overflow-hidden rounded-[20px] border border-white/10 p-4 text-white shadow-lg"
-      >
-        <div className="relative z-10 flex items-start gap-3">
-          <div className="bg-brand-500/20 rounded-xl p-1.5">
-            <ShieldCheck className="text-brand-500 h-5 w-5" />
-          </div>
-          <div className="space-y-0.5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-white">
-              VeneStay Security Shield
-            </p>
-            <p className="text-[9px] leading-relaxed font-medium text-white/70">
-              {selectedOption === 'USDT' 
-                ? 'Al asegurar con USDT, tu reserva se confirma de forma automática y tu saldo queda protegido contra la devaluación.'
-                : 'Al asegurar con VES, el monto se calcula a la tasa BCV real del momento. Deberás enviar el comprobante de pago para validación manual.'}
-            </p>
+            {supportsUSDT && (
+              <div className="flex justify-between items-center text-[11px] font-medium text-slate-500">
+                <span className="flex items-center gap-1.5 select-none">
+                  <span className="text-slate-500">Equivalente en USDT</span>
+                  <span className="bg-brand-gold/[0.07] text-brand-gold border border-brand-gold/[0.18] text-[7.5px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
+                    Mejor Precio
+                  </span>
+                </span>
+                <span className="text-brand-navy font-extrabold font-sans">
+                  {depositAmount.toFixed(2)}{' '}
+                  <span className="text-[9px] text-brand-500 font-bold">USDT</span>
+                </span>
+              </div>
+            )}
           </div>
         </div>
-        
-        {selectedOption === 'USDT' && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute -right-3 -bottom-3 opacity-10"
-          >
-            <Sparkles className="h-16 w-16 text-brand-500" />
-          </motion.div>
-        )}
-      </motion.div>
 
-      {/* Visual Timeline: UCP 20/80 Stepper */}
-      <div className="rounded-[20px] border border-gray-100 bg-gray-50/40 p-4 space-y-3">
-        <div className="flex justify-between items-center">
-          <p className="text-[8px] font-black tracking-widest text-gray-400 uppercase">
-            Protocolo de Pago VeneStay (UCP 20/80)
+        {/* ROW 2: Saldo restante al llegar (Lower contrast, reduces anxiety, friendly) */}
+        <div className="rounded-[20px] border border-slate-100 bg-white p-4 transition-all duration-300 hover:border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.01)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                Saldo restante al llegar
+              </p>
+              <p className="text-xl font-bold text-slate-700 font-sans tracking-tight mt-0.5">
+                ${remainingAmount.toFixed(2)}{' '}
+                <span className="text-xs font-semibold text-slate-400">USD</span>
+              </p>
+            </div>
+            <div className="text-right select-none">
+              <span className="inline-block rounded-full bg-slate-50 border border-slate-100 text-slate-500 text-[8px] font-black tracking-widest uppercase px-3 py-1.5 leading-none">
+                Saldo 80%
+              </span>
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-500 font-medium leading-normal mt-2.5">
+            Pagas este saldo restante directamente en el alojamiento al momento de tu llegada.
           </p>
-          <span className="text-[8px] font-bold text-brand-navy/60 px-2 py-0.5 bg-brand-500/10 rounded-full">
-            Seguro & Protegido
-          </span>
-        </div>
-        
-        <div className="relative flex items-center justify-between pt-1">
-          {/* Connector Line */}
-          <div className="absolute top-4 left-[20%] right-[20%] h-[1.5px] border-t-2 border-dashed border-brand-500/25 -z-10" />
-
-          {/* Stepper Dot 1: 20% down payment */}
-          <div className="flex flex-col items-center text-center w-[45%]">
-            <div className="h-8 w-8 rounded-full bg-brand-navy border-2 border-brand-500 text-brand-500 flex items-center justify-center font-black text-[10px] shadow-md shadow-brand-500/5">
-              20%
-            </div>
-            <p className="mt-1.5 text-[9px] font-black text-brand-navy uppercase leading-none">Pagas Hoy</p>
-            <p className="text-[8px] font-bold text-gray-400 mb-0.5">En la web para asegurar</p>
-            <p className="text-[11px] font-black text-emerald-600">
-              {selectedOption === 'USDT' 
-                ? `${calculations.depositUSDT.toFixed(2)} USDT` 
-                : `${calculations.depositVES.toLocaleString('es-VE', { maximumFractionDigits: 0 })} VES`}
-            </p>
-          </div>
-
-          {/* Stepper Dot 2: 80% remaining */}
-          <div className="flex flex-col items-center text-center w-[45%]">
-            <div className="h-8 w-8 rounded-full bg-brand-navy border border-white/10 text-white/50 flex items-center justify-center font-black text-[10px]">
-              80%
-            </div>
-            <p className="mt-1.5 text-[9px] font-black text-brand-navy/70 uppercase leading-none">Pagas en el Destino</p>
-            <p className="text-[8px] font-bold text-gray-400 mb-0.5">Al anfitrión en el Check-in</p>
-            <p className="text-[11px] font-black text-brand-navy/60">
-              {selectedOption === 'USDT' 
-                ? `${calculations.remaining80USD.toFixed(2)} USDT` 
-                : `${calculations.remaining80VES.toLocaleString('es-VE', { maximumFractionDigits: 0 })} VES`}
-            </p>
-          </div>
         </div>
       </div>
 
-      {/* Tabular Cost Summary Breakdown */}
-      <div className="border-t border-gray-100 pt-3.5 space-y-2">
-        <div className="flex justify-between text-xs font-bold text-gray-500">
-          <span>Total de la Estancia (100%):</span>
-          <span className="text-brand-navy font-black">
-            {selectedOption === 'USDT' 
-              ? `${calculations.total100USD.toFixed(2)} USDT` 
-              : `${calculations.total100VES.toLocaleString('es-VE', { maximumFractionDigits: 0 })} VES`}
-          </span>
+      {/* Tasa BCV & Live polling info metadata */}
+      <div className="flex items-center justify-between px-1 text-[9px] font-semibold text-slate-500 uppercase tracking-wider select-none">
+        <div className="flex items-center gap-1.5">
+          <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span>Tasa Oficial BCV: <span className="text-slate-700 font-extrabold">{rates.bcv.toFixed(2)} VES</span></span>
         </div>
-        <div className="flex justify-between text-xs font-bold text-gray-500">
-          <span>Anticipo de Reserva (20% hoy):</span>
-          <span className="text-emerald-600 font-black">
-            {selectedOption === 'USDT' 
-              ? `${calculations.depositUSDT.toFixed(2)} USDT` 
-              : `${calculations.depositVES.toLocaleString('es-VE', { maximumFractionDigits: 0 })} VES`}
-          </span>
-        </div>
-        <div className="flex justify-between text-xs font-bold text-gray-400 border-t border-gray-100/50 pt-2">
-          <span>Saldo Restante (80% al llegar):</span>
-          <span className="text-brand-navy/70 font-semibold">
-            {selectedOption === 'USDT' 
-              ? `${calculations.remaining80USD.toFixed(2)} USDT` 
-              : `${calculations.remaining80VES.toLocaleString('es-VE', { maximumFractionDigits: 0 })} VES`}
-          </span>
-        </div>
+        <span className="text-[8.5px] font-semibold text-slate-400">
+          Actualizado {timeAgoMsg}
+        </span>
       </div>
     </div>
   );
