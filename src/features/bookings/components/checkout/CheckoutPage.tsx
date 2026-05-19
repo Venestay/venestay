@@ -37,6 +37,7 @@ import {
 } from '@/types';
 import { CommissionTier } from '@/lib/commission';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
+import { getExchangeRates } from '@/services/exchange-service';
 import { db, storage } from '@/lib/firebase';
 import {
   doc,
@@ -92,7 +93,33 @@ const CheckoutPage: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(
     null
   );
+  const [hostPaymentMethods, setHostPaymentMethods] = useState<PaymentMethod[]>([]);
   const [rates, setRates] = useState<ExchangeRates | null>(null);
+
+  const availablePaymentMethods = useMemo(() => {
+    const listMethods = listing?.paymentMethods || [];
+    const hMethods = hostPaymentMethods || [];
+
+    if (listMethods.length === 0 && hMethods.length === 0) return [];
+
+    const primaryMethods = listMethods.length > 0 ? listMethods : hMethods;
+
+    return primaryMethods.map(method => {
+      if (!method.data?.accountHolder) {
+        const matchingHostMethod = hMethods.find(hm => hm.type === method.type);
+        if (matchingHostMethod?.data?.accountHolder) {
+          return {
+            ...method,
+            data: {
+              ...method.data,
+              accountHolder: matchingHostMethod.data.accountHolder
+            }
+          };
+        }
+      }
+      return method;
+    });
+  }, [listing?.paymentMethods, hostPaymentMethods]);
 
   const trustScore = useMemo(() => {
     if (!profileData) return 0;
@@ -134,6 +161,7 @@ const CheckoutPage: React.FC = () => {
 
           // v2.2 Host Audit for Commission Tier (Resilient Mode)
           let hostTier: CommissionTier = 12;
+          let hMethods: PaymentMethod[] = [];
           if (lData.hostId) {
             try {
               const hostSnap = await getDoc(doc(db, 'users', lData.hostId));
@@ -144,6 +172,10 @@ const CheckoutPage: React.FC = () => {
                   hData.isVerified || false,
                   hData.completedBookings || 0
                 );
+                if (hData.paymentMethods && hData.paymentMethods.length > 0) {
+                  hMethods = hData.paymentMethods;
+                  setHostPaymentMethods(hData.paymentMethods);
+                }
               }
             } catch (tierError) {
               console.warn(
@@ -175,8 +207,26 @@ const CheckoutPage: React.FC = () => {
             isDraft: true,
           } as Booking);
 
-          if (lData.paymentMethods && lData.paymentMethods.length > 0) {
-            setSelectedMethod(lData.paymentMethods[0]);
+          const listMethods = lData.paymentMethods || [];
+          const finalMethods = listMethods.length > 0 ? listMethods : hMethods;
+          const enrichedMethods = finalMethods.map(method => {
+            if (!method.data?.accountHolder) {
+              const matchingHostMethod = hMethods.find(hm => hm.type === method.type);
+              if (matchingHostMethod?.data?.accountHolder) {
+                return {
+                  ...method,
+                  data: {
+                    ...method.data,
+                    accountHolder: matchingHostMethod.data.accountHolder
+                  }
+                };
+              }
+            }
+            return method;
+          });
+
+          if (enrichedMethods.length > 0) {
+            setSelectedMethod(enrichedMethods[0]);
           }
         } else {
           setError('Propiedad no encontrada.');
@@ -205,8 +255,42 @@ const CheckoutPage: React.FC = () => {
                 const data = listingSnap.data() as Listing;
                 setListing({ id: listingSnap.id, ...data });
 
-                if (data.paymentMethods && data.paymentMethods.length > 0) {
-                  setSelectedMethod(data.paymentMethods[0]);
+                let hMethods: PaymentMethod[] = [];
+                if (data.hostId) {
+                  try {
+                    const hostSnap = await getDoc(doc(db, 'users', data.hostId));
+                    if (hostSnap.exists()) {
+                      const hData = hostSnap.data();
+                      if (hData.paymentMethods && hData.paymentMethods.length > 0) {
+                        hMethods = hData.paymentMethods;
+                        setHostPaymentMethods(hData.paymentMethods);
+                      }
+                    }
+                  } catch (hostError) {
+                    console.warn('Checkout: Fallo al obtener métodos del anfitrión.', hostError);
+                  }
+                }
+
+                const listMethods = data.paymentMethods || [];
+                const finalMethods = listMethods.length > 0 ? listMethods : hMethods;
+                const enrichedMethods = finalMethods.map(method => {
+                  if (!method.data?.accountHolder) {
+                    const matchingHostMethod = hMethods.find(hm => hm.type === method.type);
+                    if (matchingHostMethod?.data?.accountHolder) {
+                      return {
+                        ...method,
+                        data: {
+                          ...method.data,
+                          accountHolder: matchingHostMethod.data.accountHolder
+                        }
+                      };
+                    }
+                  }
+                  return method;
+                });
+
+                if (enrichedMethods.length > 0) {
+                  setSelectedMethod(enrichedMethods[0]);
                 }
               }
             }
@@ -232,15 +316,8 @@ const CheckoutPage: React.FC = () => {
     // Fetch exchange rates
     const fetchRates = async () => {
       try {
-        const mockRates: ExchangeRates = {
-          bcv: 36.45,
-          p2p: 41.2,
-          lastUpdated: new Date().toLocaleTimeString('es-VE', {
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
-        };
-        setRates(mockRates);
+        const realRates = await getExchangeRates();
+        setRates(realRates);
       } catch (err) {
         console.error('Error fetching rates:', err);
       }
@@ -711,44 +788,60 @@ const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col overflow-hidden bg-white md:flex-row">
-      {/* Left Column: Payment & Booking Info (65%) */}
-      <div className="no-scrollbar h-screen flex-grow overflow-y-auto pb-24 md:w-[65%]">
+    <div className="relative min-h-screen overflow-hidden bg-white">
+      {/* Tab flotante del chat (Desktop) con aviso dorado parpadeante */}
+      <button
+        type="button"
+        onClick={() => setIsChatOpen(true)}
+        className="fixed right-0 top-1/3 z-40 hidden md:flex items-center gap-3 bg-brand-navy text-white pl-5 pr-4 py-4 rounded-l-2xl shadow-2xl transition-all duration-300 hover:-translate-x-1 cursor-pointer border border-brand-500/20 group"
+      >
+        <div className="relative flex h-2.5 w-2.5 shrink-0">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75 shadow-[0_0_8px_#c5a059]" />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500 shadow-[0_0_6px_#c5a059]" />
+        </div>
+        <span className="text-[9px] font-black uppercase tracking-widest text-brand-500">
+          Chat Soporte
+        </span>
+        <MessageSquare className="h-4 w-4 text-brand-500 group-hover:scale-110 transition-transform" />
+      </button>
+
+      {/* Main Content Area: Payment & Booking Info (100% width on Desktop) */}
+      <div className="no-scrollbar h-screen overflow-y-auto pb-24 w-full">
         {/* Navigation Bar */}
-        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-8 backdrop-blur-xl md:px-12">
-          <div className="flex items-center space-x-6">
-            <button
-              onClick={() => navigate(`/listing/${listing.id}`)}
-              className="group rounded-2xl p-3 transition-all hover:bg-gray-100"
-            >
-              <ArrowLeft className="text-brand-navy h-5 w-5 transition-transform group-hover:-translate-x-1" />
-            </button>
-            <div>
-              <h1 className="text-brand-navy text-xl leading-none font-black tracking-tighter uppercase md:text-2xl">
-                Mi Reserva
-              </h1>
-              <div className="mt-2 flex items-center space-x-2">
-                <div
-                  className={cn(
-                    'h-2 w-2 rounded-full',
-                    booking.status === 'PENDING_PAYMENT'
-                      ? 'bg-brand-500 animate-pulse'
-                      : 'bg-emerald-500'
-                  )}
-                />
-                <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
-                  {booking.status === 'PENDING_PAYMENT'
-                    ? 'Pago Pendiente'
-                    : 'En Verificación'}
-                </span>
+        <div className="sticky top-0 z-20 border-b border-gray-100 bg-white/80 px-4 py-8 backdrop-blur-xl md:px-12">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <button
+                onClick={() => navigate(`/listing/${listing.id}`)}
+                className="group rounded-2xl p-3 transition-all hover:bg-gray-100"
+              >
+                <ArrowLeft className="text-brand-navy h-5 w-5 transition-transform group-hover:-translate-x-1" />
+              </button>
+              <div>
+                <h1 className="text-brand-navy text-xl leading-none font-black tracking-tighter uppercase md:text-2xl">
+                  Mi Reserva
+                </h1>
+                <div className="mt-2 flex items-center space-x-2">
+                  <div
+                    className={cn(
+                      'h-2 w-2 rounded-full',
+                      booking.status === 'PENDING_PAYMENT'
+                        ? 'bg-brand-500 animate-pulse'
+                        : 'bg-emerald-500'
+                    )}
+                  />
+                  <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
+                    {booking.status === 'PENDING_PAYMENT'
+                      ? 'Pago Pendiente'
+                      : 'En Verificación'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-
-          <div className="hidden items-center space-x-4 lg:flex"></div>
         </div>
 
-        <div className="mx-auto max-w-4xl space-y-12 px-6 py-10 md:px-12">
+        <div className="mx-auto max-w-5xl space-y-12 px-6 py-10 md:px-12">
           {uploadSuccess ? (
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1101,9 +1194,9 @@ const CheckoutPage: React.FC = () => {
 
                 {/* Payment Method Cards */}
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                  {listing.paymentMethods &&
-                  listing.paymentMethods.length > 0 ? (
-                    listing.paymentMethods.map((method) => {
+                  {availablePaymentMethods &&
+                  availablePaymentMethods.length > 0 ? (
+                    availablePaymentMethods.map((method) => {
                       const Icon =
                         method.type === 'Zelle'
                           ? Globe
@@ -1521,54 +1614,6 @@ const CheckoutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Column: Chat (35%) - Fixed on md+ */}
-      <div className="hidden h-screen flex-col border-l border-gray-100 bg-gray-50 shadow-inner md:flex md:w-[35%]">
-        <div className="flex items-center gap-5 border-b border-gray-200 bg-white p-10 shadow-sm">
-          <div className="relative">
-            <div className="border-brand-navy/5 h-14 w-14 overflow-hidden rounded-3xl border-2 shadow-md">
-              <img
-                src={
-                  listing.hostAvatar ||
-                  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150'
-                }
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-4 border-white bg-emerald-500">
-              <div className="h-1.5 w-1.5 animate-ping rounded-full bg-white" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-brand-navy text-lg leading-tight font-black">
-              Chat con {listing.hostName || 'Anfitrión'}
-            </h3>
-            <p className="mt-1 text-[10px] font-black tracking-widest text-emerald-500 uppercase">
-              Soporte Inmediato
-            </p>
-          </div>
-        </div>
-
-        <div className="flex-grow overflow-hidden bg-white/40 backdrop-blur-sm">
-          <Chat
-            bookingId={booking?.id || ''}
-            senderId={user?.uid || 'guest'}
-            senderName={user?.displayName || 'Huésped'}
-            isFloating={false}
-            onAuthRequired={() => setShowAuthModal(true)}
-          />
-        </div>
-
-        <div className="flex items-center gap-4 border-t border-gray-100 bg-white p-8">
-          <div className="bg-brand-navy text-brand-500 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
-          <p className="text-[10px] leading-relaxed font-black tracking-wider text-slate-600 uppercase">
-            Tus conversaciones están protegidas por VeneStay. Nunca realices
-            pagos fuera de la plataforma.
-          </p>
-        </div>
-      </div>
-
       {/* Mobile Sticky CTA */}
       {!uploadSuccess && (
         <div className="pointer-events-none fixed right-0 bottom-16 left-0 z-[60] p-4 md:hidden">
@@ -1606,50 +1651,126 @@ const CheckoutPage: React.FC = () => {
 
       <AnimatePresence>
         {isChatOpen && (
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed inset-0 z-[100] flex flex-col bg-white md:hidden"
-          >
-            <div className="bg-brand-navy flex items-center justify-between border-b border-gray-100 p-6 text-white">
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-10 overflow-hidden rounded-xl border border-white/20">
-                  <img
-                    src={
-                      listing.hostAvatar ||
-                      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150'
-                    }
-                    className="h-full w-full object-cover"
-                  />
+          <>
+            {/* Mobile View Popup */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-[100] flex flex-col bg-white md:hidden"
+            >
+              <div className="bg-brand-navy flex items-center justify-between border-b border-gray-100 p-6 text-white">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 overflow-hidden rounded-xl border border-white/20">
+                    <img
+                      src={
+                        listing.hostAvatar ||
+                        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150'
+                      }
+                      className="h-full w-full object-cover"
+                      alt="Avatar"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black tracking-tight uppercase">
+                      Soporte Anfitrión
+                    </h3>
+                    <p className="text-brand-500 mt-1 text-[9px] leading-none font-bold tracking-widest uppercase">
+                      En línea ahora
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-black tracking-tight uppercase">
-                    Soporte Anfitrión
-                  </h3>
-                  <p className="text-brand-500 mt-1 text-[9px] leading-none font-bold tracking-widest uppercase">
-                    En línea ahora
-                  </p>
-                </div>
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className="rounded-2xl bg-white/10 p-3 transition-transform hover:bg-white/20 active:scale-90"
+                >
+                  <X className="h-6 w-6" />
+                </button>
               </div>
-              <button
-                onClick={() => setIsChatOpen(false)}
-                className="rounded-2xl bg-white/10 p-3 transition-transform hover:bg-white/20 active:scale-90"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="flex-grow overflow-hidden">
-              <Chat
-                bookingId={booking?.id || ''}
-                senderId={user?.uid || 'guest'}
-                senderName={user?.displayName || 'Huésped'}
-                isFloating={false}
-                onAuthRequired={() => setShowAuthModal(true)}
-              />
-            </div>
-          </motion.div>
+              <div className="flex-grow overflow-hidden">
+                <Chat
+                  bookingId={booking?.id || ''}
+                  senderId={user?.uid || 'guest'}
+                  senderName={user?.displayName || 'Huésped'}
+                  isFloating={false}
+                  onAuthRequired={() => setShowAuthModal(true)}
+                />
+              </div>
+            </motion.div>
+
+            {/* Desktop Drawer Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsChatOpen(false)}
+              className="fixed inset-0 z-[90] bg-brand-navy hidden md:block backdrop-blur-[2px]"
+            />
+
+            {/* Desktop View Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 bottom-0 z-[100] hidden h-screen w-[420px] flex-col border-l border-gray-100 bg-gray-50 shadow-2xl md:flex"
+            >
+              <div className="flex items-center justify-between border-b border-gray-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="border-brand-navy/5 h-12 w-12 overflow-hidden rounded-2xl border-2 shadow-md">
+                      <img
+                        src={
+                          listing.hostAvatar ||
+                          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150'
+                        }
+                        className="h-full w-full object-cover"
+                        alt="Avatar"
+                      />
+                    </div>
+                    <div className="absolute -right-1 -bottom-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-emerald-500">
+                      <div className="h-1 w-1 animate-ping rounded-full bg-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-brand-navy text-sm font-black tracking-tight uppercase">
+                      Chat con {listing.hostName || 'Anfitrión'}
+                    </h3>
+                    <p className="mt-0.5 text-[8px] font-black tracking-widest text-emerald-500 uppercase">
+                      Soporte Inmediato
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className="rounded-xl bg-gray-50 p-2.5 text-gray-400 hover:bg-gray-100 hover:text-brand-navy transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-hidden bg-white/40 backdrop-blur-sm">
+                <Chat
+                  bookingId={booking?.id || ''}
+                  senderId={user?.uid || 'guest'}
+                  senderName={user?.displayName || 'Huésped'}
+                  isFloating={false}
+                  onAuthRequired={() => setShowAuthModal(true)}
+                />
+              </div>
+
+              <div className="flex items-center gap-4 border-t border-gray-100 bg-white p-6">
+                <div className="bg-brand-navy text-brand-500 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl">
+                  <ShieldCheck className="h-4 w-4" />
+                </div>
+                <p className="text-[8px] leading-relaxed font-black tracking-wider text-slate-500 uppercase">
+                  Tus conversaciones están protegidas por VeneStay. Nunca realices
+                  pagos fuera de la plataforma.
+                </p>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

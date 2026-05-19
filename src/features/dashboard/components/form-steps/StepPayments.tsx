@@ -54,6 +54,7 @@ const StepPayments: React.FC = () => {
     if (activePaymentType === 'Binance') {
       if (!tempPaymentData.binanceId || tempPaymentData.binanceId.trim().length < 6) return "El Binance Pay ID debe tener al menos 6 dígitos";
       if (!tempPaymentData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tempPaymentData.email)) return "Debe ingresar el correo asociado a Binance";
+      if (!tempPaymentData.accountHolder || tempPaymentData.accountHolder.trim().length < 3) return "Debe ingresar el nombre del titular para Binance Pay";
     }
 
     if (activePaymentType === 'Transferencia' || activePaymentType === 'PagoMovil') {
@@ -227,6 +228,10 @@ const StepPayments: React.FC = () => {
                     <div className="space-y-2">
                       <label htmlFor="payment-binance-email" className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Correo asociado</label>
                       <input id="payment-binance-email" type="email" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none min-h-[44px]" placeholder="nombre@ejemplo.com" value={tempPaymentData.email || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, email: e.target.value })} />
+                    </div>
+                    <div className="col-span-1 md:col-span-2 space-y-2">
+                      <label htmlFor="payment-binance-holder" className="text-brand-navy ml-2 text-[9px] font-black tracking-widest uppercase">Titular de la Cuenta (Nombre Completo)</label>
+                      <input id="payment-binance-holder" type="text" className="w-full rounded-2xl bg-gray-50 px-6 py-4 text-xs font-bold outline-none min-h-[44px]" placeholder="Nombre y Apellido" value={tempPaymentData.accountHolder || ''} onChange={(e) => setTempPaymentData({ ...tempPaymentData, accountHolder: e.target.value })} />
                     </div>
                   </>
                 )}

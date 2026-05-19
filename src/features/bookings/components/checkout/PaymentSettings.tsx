@@ -371,24 +371,43 @@ const PaymentSettings: React.FC<PaymentSettingsProps> = ({
                     )}
 
                     {selectedType === 'Binance' && (
-                      <div className="col-span-2">
-                        <label className="text-brand-navy mb-2 ml-2 block text-[9px] font-black tracking-widest uppercase">
-                          Binance Pay ID o Email
-                        </label>
-                        <input
-                          type="text"
-                          autoFocus
-                          value={formData.binanceId}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              binanceId: e.target.value,
-                            })
-                          }
-                          placeholder="ID de 9 dígitos o correo registrado"
-                          className="focus:border-brand-500 w-full rounded-[1.2rem] border border-transparent bg-gray-50 px-5 py-4 text-sm font-black transition-all outline-none focus:bg-white"
-                        />
-                      </div>
+                      <>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="text-brand-navy mb-2 ml-2 block text-[9px] font-black tracking-widest uppercase">
+                            Binance Pay ID o Email
+                          </label>
+                          <input
+                            type="text"
+                            autoFocus
+                            value={formData.binanceId}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                binanceId: e.target.value,
+                              })
+                            }
+                            placeholder="ID de 9 dígitos o correo"
+                            className="focus:border-brand-500 w-full rounded-[1.2rem] border border-transparent bg-gray-50 px-5 py-4 text-sm font-black transition-all outline-none focus:bg-white"
+                          />
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="text-brand-navy mb-2 ml-2 block text-[9px] font-black tracking-widest uppercase">
+                            Titular de la Cuenta
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.accountHolder}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                accountHolder: e.target.value,
+                              })
+                            }
+                            placeholder="Nombre Completo"
+                            className="focus:border-brand-500 w-full rounded-[1.2rem] border border-transparent bg-gray-50 px-5 py-4 text-sm font-black transition-all outline-none focus:bg-white"
+                          />
+                        </div>
+                      </>
                     )}
 
                     {(selectedType === 'PagoMovil' ||

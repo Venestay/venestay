@@ -12,7 +12,7 @@ import { UserProfile, TravelInterest } from '@/features/auth/types';
  * Strategy: Trust Architect
  */
 export const calculateTrustScore = (profile: Partial<UserProfile>): number => {
-  let score = 20; // Base for having an account/email
+  let score = 10; // Base for having an account/email
 
   if (profile.displayName && profile.displayName.length >= 3) score += 20;
   if (profile.bio && profile.bio.length >= 50) score += 20;
