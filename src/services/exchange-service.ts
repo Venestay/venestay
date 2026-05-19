@@ -23,11 +23,11 @@ interface DolarApiRate {
   fechaActualizacion: string;
 }
 
-export async function getExchangeRates(): Promise<ExchangeRates> {
+export async function getExchangeRates(bypassCache = false): Promise<ExchangeRates> {
   const now = Date.now();
 
   // If cache is valid, return cached rates
-  if (cachedRates && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
+  if (!bypassCache && cachedRates && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
     return cachedRates;
   }
 

@@ -104,6 +104,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
   const [guests, setGuests] = useState(2);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [reservedDates, setReservedDates] = useState<
@@ -1102,65 +1103,84 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
               </div>
 
               {/* Desktop Booking Card (Visible on lg) */}
-              <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-[480px] pr-2">
-                <div className="glass-card rounded-[32px] border-gray-200/50 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.1)] md:p-10">
-                  <div className="mb-10 flex items-center justify-between">
-                    <div>
-                      <span className="text-brand-navy text-4xl font-black">
-                        ${currentListing.pricePerNight}
-                      </span>
-                      <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">
-                        {' '}
-                        / noche
-                      </span>
+              <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-[460px] pr-2">
+                <div className="rounded-[32px] border border-white/60 p-6 md:p-8 bg-white/98 backdrop-blur-md shadow-[0_25px_60px_rgba(0,0,0,0.04),0_0_50px_rgba(212,175,55,0.015)] space-y-6.5">
+                  
+                  {/* 1. HEADER DE PRECIO */}
+                  <div className="flex flex-col space-y-3.5 border-b border-slate-100 pb-5">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <span className="text-brand-navy text-4xl font-extrabold font-sans tracking-tight leading-none block">
+                          ${(totalNights > 0 ? totalPrice : currentListing.pricePerNight).toLocaleString()}
+                        </span>
+                        <span className="text-[11px] font-semibold text-slate-500 block">
+                          {totalNights > 0 ? (
+                            <>
+                              Total estadía <span className="text-slate-300 mx-1">•</span> {totalNights} {totalNights === 1 ? 'noche' : 'noches'}
+                            </>
+                          ) : (
+                            'Precio por noche'
+                          )}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-1 bg-brand-navy/[0.02] border border-brand-navy/[0.06] rounded-xl px-2.5 py-1.5 shrink-0 select-none">
+                        <Star className="text-brand-500 fill-brand-500 h-3.5 w-3.5" />
+                        <span className="text-brand-navy text-[11px] font-extrabold">
+                          {currentListing.rating}
+                        </span>
+                      </div>
                     </div>
-                    <div className="bg-brand-navy/5 border-brand-navy/5 flex items-center space-x-2 rounded-2xl border px-4 py-2">
-                      <Star className="text-brand-500 fill-brand-500 h-4 w-4" />
-                      <span className="text-brand-navy font-black">
-                        {currentListing.rating}
+
+                    {/* Luxury pill badge pill premium */}
+                    <div className="flex select-none">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold/[0.07] border border-brand-gold/[0.18] px-3.5 py-1 text-[11px] font-bold text-[#b08f23] tracking-wide shadow-[0_2px_10px_rgba(212,175,55,0.03)] transition-all hover:bg-brand-gold/[0.1]">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse shrink-0" />
+                        Reserva hoy con solo ${(totalNights > 0 ? calculatePaymentBreakdown(totalPrice).depositAmount : currentListing.pricePerNight * 0.20).toFixed(0)} USD
                       </span>
                     </div>
                   </div>
 
+                  {/* 2. BLOQUE DE RESERVA (APPLE WALLET / LINEAR CARD STACKS STYLE) */}
                   <div
                     className={cn(
-                      'group relative mb-8 overflow-hidden rounded-2xl border bg-gray-50 transition-all duration-300',
+                      'group relative overflow-hidden rounded-[24px] border bg-white transition-all duration-300 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.02)]',
                       isCalendarOpen
-                        ? 'border-brand-500 ring-brand-500/10 shadow-lg ring-1'
-                        : 'hover:border-brand-500 border-gray-200'
+                        ? 'border-brand-navy/60 ring-brand-navy/5 shadow-md ring-2'
+                        : 'hover:border-slate-300 border-slate-200/80'
                     )}
                   >
-                    <div className="grid grid-cols-2 border-b border-gray-200">
+                    <div className="grid grid-cols-2 border-b border-slate-100">
                       <div
-                        className="group/item cursor-pointer border-r border-gray-200 p-5 transition hover:bg-white"
+                        className="group/item cursor-pointer border-r border-slate-100 p-4 transition-all hover:bg-slate-50/50"
                         onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                       >
-                        <div className="mb-1 flex items-center space-x-2">
-                          <Clock className="text-brand-500 h-3 w-3" />
-                          <p className="text-brand-navy/40 text-[10px] font-black tracking-widest uppercase">
+                        <div className="mb-1 flex items-center space-x-1.5 select-none">
+                          <Clock className="text-brand-navy/40 h-3.5 w-3.5 shrink-0" />
+                          <p className="text-brand-navy/40 text-[8.5px] font-black tracking-[0.12em] uppercase">
                             Check-in
                           </p>
                         </div>
-                        <p className="text-brand-navy text-sm font-black">
+                        <p className="text-brand-navy text-[13px] font-black leading-tight mt-1">
                           {startDate
                             ? format(startDate, 'dd MMM yyyy', { locale: es })
-                            : 'Elegir'}
+                            : 'Elegir fecha'}
                         </p>
                       </div>
                       <div
-                        className="group/item cursor-pointer p-5 transition hover:bg-white"
+                        className="group/item cursor-pointer p-4 transition-all hover:bg-slate-50/50"
                         onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                       >
-                        <div className="mb-1 flex items-center space-x-2">
-                          <Clock className="text-brand-500 h-3 w-3" />
-                          <p className="text-brand-navy/40 text-[10px] font-black tracking-widest uppercase">
+                        <div className="mb-1 flex items-center space-x-1.5 select-none">
+                          <Clock className="text-brand-navy/40 h-3.5 w-3.5 shrink-0" />
+                          <p className="text-brand-navy/40 text-[8.5px] font-black tracking-[0.12em] uppercase">
                             Check-out
                           </p>
                         </div>
-                        <p className="text-brand-navy text-sm font-black">
+                        <p className="text-brand-navy text-[13px] font-black leading-tight mt-1">
                           {endDate
                             ? format(endDate, 'dd MMM yyyy', { locale: es })
-                            : 'Elegir'}
+                            : 'Elegir fecha'}
                         </p>
                       </div>
                     </div>
@@ -1171,7 +1191,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden border-b border-gray-100 bg-white"
+                          className="overflow-hidden border-b border-slate-100 bg-white"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="p-2">
@@ -1191,27 +1211,28 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                         </motion.div>
                       )}
                     </AnimatePresence>
-                    <div className="group/item flex items-center justify-between border-t border-gray-100 p-5">
+
+                    <div className="flex items-center justify-between p-4 bg-white select-none">
                       <div className="flex items-center space-x-2">
-                        <Users className="text-brand-500 h-3 w-3" />
-                        <p className="text-brand-navy/40 text-[10px] font-black tracking-widest uppercase">
-                          Ocupación
+                        <Users className="text-brand-navy/40 h-3.5 w-3.5" />
+                        <p className="text-brand-navy/40 text-[8.5px] font-black tracking-[0.12em] uppercase">
+                          Huéspedes
                         </p>
                       </div>
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => setGuests(Math.max(1, guests - 1))}
-                          className="text-brand-navy flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 transition-colors hover:bg-gray-100"
+                          className="text-brand-navy flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 transition-colors hover:bg-slate-100 active:scale-95 text-xs font-bold"
                         >
                           -
                         </button>
-                        <span className="text-brand-navy min-w-[3rem] text-center text-sm font-black">
+                        <span className="text-brand-navy min-w-[2.5rem] text-center text-xs font-black">
                           {guests} {guests === 1 ? 'Viajero' : 'Viajeros'}
                         </span>
                         <button
                           onClick={() => setGuests(Math.min(currentListing.maxGuests, guests + 1))}
                           disabled={guests >= currentListing.maxGuests}
-                          className="text-brand-navy flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 transition-colors hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-brand-navy flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 transition-colors hover:bg-slate-100 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold"
                         >
                           +
                         </button>
@@ -1219,44 +1240,139 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     </div>
                   </div>
 
-                  <div className="mb-10">
+                  {/* 3. BLOQUE DE PAGO */}
+                  <div>
                     <ExchangeCalculator
-                      basePriceUSD={
+                      totalPrice={totalNights > 0 ? totalPrice : currentListing.pricePerNight}
+                      depositAmount={
                         totalNights > 0
                           ? calculatePaymentBreakdown(totalPrice).depositAmount
                           : currentListing.pricePerNight * 0.20
                       }
+                      remainingAmount={
+                        totalNights > 0
+                          ? calculatePaymentBreakdown(totalPrice).remainingBalance
+                          : currentListing.pricePerNight * 0.80
+                      }
+                      paymentMethods={currentListing.paymentMethods}
                     />
                   </div>
 
+                  {/* 4. DESGLOSE TRANSPARENTE (ACCORDION MINIMALISTA AIRY) */}
+                  <div className="border-t border-slate-100 pt-4">
+                    <button
+                      onClick={() => setIsBreakdownOpen(!isBreakdownOpen)}
+                      className="flex w-full items-center justify-between text-[10px] font-black tracking-widest text-[#0a142c]/60 uppercase hover:text-brand-navy transition-colors py-1 px-1 select-none"
+                    >
+                      <span>{isBreakdownOpen ? 'Ocultar desglose' : 'Ver desglose'}</span>
+                      <span className="text-sm font-semibold transition-transform duration-200 text-slate-400" style={{ transform: isBreakdownOpen ? 'rotate(180deg)' : 'rotate(0)' }}>
+                        ▼
+                      </span>
+                    </button>
+                    <AnimatePresence>
+                      {isBreakdownOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="space-y-3.5 pt-4 pb-2 px-1 text-[12px] font-medium text-slate-500">
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-slate-500 font-medium">Estadía • {totalNights > 0 ? `${totalNights} ${totalNights === 1 ? 'noche' : 'noches'}` : '1 noche'}</span>
+                              <span className="font-extrabold text-brand-navy font-sans text-sm">
+                                ${(currentListing.pricePerNight * (totalNights > 0 ? totalNights : 1)).toLocaleString()} USD
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-500 font-medium">Limpieza de alojamiento</span>
+                              <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none select-none">
+                                Incluida
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-500 font-medium">Servicios de plataforma</span>
+                              <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none select-none">
+                                $0 Cargo
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-500 font-medium">Impuestos municipales</span>
+                              <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none select-none">
+                                Incluidos
+                              </span>
+                            </div>
+                            <div className="border-t border-slate-100 pt-3.5 flex justify-between items-baseline font-black text-brand-navy mt-1">
+                              <span className="text-[10px] tracking-widest uppercase text-slate-400 font-extrabold">Total Final</span>
+                              <span className="text-base font-extrabold font-sans">
+                                ${(currentListing.pricePerNight * (totalNights > 0 ? totalNights : 1)).toLocaleString()} USD
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
                   {bookingError && (
-                    <div className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-center">
-                      <p className="text-[10px] font-black tracking-widest text-red-500 uppercase">
+                    <div className="rounded-xl border border-red-100 bg-red-50 p-3 text-center">
+                      <p className="text-[10px] font-black tracking-widest text-red-500 uppercase leading-snug">
                         {bookingError}
                       </p>
                     </div>
                   )}
 
-                  <button
-                    id="reserve-button-desktop"
-                    className="bg-brand-navy hover:bg-brand-navy/95 group/btn relative w-full transform overflow-hidden rounded-2xl py-5 text-sm font-black tracking-[0.2em] text-white uppercase shadow-[0_15px_30px_-5px_rgba(5,11,24,0.4)] transition-all duration-300 active:scale-[0.98]"
-                    onClick={handleBooking}
-                  >
-                    <span className="relative z-10">Asegurar mi Estancia</span>
-                    <div className="bg-brand-500 absolute inset-0 -translate-x-full opacity-20 transition-transform duration-500 group-hover/btn:translate-x-0" />
-                  </button>
-
-                  <div className="mt-6 flex flex-col items-center justify-center space-y-2 text-gray-400">
-                    <div className="flex items-center space-x-2">
-                      <Info className="h-4 w-4" />
-                      <p className="text-[11px] font-bold tracking-tighter uppercase">
-                        Confirmación Inmediata
-                      </p>
-                    </div>
-                    <p className="px-4 text-center text-[10px] leading-relaxed font-medium">
-                      Tu estancia queda asegurada al instante tras confirmar el anticipo.
+                  {/* 6. CTA PRINCIPAL */}
+                  <div className="space-y-3.5">
+                    <button
+                      id="reserve-button-desktop"
+                      className="bg-gradient-to-r from-brand-navy via-[#0d1b3a] to-brand-navy hover:from-[#0d1b3a] hover:to-brand-navy active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] text-white uppercase shadow-[0_10px_30px_rgba(10,15,40,0.18)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_14px_35px_rgba(10,15,40,0.22)] cursor-pointer"
+                      onClick={handleBooking}
+                    >
+                      <span className="relative z-10">Asegurar mi Estancia</span>
+                      <div className="bg-brand-500 absolute inset-0 -translate-x-full opacity-10 transition-transform duration-500 group-hover/btn:translate-x-0" />
+                    </button>
+                    <p className="text-center text-[10.5px] text-slate-500 font-semibold tracking-normal select-none">
+                      No se realizará ningún cargo adicional hoy.
                     </p>
                   </div>
+
+                  {/* 5. BLOQUE DE CONFIANZA */}
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-3.5 pt-5 border-t border-slate-100 select-none">
+                    <div className="flex items-center space-x-2 text-[10.5px] font-bold text-slate-500 select-none">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-50 border border-emerald-100/50 shrink-0">
+                        <svg className="w-2.5 h-2.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      <span>Pago seguro</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-[10.5px] font-bold text-slate-500 select-none">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-50 border border-emerald-100/50 shrink-0">
+                        <svg className="w-2.5 h-2.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      <span>Confirmación inmediata</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-[10.5px] font-bold text-slate-500 select-none">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-50 border border-emerald-100/50 shrink-0">
+                        <svg className="w-2.5 h-2.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      <span>Reserva protegida</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-[10.5px] font-bold text-slate-500 select-none">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-50 border border-emerald-100/50 shrink-0">
+                        <svg className="w-2.5 h-2.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      <span>Sin cargos ocultos</span>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
