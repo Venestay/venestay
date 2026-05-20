@@ -117,7 +117,7 @@ const Home: React.FC = () => {
       if (state.searchQuery !== undefined) setSearchQuery(state.searchQuery);
       if (state.startDate) setStartDate(new Date(state.startDate));
       if (state.endDate) setEndDate(new Date(state.endDate));
-      
+
       // Clear state to avoid infinite loop or re-applying stale state
       window.history.replaceState({}, document.title);
     }
@@ -221,77 +221,74 @@ const Home: React.FC = () => {
               !isLoadingListings &&
               activeCity === 'All' &&
               searchQuery === '' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-                className="group relative mb-16 flex min-h-[85vh] items-center overflow-hidden rounded-[40px] border-8 border-gray-50 shadow-2xl"
-              >
-                <div className="absolute inset-0 bg-[#0B1120]">
-                  <img
-                    src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80"
-                    alt="Luxury Venezuela"
-                    className="h-full w-full object-cover opacity-50 transition-transform duration-1000 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120]/90 via-[#0B1120]/40 to-transparent" />
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  className="group relative mb-16 flex min-h-[85vh] items-center overflow-hidden rounded-[40px] border-8 border-gray-50 shadow-2xl"
+                >
+                  <div className="absolute inset-0 bg-[#0B1120]">
+                    <img
+                      src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80"
+                      alt="Luxury Venezuela"
+                      className="h-full w-full object-cover opacity-50 transition-transform duration-1000 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120]/90 via-[#0B1120]/40 to-transparent" />
+                  </div>
 
-                <div className="relative flex w-full max-w-3xl flex-col justify-center p-8 md:p-20">
-                  <div className="mb-8 flex items-center space-x-2 text-xs font-black tracking-[0.4em] text-amber-500 uppercase">
-                    <Sparkles className="h-4 w-4 fill-amber-500" />
-                    <span>Experiencias Premium</span>
+                  <div className="relative flex w-full max-w-3xl flex-col justify-center p-8 md:p-20">
+                    <div className="mb-8 flex items-center space-x-2 text-xs font-black tracking-[0.4em] text-amber-500 uppercase">
+                      <Sparkles className="h-4 w-4 fill-amber-500" />
+                      <span>Experiencias Premium</span>
+                    </div>
+                    <h2 className="mb-8 text-4xl leading-[1.15] font-black tracking-tight text-white md:text-6xl lg:text-7xl uppercase">
+                      Encuentra tu próximo <br />{' '}
+                      <span className="text-amber-500">Alquiler Vacacional</span> <br /> en Lechería
+                    </h2>
+                    <p className="mb-10 max-w-2xl text-lg leading-relaxed font-medium text-gray-300 md:text-xl">
+                      Propiedades verificadas, pagos adaptados al contexto actual y reservas más seguras para disfrutar sin preocupaciones.
+                    </p>
+                    <div className="flex flex-col items-start gap-4 sm:flex-row">
+                      <button
+                        onClick={() => {
+                          const grid = document.getElementById('listings-grid');
+                          grid?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="flex w-full items-center justify-center rounded-full bg-amber-500 px-8 py-4 font-bold text-gray-900 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-amber-600 sm:w-auto"
+                      >
+                        Explorar alojamientos
+                        <ChevronRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                      </button>
+                      <button
+                        onClick={() => openInfo('security')}
+                        className="w-full rounded-full border border-white/50 px-6 py-4 font-medium text-white transition-all duration-300 hover:bg-white/10 sm:w-auto"
+                      >
+                        ¿Cómo protegemos tu reserva?
+                      </button>
+                    </div>
                   </div>
-                  <h2 className="mb-8 text-5xl leading-[1.1] font-black tracking-tighter text-white md:text-7xl lg:text-8xl">
-                    TU REFUGIO <br />{' '}
-                    <span className="text-amber-500">EXCLUSIVO</span> <br /> EN
-                    VENEZUELA
-                  </h2>
-                  <p className="mb-10 max-w-2xl text-lg leading-relaxed font-medium text-gray-300 md:text-xl">
-                    Descubre estancias seleccionadas a mano. Seguridad
-                    garantizada, limpieza impecable y el confort que mereces en
-                    cada rincón del país.
-                  </p>
-                  <div className="flex flex-col items-start gap-4 sm:flex-row">
-                    <button
-                      onClick={() => {
-                        const grid = document.getElementById('listings-grid');
-                        grid?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="flex w-full items-center justify-center rounded-full bg-amber-500 px-8 py-4 font-bold text-gray-900 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-amber-600 sm:w-auto"
-                    >
-                      Encuentra tu próximo refugio
-                      <ChevronRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </button>
-                    <button
-                      onClick={() => openInfo('security')}
-                      className="w-full rounded-full border border-white/50 px-6 py-4 font-medium text-white transition-all duration-300 hover:bg-white/10 sm:w-auto"
-                    >
-                      ¿Cómo protegemos tu dinero?
-                    </button>
-                  </div>
-                </div>
 
-                {/* Stats Overlay */}
-                <div className="absolute right-12 bottom-12 z-10 hidden space-x-12 xl:flex">
-                  <div className="text-right">
-                    <p className="text-4xl leading-none font-black text-white">
-                      100%
-                    </p>
-                    <p className="mt-1 text-[10px] font-black tracking-widest text-amber-500 uppercase">
-                      Verificado
-                    </p>
+                  {/* Stats Overlay */}
+                  <div className="absolute right-12 bottom-12 z-10 hidden space-x-12 xl:flex">
+                    <div className="text-right">
+                      <p className="text-4xl leading-none font-black text-white">
+                        100%
+                      </p>
+                      <p className="mt-1 text-[10px] font-black tracking-widest text-amber-500 uppercase">
+                        Verificado
+                      </p>
+                    </div>
+                    <div className="border-l border-white/10 pl-12 text-right">
+                      <p className="text-4xl leading-none font-black text-white">
+                        VIP
+                      </p>
+                      <p className="mt-1 text-[10px] font-black tracking-widest text-amber-500 uppercase">
+                        Soporte 24/7
+                      </p>
+                    </div>
                   </div>
-                  <div className="border-l border-white/10 pl-12 text-right">
-                    <p className="text-4xl leading-none font-black text-white">
-                      VIP
-                    </p>
-                    <p className="mt-1 text-[10px] font-black tracking-widest text-amber-500 uppercase">
-                      Soporte 24/7
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
 
             {/* Section Heading */}
             <div

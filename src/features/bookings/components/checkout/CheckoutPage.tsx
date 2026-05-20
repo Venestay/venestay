@@ -957,7 +957,13 @@ const CheckoutPage: React.FC = () => {
                         </div>
                         {isBlockedByTrust && (
                           <button 
-                            onClick={() => navigate('/mi-pasaporte')}
+                            onClick={() => {
+                              if (!user) {
+                                setShowAuthModal(true);
+                              } else {
+                                navigate('/mi-pasaporte');
+                              }
+                            }}
                             className="mt-2 text-[9px] font-black text-red-600 underline decoration-2 underline-offset-2 hover:text-red-700 uppercase"
                           >
                             Completar Pasaporte para Reservar
