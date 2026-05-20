@@ -921,10 +921,162 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                {/* 04 Configuración de Reserva y Divisas (Mobile Only) */}
+                <div className="space-y-6 block lg:hidden border-t border-gray-100 pt-8">
                   <h3 className="text-brand-navy flex items-center text-2xl font-black">
                     <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
                       04
+                    </span>
+                    Detalle de Reserva y Divisas
+                  </h3>
+
+                  <div className="rounded-[32px] border border-gray-100 p-6 bg-gray-50/30 space-y-6">
+                    {/* Bloque de Fechas y Huéspedes en Móvil */}
+                    <div className="bg-white rounded-[24px] border border-slate-200/80 overflow-hidden shadow-sm">
+                      <div className="grid grid-cols-2 border-b border-slate-100">
+                        <div
+                          className="cursor-pointer border-r border-slate-100 p-4 active:bg-slate-50"
+                          onClick={() => setIsCalendarOpen(true)}
+                        >
+                          <div className="mb-1 flex items-center space-x-1.5 select-none">
+                            <Clock className="text-brand-navy/40 h-3.5 w-3.5 shrink-0" />
+                            <p className="text-brand-navy/40 text-[8.5px] font-black tracking-[0.12em] uppercase">
+                              Check-in
+                            </p>
+                          </div>
+                          <p className="text-brand-navy text-[13px] font-black leading-tight mt-1">
+                            {startDate
+                              ? format(startDate, 'dd MMM yyyy', { locale: es })
+                              : 'Elegir fecha'}
+                          </p>
+                        </div>
+                        <div
+                          className="cursor-pointer p-4 active:bg-slate-50"
+                          onClick={() => setIsCalendarOpen(true)}
+                        >
+                          <div className="mb-1 flex items-center space-x-1.5 select-none">
+                            <Clock className="text-brand-navy/40 h-3.5 w-3.5 shrink-0" />
+                            <p className="text-brand-navy/40 text-[8.5px] font-black tracking-[0.12em] uppercase">
+                              Check-out
+                            </p>
+                          </div>
+                          <p className="text-brand-navy text-[13px] font-black leading-tight mt-1">
+                            {endDate
+                              ? format(endDate, 'dd MMM yyyy', { locale: es })
+                              : 'Elegir fecha'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-white select-none">
+                        <div className="flex items-center space-x-2">
+                          <Users className="text-brand-navy/40 h-3.5 w-3.5" />
+                          <p className="text-brand-navy/40 text-[8.5px] font-black tracking-[0.12em] uppercase">
+                            Huéspedes
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={() => setGuests(Math.max(1, guests - 1))}
+                            className="text-brand-navy flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 active:bg-slate-100 text-xs font-bold"
+                          >
+                            -
+                          </button>
+                          <span className="text-brand-navy min-w-[2.5rem] text-center text-xs font-black">
+                            {guests} {guests === 1 ? 'Viajero' : 'Viajeros'}
+                          </span>
+                          <button
+                            onClick={() => setGuests(Math.min(currentListing.maxGuests, guests + 1))}
+                            disabled={guests >= currentListing.maxGuests}
+                            className="text-brand-navy flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 active:bg-slate-100 disabled:opacity-30 text-xs font-bold"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desglose de Divisas / Conversiones en Móvil */}
+                    <div className="border-t border-slate-100 pt-4">
+                      <ExchangeCalculator
+                        totalPrice={totalNights > 0 ? totalPrice : currentListing.pricePerNight}
+                        depositAmount={
+                          totalNights > 0
+                            ? calculatePaymentBreakdown(totalPrice).depositAmount
+                            : currentListing.pricePerNight * 0.20
+                        }
+                        remainingAmount={
+                          totalNights > 0
+                            ? calculatePaymentBreakdown(totalPrice).remainingBalance
+                            : currentListing.pricePerNight * 0.80
+                        }
+                        paymentMethods={currentListing.paymentMethods}
+                      />
+                    </div>
+
+                    {/* Acordeón de desglose detallado en móvil */}
+                    <div className="border-t border-slate-100 pt-4">
+                      <button
+                        onClick={() => setIsBreakdownOpen(!isBreakdownOpen)}
+                        className="flex w-full items-center justify-between text-[10px] font-black tracking-widest text-[#0a142c]/60 uppercase py-1 px-1 select-none"
+                      >
+                        <span>{isBreakdownOpen ? 'Ocultar desglose' : 'Ver desglose de tarifas'}</span>
+                        <span className="text-sm font-semibold transition-transform duration-200 text-slate-400" style={{ transform: isBreakdownOpen ? 'rotate(180deg)' : 'rotate(0)' }}>
+                          ▼
+                        </span>
+                      </button>
+                      <AnimatePresence>
+                        {isBreakdownOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="space-y-3.5 pt-4 pb-2 px-1 text-[12px] font-medium text-slate-500">
+                              <div className="flex justify-between items-baseline">
+                                <span className="text-slate-500 font-medium">Estadía • {totalNights > 0 ? `${totalNights} ${totalNights === 1 ? 'noche' : 'noches'}` : '1 noche'}</span>
+                                <span className="font-extrabold text-brand-navy font-sans text-sm">
+                                  ${(currentListing.pricePerNight * (totalNights > 0 ? totalNights : 1)).toLocaleString()} USD
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-500 font-medium">Limpieza de alojamiento</span>
+                                <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none">
+                                  Incluida
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-500 font-medium">Servicios de plataforma</span>
+                                <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none">
+                                  $0 Cargo
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-500 font-medium">Impuestos municipales</span>
+                                <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none">
+                                  Incluidos
+                                </span>
+                              </div>
+                              <div className="border-t border-slate-100 pt-3.5 flex justify-between items-baseline font-black text-brand-navy mt-1">
+                                <span className="text-[10px] tracking-widest uppercase text-slate-400 font-extrabold">Total Final</span>
+                                <span className="text-base font-extrabold font-sans">
+                                  ${(currentListing.pricePerNight * (totalNights > 0 ? totalNights : 1)).toLocaleString()} USD
+                                </span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6 border-t border-gray-100 pt-8 lg:border-t-0 lg:pt-0">
+                  <h3 className="text-brand-navy flex items-center text-2xl font-black">
+                    <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
+                      <span className="hidden lg:inline">04</span>
+                      <span className="inline lg:hidden">05</span>
                     </span>
                     Ubicación
                   </h3>
@@ -1048,7 +1200,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <h3 className="text-brand-navy flex items-center text-2xl font-black">
                       <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
-                        05
+                        <span className="hidden lg:inline">05</span>
+                        <span className="inline lg:hidden">06</span>
                       </span>
                       Reseñas Verificadas
                     </h3>
