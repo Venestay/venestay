@@ -144,27 +144,27 @@ Refactorizar `useListingValidation` para usar este patrón genérico en lugar de
 ## Criterios de Aceptación
 
 ### Funcionalidad (No Regresión)
-- [ ] El formulario mantiene su funcionalidad actual de guardado y publicación.
-- [ ] El borrador en `localStorage` sigue funcionando.
-- [ ] La carga de imágenes y el mapa funcionan igual que antes.
+- [x] El formulario mantiene su funcionalidad actual de guardado y publicación.
+- [x] El borrador en `localStorage` sigue funcionando.
+- [x] La carga de imágenes y el mapa funcionan igual que antes.
 
 ### Rendimiento
-- [ ] El tamaño del bundle principal disminuye gracias al code-splitting (`bundle-dynamic-imports`).
-- [ ] La librería de compresión no aparece en el bundle inicial.
-- [ ] La navegación entre pasos es instantánea (< 100ms de respuesta visual).
+- [x] El tamaño del bundle principal disminuye gracias al code-splitting (`bundle-dynamic-imports`).
+- [x] La librería de compresión no aparece en el bundle inicial.
+- [x] La navegación entre pasos es instantánea (< 100ms de respuesta visual).
 
 ### Accesibilidad
-- [ ] Todos los campos tienen `label` asociado programáticamente.
-- [ ] Los errores de validación son anunciados por lectores de pantalla (`aria-live`).
-- [ ] Navegación completa por teclado (Tab / Shift+Tab / Enter).
-- [ ] El foco se mueve al primer campo al entrar en cada paso.
+- [x] Todos los campos tienen `label` asociado programáticamente.
+- [x] Los errores de validación son anunciados por lectores de pantalla (`aria-live`).
+- [x] Navegación completa por teclado (Tab / Shift+Tab / Enter).
+- [x] El foco se mueve al primer campo al entrar en cada paso.
 
 ### Calidad de Código
-- [ ] Pasa `npm run lint` sin errores.
-- [ ] No hay tipos `any` en los archivos nuevos.
+- [x] Pasa `npm run lint` sin errores.
+- [x] No hay tipos `any` en los archivos nuevos.
 - [ ] Ningún archivo supera 300 líneas.
 
 ### UX y Diseño
-- [ ] La barra de progreso de pasos es visible y muestra el estado de validez.
-- [ ] Los controles +/- son visibles y accesibles en móvil.
+- [x] La barra de progreso de pasos es visible y muestra el estado de validez.
+- [x] Los controles +/- son visibles y accesibles en móvil.
 - [ ] Las transiciones entre pasos respetan `prefers-reduced-motion`.
