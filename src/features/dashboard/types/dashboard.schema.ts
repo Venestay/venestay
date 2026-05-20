@@ -3,7 +3,10 @@ import { z } from 'zod';
 export const listingSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres'),
   description: z.string().min(20, 'La descripción debe tener al menos 20 caracteres'),
-  city: z.enum(['Caracas', 'Margarita', 'Falcon', 'Lechería', 'Maracaibo', 'Puerto La Cruz']),
+  city: z.preprocess(
+    (val) => (val === 'Lecheria' ? 'Lechería' : val),
+    z.enum(['Caracas', 'Margarita', 'Falcon', 'Lechería', 'Maracaibo', 'Puerto La Cruz'])
+  ),
   location: z.string().optional(),
   pricePerNight: z.coerce.number().positive('El precio debe ser un valor positivo'),
   maxGuests: z.coerce.number().min(1, 'Mínimo 1 huésped'),
