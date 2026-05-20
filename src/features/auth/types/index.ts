@@ -31,6 +31,17 @@ export interface PaymentMethod {
   };
 }
 
+export type LoyaltyTierType = 'BRONCE' | 'PLATA' | 'ORO';
+
+export interface HostLoyaltyStats {
+  completedRentalsCount: number;
+  rollingTwelveMonthsGMV: number;
+  currentCommissionRate: 0.12 | 0.10 | 0.08;
+  averageRating: number;
+  loyaltyTier: LoyaltyTierType;
+  lastRecalculatedAt: string;
+}
+
 export interface UserProfile {
   uid: string;
   email: string | null;
@@ -68,7 +79,12 @@ export interface UserProfile {
   location?: string;
   responseTime?: string;
   responseRate?: string;
+
+  // Host Loyalty (v2.3.0)
+  loyaltyStats?: HostLoyaltyStats;
+  currentCommissionRate?: number;
 }
+
 
 
 
