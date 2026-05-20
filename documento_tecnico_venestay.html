@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>VeneStay - Documento de Arquitectura y Especificación Técnica</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      line-height: 1.6;
+      color: #1C2541;
+      margin: 40px auto;
+      max-width: 900px;
+      padding: 0 20px;
+      background-color: #FFFFFF;
+    }
+    h1 {
+      color: #0B132B;
+      border-bottom: 3px solid #C1A25A;
+      padding-bottom: 12px;
+      margin-top: 45px;
+      font-size: 26px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    h2 {
+      color: #1C2541;
+      border-bottom: 1.5px solid #E2E8F0;
+      padding-bottom: 8px;
+      margin-top: 35px;
+      font-size: 20px;
+    }
+    h3 {
+      color: #3A506B;
+      margin-top: 25px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    p {
+      margin-bottom: 15px;
+      text-align: justify;
+      font-size: 14px;
+      color: #334155;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      font-size: 13px;
+    }
+    th {
+      background-color: #0B132B;
+      color: #FFFFFF;
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 600;
+      border: 1px solid #1C2541;
+    }
+    td {
+      padding: 10px 12px;
+      border: 1px solid #E2E8F0;
+      color: #334155;
+      vertical-align: top;
+    }
+    tr:nth-child(even) {
+      background-color: #F8FAFC;
+    }
+    pre {
+      background-color: #0F172A;
+      color: #F8F8F2;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      border-left: 4px solid #C1A25A;
+      margin: 20px 0;
+    }
+    code {
+      font-family: 'Consolas', monospace;
+      background-color: #F1F5F9;
+      color: #B45309;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    ul, ol {
+      margin-bottom: 15px;
+      padding-left: 20px;
+      font-size: 14px;
+      color: #334155;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    .highlight-card {
+      background-color: #FFFDF5;
+      border-left: 4px solid #C1A25A;
+      padding: 14px;
+      margin: 20px 0;
+      border-radius: 0 6px 6px 0;
+      font-size: 13.5px;
+    }
+    .alert-card {
+      background-color: #FEF2F2;
+      border-left: 4px solid #EF4444;
+      padding: 14px;
+      margin: 20px 0;
+      border-radius: 0 6px 6px 0;
+      font-size: 13.5px;
+    }
+    .tech-pill {
+      font-weight: bold;
+      color: #0B132B;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cabecera del Documento para Google Docs -->
+  <div style="text-align: center; border-bottom: 2px double #C1A25A; padding-bottom: 20px; margin-bottom: 40px;">
+    <h1 style="margin: 0 0 10px 0; color: #0B132B; font-size: 32px; border: none;">VeneStay</h1>
+    <h2 style="margin: 0 0 15px 0; color: #C1A25A; font-size: 16px; text-transform: uppercase; border: none; letter-spacing: 2px;">DOCUMENTO DE ARQUITECTURA Y ESPECIFICACIÓN TÉCNICA INDUSTRIAL</h2>
+    <p style="text-align: center; margin: 0; font-size: 12px; color: #64748B;">
+      <strong>Ecosistema Premium P2P de Alquiler Vacacional | Beta de Lechería, Venezuela</strong><br>
+      <strong>Stack:</strong> React 19 • TypeScript (Estricto) • Vite 6 • Firebase SDK v10 • Tailwind CSS • FSD-lite<br>
+      <strong>Fecha:</strong> Mayo 2026 • <strong>Versión de Lanzamiento:</strong> 2.2
+    </p>
+  </div>
+
+  <!-- SECCIÓN 1 -->
+  <h1>1. Descripción del Proyecto y Módulos Core</h1>
+  
+  <h2>1.1 Propósito del Negocio e Innovación en el Contexto de Lechería</h2>
+  <p>
+    El proyecto <strong>VeneStay</strong> nace como un marketplace P2P premium diseñado específicamente para resolver las ineficiencias de confianza, transacción y logística en el alquiler de propiedades vacacionales de alto valor en la región de <strong>Lechería, Estado Anzoátegui</strong>. Lechería posee una geografía única en el Caribe, estructurada alrededor del Complejo Turístico El Morro, caracterizado por canales navegables artificiales, villas de lujo con muelles privados (como Casas Bote), y playas urbanas premium (Playa Lido, Playa Mansa). El ticket promedio de arrendamiento diario en esta región es comparable a destinos de lujo internacionales.
+  </p>
+  <p>
+    No obstante, operar un marketplace en Venezuela presenta fricciones operacionales atípicas que los sistemas tradicionales globales (como Airbnb o Booking.com) no resuelven. VeneStay se posiciona como el habilitador tecnológico definitivo mediante tres pilares estratégicos:
+  </p>
+  <ul>
+    <li>
+      <span class="tech-pill">Soporte Multimoneda Nativo y Manual:</span> Ante la ausencia de pasarelas de pago automatizadas locales directamente enlazadas a bancos internacionales, el sistema gestiona flujos manuales verificables para <strong>Zelle, Binance P2P (USDT), Pago Móvil y Transferencias Bancarias</strong> nacionales en bolívares al tipo de cambio oficial del Banco Central de Venezuela (BCV), con mecanismos transparentes de carga de comprobantes.
+    </li>
+    <li>
+      <span class="tech-pill">Blindaje contra Frecuencia de Fallos de Servicios:</span> El desarrollo arquitectónico contempla características específicas para la resiliencia ante fluctuaciones eléctricas ("bajones de luz") e inestabilidad de conectividad a internet mediante sincronización silenciosa local.
+    </li>
+    <li>
+      <span class="tech-pill">Control de Acceso y Verificación KYC Rigurosa:</span> La seguridad de los propietarios (hosts) de yates, villas y apartamentos en conjuntos cerrados de alta seguridad exige un nivel de filtrado de huéspedes extremadamente estricto antes de otorgar acceso físico a las instalaciones.
+    </li>
+  </ul>
+
+  <h2>1.2 Desglose Exhaustivo de Módulos Principales</h2>
+
+  <h3>A. Feed de Propiedades y Búsqueda Multidimensional</h3>
+  <p>
+    El Feed de Propiedades implementa un filtrado avanzado de alto rendimiento enfocado en los atributos exclusivos de la zona. Permite buscar propiedades no solo por rango de precio y huéspedes, sino por características de infraestructura críticas para el mercado venezolano:
+  </p>
+  <ul>
+    <li><strong>Soporte Eléctrico:</strong> Presencia de planta eléctrica total (100% de la propiedad, incluyendo aire acondicionado central) o parcial (iluminación y tomacorrientes esenciales).</li>
+    <li><strong>Soporte Hídrico:</strong> Tanques subterráneos de gran capacidad o acceso a pozos de agua dulce profundos, lo que garantiza cero interrupciones de servicio.</li>
+    <li><strong>Facilidades Náuticas:</strong> Disponibilidad de muelle privado apto para el atraque de embarcaciones de recreo (lanchas, yates).</li>
+    <li><strong>Seguridad del Complejo:</strong> Vigilancia armada las 24 horas, control de acceso biométrico o patrullaje en los canales navegables.</li>
+  </ul>
+  <p>
+    La interfaz de usuario combina mapas interactivos en tiempo real con <strong>Google Maps SDK</strong>, agrupamiento inteligente de marcadores (Marker Clustering) para evitar sobrecarga cognitiva en los canales densos de Lechería, y carga diferida (Lazy Loading) de las tarjetas de propiedades para mantener una navegación fluida a 60 FPS.
+  </p>
+
+  <h3>B. Dashboard del Anfitrión (Host Control Center)</h3>
+  <p>
+    Panel administrativo premium que unifica la gestión de propiedades y operaciones en una sola vista estructurada. Sus principales características técnicas y operativas incluyen:
+  </p>
+  <ul>
+    <li>
+      <strong>Sincronización de Calendario y Reservas:</strong> Control en tiempo real del estado de disponibilidad de cada propiedad mediante un calendario interactivo que gestiona bloqueos manuales por mantenimiento o alquiler directo.
+    </li>
+    <li>
+      <strong>Ecosistema de Tasas Dinámicas por Verificación (Commission Tiers):</strong> Incentiva la transparencia y formalidad. El sistema aplica una comisión de servicio reducida del <strong>10%</strong> a los anfitriones que completan la verificación KYC estricta y vinculan métodos de pago validados, frente a un <strong>12%</strong> cobrado a las cuentas sin verificación KYC completa.
+    </li>
+    <li>
+      <strong>Verificación Manual de Flujos Financieros:</strong> Pantalla especializada que permite al host revisar los comprobantes de pago subidos por los huéspedes (Zelle/Binance/Pago Móvil). El anfitrión puede contrastar la referencia de la transacción y el adjunto gráfico antes de marcar la reserva como "Confirmada".
+    </li>
+  </ul>
+
+  <h3>C. El "Listing Form" Evolutivo en 4 Pasos</h3>
+  <p>
+    Para mitigar la fatiga del formulario y asegurar que la tasa de abandono en la creación de propiedades sea mínima, el formulario de publicación de VeneStay se fragmenta en un wizard interactivo asíncrono optimizado con validación por paso:
+  </p>
+  <div class="highlight-card">
+    <strong>Evolución del Flujo Wizard en 4 Pasos:</strong>
+    <ol>
+      <li>
+        <strong>Paso 1: Información General y Reglas:</strong> Título, descripción de alto impacto, capacidad de huéspedes, cantidad de dormitorios/camas/baños, y el nuevo <strong>Selector de Reglas de la Casa</strong> (permitido fumar, mascotas, eventos, niños, y una ventana de horarios obligatoria para el Check-in y Check-out).
+      </li>
+      <li>
+        <strong>Paso 2: Galería de Ambientes y Premium Touch:</strong> Carga obligatoria de al menos 1 imagen. Se introducen los "Ambiente Photos", permitiendo segmentar la carga de fotos en alta resolución por áreas específicas: "Área Social", "Habitaciones" y "Muelle/Vistas al Canal".
+      </li>
+      <li>
+        <strong>Paso 3: Geolocalización Precisa:</strong> Integración del mapa interactivo con arrastre de marcador (Drag & Drop) para fijar las coordenadas exactas de latitud y longitud. Esto se complementa con un área de texto para instrucciones específicas de acceso a urbanizaciones privadas ("Casas Bote A", "Isla Paraíso", etc.).
+      </li>
+      <li>
+        <strong>Paso 4: Blindaje Financiero y Políticas:</strong> Entrada numérica para el precio por noche y la tarifa de limpieza. Toggle premium para activar el <strong>Depósito de Seguridad (Fianza de Daños)</strong> que despliega con una suave transición CSS el campo numérico del monto requerido. Selector de <strong>Políticas de Cancelación (Flexible, Moderada, Estricta)</strong> y configuración detallada de cuentas receptoras para cobros en dólares y bolívares.
+      </li>
+    </ol>
+  </div>
+
+  <h3>D. El "Pasaporte VeneStay" (Sistema de Confianza y KYC)</h3>
+  <p>
+    El <strong>Pasaporte VeneStay</strong> es la pieza central de la confianza comunitaria en la plataforma. Consiste en un sistema de perfilado de identidad y cálculo dinámico de puntuación de confianza (Trust Score), el cual funciona como una llave de acceso para transacciones comerciales dentro de la app:
+  </p>
+  <ul>
+    <li>
+      <strong>Flujo de Verificación KYC Fuerte:</strong> El usuario debe subir una fotografía nítida de su Documento de Identidad (Cédula o Pasaporte) y una selfie en tiempo real. Estos documentos se suben directamente a una sección protegida de Firebase Storage (encriptada bajo reglas estrictas a nivel de servidor).
+    </li>
+    <li>
+      <strong>Fórmula Algorítmica de Confianza (Trust Score):</strong> Se calcula del 0% al 100% de manera reactiva en tiempo real bajo la siguiente distribución de pesos ponderados en Firestore:
+      <ul>
+        <li><code>+20%</code> Verificación básica y enlace de correo electrónico.</li>
+        <li><code>+30%</code> Aprobación de KYC (Verificación manual de identidad por el equipo de administración de VeneStay).</li>
+        <li><code>+20%</code> Historial de pago: primera transacción completada y liberada con éxito sin reportes de disputas.</li>
+        <li><code>+20%</code> Calificación promedio superior a 4.5 estrellas otorgada por anfitriones en reservas previas.</li>
+        <li><code>+10%</code> Completitud general del perfil (biografía, idiomas hablados, foto de avatar).</li>
+      </ul>
+    </li>
+    <li>
+      <strong>Puerta de Reserva Unificada (Trust Gate):</strong> Para poder proceder a la confirmación del pago en el checkout, el sistema evalúa dinámicamente si el huésped posee un <strong>Trust Score mínimo de 40%</strong>. Si el score es inferior, el botón de reserva se deshabilita y se muestra una barra de progreso informativa que indica los pasos exactos a completar en su pasaporte (ej. "Sube tu documento de identidad para ganar +30% de confianza").
+    </li>
+  </ul>
+
+  <!-- SECCIÓN 2 -->
+  <h1>2. Hoja de Ruta Técnica (Roadmap en Sprints)</h1>
+  
+  <h2>2.1 Planificación de Sprints y Mitigación de Riesgos</h2>
+  <p>
+    Para garantizar un lanzamiento impecable en julio de 2026 enfocado en la beta de Lechería, la hoja de ruta técnica se ha estructurado en 5 sprints incrementales de dos semanas cada uno. Este roadmap no prioriza la comodidad del equipo de desarrollo, sino la <strong>reducción del riesgo financiero y de fugas de datos</strong> en la plataforma.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 10%;">Sprint</th>
+        <th style="width: 20%;">Módulo Objetivo</th>
+        <th style="width: 45%;">Acciones Técnicas Principales</th>
+        <th style="width: 25%;">Riesgo Crítico que Mitiga</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Sprint 1</strong></td>
+        <td>Cimientos de Datos y Seguridad</td>
+        <td>
+          - Refactorización de interfaces TypeScript en <code>src/types/</code>.<br>
+          - Creación de esquemas Zod con validación cruzada condicional.<br>
+          - Despliegue inicial de Firebase Storage y Firestore Security Rules restrictivas.
+        </td>
+        <td><strong>Inconsistencia de Datos y Escalación de Privilegios:</strong> Impide el almacenamiento de esquemas de propiedad inválidos en la base de datos y bloquea accesos no autorizados.</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 2</strong></td>
+        <td>Listing Form Evolutivo (Pasos 1 y 2)</td>
+        <td>
+          - Creación de componentes atómicos interactivos (<code>HouseRulesSelector</code>, <code>TimePicker</code>).<br>
+          - Implementación de la carga segmentada por ambientes en el gestor de imágenes.<br>
+          - Desarrollo del hook de persistencia local <code>useDraftSync</code>.
+        </td>
+        <td><strong>Fuga de Conversión por Pérdida de Datos:</strong> Previene que fallos de conexión o caídas eléctricas fuercen al host a reescribir la información del listado desde cero.</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 3</strong></td>
+        <td>Listing Form (Pasos 3 y 4) y Finanzas</td>
+        <td>
+          - Integración de Google Maps con fijación de coordenadas geográficas precisas.<br>
+          - Desarrollo de la sección de blindaje financiero (depósitos de seguridad dinámicos y políticas de cancelación).<br>
+          - Implementación de desgloses de tarifas reactivos en base al input del host.
+        </td>
+        <td><strong>Fugas Financieras y Errores de Cálculo:</strong> Garantiza que el depósito de seguridad y la tarifa de limpieza estén estructurados y validados condicionalmente según las políticas de negocio.</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 4</strong></td>
+        <td>Pasaporte VeneStay y KYC Integrado</td>
+        <td>
+          - Creación de la pantalla de gestión del perfil de usuario y carga de documentos de identidad.<br>
+          - Lógica asíncrona de cálculo de Trust Score basado en datos de Firestore.<br>
+          - Implementación del validador de checkout (Trust Gate) en el flujo de reservas.
+        </td>
+        <td><strong>Fraude de Identidad y Daños Colaterales:</strong> Impide que usuarios anónimos o no verificados reserven propiedades de ultra-lujo, protegiendo los activos del anfitrión.</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 5</strong></td>
+        <td>Cálculo en Servidor y Quality Gates</td>
+        <td>
+          - Migración de cálculos matemáticos y conversión BCV a Firebase Cloud Functions.<br>
+          - Integración de transacciones atómicas en Firestore para evitar dobles reservas.<br>
+          - Auditoría de accesibilidad WCAG 2.2 AA y paso de linters strict en CI/CD.
+        </td>
+        <td><strong>Manipulación de Precios desde el Cliente:</strong> Evita que usuarios malintencionados modifiquen los montos finales a pagar alterando las variables del frontend.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>2.2 Cambios Requeridos en el Código para la Evolución del Listing Form</h2>
+  
+  <h3>A. Modificación de la Interfaz TypeScript en <code>src/types/index.ts</code></h3>
+  <p>
+    Para acomodar las nuevas variables del negocio financiero y control de estancia en el dominio de listados, actualizamos la firma de la interfaz de datos principal. Los campos opcionales permiten que el histórico de datos en la base de datos siga siendo compatible:
+  </p>
+
+  <pre><code>// Modificaciones en src/features/listings/types/index.ts o src/types/index.ts
+
+export type CancellationPolicy = 'flexible' | 'moderate' | 'strict';
+
+export interface HouseRules {
+  allowPets: boolean;
+  allowSmoking: boolean;
+  allowParties: boolean;
+  allowChildren: boolean;
+  additionalRules?: string;
+}
+
+export interface Listing {
+  id: string;
+  title: string;
+  description: string;
+  city: 'Caracas' | 'Margarita' | 'Falcon' | 'Lechería' | 'Maracaibo' | 'Puerto La Cruz';
+  location: string;
+  pricePerNight: number;
+  rating: number;
+  reviewsCount: number;
+  images: string[];
+  amenities: string[];
+  maxGuests: number;
+  bedrooms: number;
+  beds: number;
+  baths: number;
+  hostName: string;
+  hostAvatar: string;
+  hostId: string;
+  isVerified: boolean;
+  isPetFriendly: boolean;
+  blockedDates?: string[];
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  
+  // Campos de infraestructura y geolocalización exigidos por el validador
+  buildingFloors: number;
+  propertyFloor: number;
+  constructionYear: number;
+  latitude: number;
+  longitude: number;
+  manualAddress?: string;
+
+  // Parámetros financieros y logísticos v2.3.0
+  houseRules?: HouseRules;
+  checkInTime?: string;  
+  checkOutTime?: string; 
+  requiresDeposit?: boolean;
+  depositAmount?: number;
+  cleaningFee?: number;
+  cancellationPolicy?: CancellationPolicy;
+  minNights?: number;
+  maxNights?: number;
+  environmentPhotos?: Record&lt;string, string&gt;; 
+}
+</code></pre>
+
+  <h3>B. Esquemas de Validación Cruzada Condicional con Zod en <code>dashboard.schema.ts</code></h3>
+  <p>
+    Para blindar la base de datos a nivel de tipo de datos de entrada en el cliente, implementamos una regla de validación de Zod con refinamiento condicional estricto: si <code>requiresDeposit</code> está activo (es <code>true</code>), el campo de monto de fianza <code>depositAmount</code> se convierte en obligatorio y debe ser un valor positivo mayor a cero.
+  </p>
+
+  <pre><code>import { z } from 'zod';
+
+export const listingSchema = z.object({
+  title: z.string().min(5, 'El título debe tener al menos 5 caracteres'),
+  description: z.string().min(20, 'La descripción debe tener al menos 20 caracteres'),
+  city: z.enum(['Caracas', 'Margarita', 'Falcon', 'Lechería', 'Maracaibo', 'Puerto La Cruz']),
+  location: z.string().min(2, 'Debe especificar el sector o ubicación física'),
+  pricePerNight: z.coerce.number().positive('El precio por noche debe ser un valor positivo'),
+  maxGuests: z.coerce.number().min(1, 'Mínimo 1 huésped permitido'),
+  bedrooms: z.coerce.number().min(0, 'Especificar número de habitaciones'),
+  beds: z.coerce.number().min(1, 'Debe tener al menos 1 cama'),
+  baths: z.coerce.number().min(1, 'Debe tener al menos 1 baño'),
+  minNights: z.coerce.number().min(1, 'Estancia mínima obligatoria de 1 noche').default(1),
+  maxNights: z.coerce.number().min(1).default(30),
+  buildingFloors: z.coerce.number().min(1, 'Mínimo 1 piso de edificio'),
+  propertyFloor: z.coerce.number().min(0, 'Piso no puede ser menor a cero'),
+  constructionYear: z.coerce.number().min(1900).max(new Date().getFullYear()),
+  images: z.array(z.string()).min(1, 'Debes subir al menos una imagen de portada'),
+  amenities: z.array(z.string()).default([]),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  
+  // ==========================================
+  // VALIDADORES DE NUEVOS CAMPOS CONDICIONALES
+  // ==========================================
+  checkInTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Formato de hora inválido (HH:MM)'),
+  checkOutTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Formato de hora inválido (HH:MM)'),
+  cleaningFee: z.coerce.number().min(0, 'La tarifa de limpieza no puede ser negativa').default(0),
+  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict']).default('flexible'),
+  
+  // Campos del Depósito de Seguridad
+  requiresDeposit: z.boolean().default(false),
+  depositAmount: z.coerce.number().optional(),
+
+  // Objeto de Reglas de la Casa
+  houseRules: z.object({
+    allowPets: z.boolean().default(false),
+    allowSmoking: z.boolean().default(false),
+    allowParties: z.boolean().default(false),
+    allowChildren: z.boolean().default(true),
+    additionalRules: z.string().max(1000, 'Máximo 1000 caracteres para reglas extras').optional()
+  })
+}).refine(
+  (data) => data.propertyFloor <= data.buildingFloors,
+  {
+    message: "El piso del alojamiento no puede ser mayor que el total de pisos del edificio",
+    path: ["propertyFloor"]
+  }
+).superRefine((data, ctx) => {
+  // Validación cruzada condicional: Si requiere depósito de seguridad, el monto es estrictamente requerido y &gt; 0
+  if (data.requiresDeposit) {
+    if (data.depositAmount === undefined || data.depositAmount === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El monto del depósito de seguridad es obligatorio si activa la fianza",
+        path: ["depositAmount"]
+      });
+    } else if (data.depositAmount <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El depósito de seguridad debe ser un monto mayor a cero",
+        path: ["depositAmount"]
+      });
+    }
+  }
+});
+
+export type ListingSchema = z.infer<typeof listingSchema>;
+</code></pre>
+
+  <!-- SECCIÓN 3 -->
+  <h1>3. Arquitectura de Seguridad (Security Blueprint)</h1>
+  
+  <h2>3.1 Desafíos de Integridad y Mitigación Serverless</h2>
+  <p>
+    En un entorno serverless directo como Firebase, donde la aplicación de frontend interactúa con los SDKs del lado del cliente, confiar ciegamente en la lógica del cliente representa un riesgo crítico de seguridad. Cualquier usuario avanzado con herramientas de desarrollador o scripts automatizados puede saltarse el código de validación de React y escribir información maliciosa directamente en las colecciones.
+  </p>
+  <p>
+    Para evitar la manipulación de flujos de negocio y proteger los datos personales de la comunidad, implementamos un esquema defensivo en capas: validación estricta de esquemas de datos del lado del cliente con Zod para una experiencia UX inmediata, seguido de un blindaje absoluto en el servidor mediante **Firebase Firestore y Storage Security Rules** que auditan cada petición HTTP de forma aislada.
+  </p>
+
+  <h2>3.2 Firebase Storage Rules para el Resguardo KYC del Pasaporte</h2>
+  <p>
+    El resguardo de documentos de identidad personales y biometrías del Pasaporte VeneStay requiere un nivel de privacidad estricto. La carpeta <code>/kyc/</code> de almacenamiento debe ser inaccesible al público general, limitando la lectura únicamente al propietario del documento y a los administradores auditores del sistema.
+  </p>
+
+  <pre><code>rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Funciones utilitarias globales de acceso y validación
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Consulta si el usuario autenticado tiene rol 'admin' en la base de datos Firestore
+    function isAdmin() {
+      return isAuthenticated() && 
+             firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Regla estricta para la colección de Verificación de Identidad (KYC)
+    match /kyc/{userId}/{fileName} {
+      // Lectura: Únicamente permitida al propio usuario titular del documento o al equipo administrador
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Escritura (crear/actualizar): El usuario puede subir su propio documento si es una imagen válida (< 5MB)
+      allow create, update: if isOwner(userId) 
+                           && request.resource.size <= 5 * 1024 * 1024
+                           && request.resource.contentType.matches('image/.*');
+                           
+      // Borrado: Solo el usuario titular o administradores pueden eliminar el registro
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+  }
+}
+</code></pre>
+
+  <h2>3.3 Firestore Security Rules para Evitar la Manipulación de Precios</h2>
+  <p>
+    Uno de los vectores de ataque más comunes en marketplaces es la alteración de precios de listados o la creación de reservas con importes menores a los calculados. Las reglas de seguridad de Firestore actúan como un cortafuegos que impide modificar variables calculadas, forzando la consistencia de los datos financieros.
+  </p>
+
+  <pre><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Funciones utilitarias de autenticación
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Validador de firma estructural de datos entrantes para listados
+    function isValidListing(data) {
+      return data.keys().hasAll(['id', 'title', 'description', 'city', 'location', 'pricePerNight', 'hostId']) &&
+             data.pricePerNight is number &&
+             data.pricePerNight > 0;
+    }
+
+    // Validador de coherencia estructural para reservas
+    function isValidBooking(data) {
+      return data.keys().hasAll(['listingId', 'guestId', 'ownerId', 'totalAmount', 'status', 'createdAt', 'nights']) &&
+             data.guestId == request.auth.uid && 
+             data.nights is number &&
+             data.nights > 0 &&
+             data.totalAmount is number && 
+             data.totalAmount > 0 &&
+             data.status == 'PENDING_PAYMENT';
+    }
+
+    // Reglas para la Colección de Propiedades (listings)
+    match /listings/{listingId} {
+      allow read: if true; // Lectura pública para búsquedas en el feed
+      
+      // Creación: El host debe estar autenticado, ser el propietario del listado y enviar datos estructurados válidos
+      allow create: if isSignedIn() && 
+                    (request.resource.data.hostId == request.auth.uid || isAdmin()) && 
+                    isValidListing(request.resource.data);
+                    
+      // Actualización: Solo el dueño de la propiedad o un administrador pueden editar, y no pueden alterar el hostId original
+      allow update: if (isAdmin() || get(/databases/$(database)/documents/listings/$(listingId)).data.hostId == request.auth.uid) &&
+                    isValidListing(request.resource.data) &&
+                    request.resource.data.hostId == resource.data.hostId;
+                    
+      allow delete: if isAdmin() || get(/databases/$(database)/documents/listings/$(listingId)).data.hostId == request.auth.uid;
+    }
+
+    // Reglas para la Colección de Reservas (bookings)
+    match /bookings/{bookingId} {
+      allow get, list: if isSignedIn() && (
+        resource.data.guestId == request.auth.uid || 
+        resource.data.ownerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Prevención de inyección de precios arbitrarios desde el cliente al crear reservas
+      allow create: if isSignedIn() && 
+                    isValidBooking(request.resource.data) &&
+                    // Regla de Integridad de Negocio: Obtiene el precio del listado real directamente en el servidor y lo compara
+                    request.resource.data.totalAmount == (
+                      get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.pricePerNight * 
+                      request.resource.data.nights
+                    ) + get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.cleaningFee;
+
+      // Restricción estricta de transiciones de estado en la actualización
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        // Flujo del Huésped: Solo puede cancelar una reserva pendiente o subir soporte de pago
+        (request.auth.uid == resource.data.guestId && (
+          // Transición a cancelación
+          (request.resource.data.status == 'CANCELLED' && resource.data.status == 'PENDING_PAYMENT' &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory'])) ||
+          // Transición a en espera de verificación manual tras adjuntar comprobante
+          (request.resource.data.status == 'AWAITING_VERIFICATION' && resource.data.status == 'PENDING_PAYMENT' &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'proofUrl', 'paymentReference', 'updatedAt', 'statusHistory']))
+        )) ||
+        // Flujo del Anfitrión: Solo puede confirmar o rechazar tras evaluar el comprobante de pago
+        (request.auth.uid == resource.data.ownerId && (
+          (request.resource.data.status in ['CONFIRMED', 'REJECTED'] && resource.data.status == 'AWAITING_VERIFICATION' &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'verifiedAt', 'verifiedBy', 'rejectionReason', 'updatedAt', 'statusHistory']))
+        ))
+      );
+
+      allow delete: if isAdmin();
+    }
+  }
+}
+</code></pre>
+
+  <!-- SECCIÓN 4 -->
+  <h1>4. Optimización y Performance</h1>
+  
+  <h2>4.1 Estrategia del "Módulo de Entorno" y Patrón "Fetch on Publish"</h2>
+  <p>
+    En la vista detallada de la propiedad (<code>ListingDetail</code>), los huéspedes premium valoran de gran manera los puntos de interés cercanos (embarcaderos, accesos a playas, bodegones gourmet y centros comerciales náuticos). Sin embargo, llamar directamente al SDK de <strong>Google Places API</strong> desde el navegador en cada renderizado de página presenta dos problemas graves:
+  </p>
+  <ul>
+    <li>
+      <strong>Costos Financieros Masivos:</strong> Las consultas a la API de Google Places (Nearby Search / Place Details) tienen un coste de hasta $17 USD por cada 1,000 peticiones. Para una plataforma con miles de visitas diarias al feed, la facturación mensual se dispararía exponencialmente.
+    </li>
+    <li>
+      <strong>Rendimiento del Cliente:</strong> Las llamadas asíncronas añaden latencia a la carga visual de la propiedad, reduciendo la fluidez táctil en teléfonos móviles con conexiones móviles lentas.
+    </li>
+  </ul>
+  
+  <p>
+    Para resolver este problema a coste cero e incrementar la velocidad de carga a niveles instantáneos, se diseña el patrón de arquitectura <strong>"Fetch on Publish"</strong>:
+  </p>
+
+  <div class="highlight-card">
+    <strong>Arquitectura del Patrón "Fetch on Publish":</strong>
+    <ol>
+      <li>
+        <strong>Acción del Host:</strong> El anfitrión introduce las coordenadas y presiona "Publicar". Firestore almacena el documento del listado.
+      </li>
+      <li>
+        <strong>Disparador Serverless:</strong> Una función en la nube (Cloud Function) de Firebase se activa automáticamente mediante un trigger <code>onDocumentCreated</code> para la colección <code>/listings/</code>.
+      </li>
+      <li>
+        <strong>Llamada Unitaria:</strong> La Cloud Function lee las coordenadas <code>latitude</code> y <code>longitude</code> recién guardadas y realiza una petición segura y aislada del lado del servidor (backend) a la API de Google Places, filtrando únicamente puntos relevantes en un radio de 3 km.
+      </li>
+      <li>
+        <strong>Enriquecimiento de Documento:</strong> La Cloud Function procesa la respuesta, extrae los 5 puntos de interés principales con sus distancias lineales aproximadas y almacena este desglose estático de forma permanente dentro del mismo documento de la propiedad en un campo estructurado denominado <code>nearbyInsights</code>.
+      </li>
+      <li>
+        <strong>Cero Latencia en Cliente:</strong> Cuando el huésped accede a la propiedad, los puntos de interés ya vienen precargados de forma nativa en la respuesta inicial del documento de Firestore. El coste de la llamada externa de la API se reduce a <strong>una única llamada al momento de publicar</strong> (y al actualizar coordenadas), disminuyendo en un <strong>99.9%</strong> los gastos del Places API.
+      </li>
+    </ol>
+  </div>
+
+  <h2>4.2 Sincronización Silenciosa de Borradores (Draft Sync) con Resiliencia Operacional</h2>
+  <p>
+    En el contexto de infraestructura de servicios básicos en Venezuela, es común experimentar cortes imprevistos de electricidad o caídas abruptas de la conexión de red ("bajones de luz" o desconexiones de Cantv/Inter). Exigirle a un anfitrión que rellene un formulario extenso de 4 pasos con múltiples detalles y que pierda todo el progreso debido a una recarga de navegador involuntaria causaría abandono del sistema.
+  </p>
+  <p>
+    Para blindar la experiencia de usuario, se diseña el hook personalizado <code>useDraftSync</code>, cuya implementación asegura:
+  </p>
+  <ul>
+    <li>
+      <strong>Persistencia Asíncrona Debounceada:</strong> Escucha los cambios del estado interno del formulario (React Context / State) y sincroniza los cambios de forma transparente en el <code>localStorage</code> del navegador, aplicando una función de debounce de <strong>500ms</strong> para evitar saturar el hilo principal de ejecución en dispositivos de gama media.
+    </li>
+    <li>
+      <strong>Recuperación Inmediata del Estado:</strong> Al montarse el componente <code>ListingForm</code>, el hook evalúa si existe un borrador de sesión activo que no exceda las 48 horas de antigüedad. De ser así, inyecta los datos recuperados en el formulario y lanza una notificación de UI premium: <em>"Hemos recuperado tu borrador guardado automáticamente de forma segura."</em>
+    </li>
+    <li>
+      <strong>Seguridad Anti-Exposición de Datos (Principio de Mínimo Privilegio):</strong> 
+      <div class="alert-card">
+        <strong>⚠️ CRÍTICO - REGLA DE SEGURIDAD FSD:</strong> El borrador local <strong>solo</strong> almacena datos descriptivos no sensibles (Step 1: Detalles generales, Step 2: Referencias a rutas temporales de fotos y Step 3: Coordenadas geográficas). Queda estrictamente <strong>prohibido</strong> persistir en el <code>localStorage</code> cualquier dato financiero del Step 4 (como correos electrónicos de Zelle, credenciales de Binance, nombres de cuentas bancarias o números de identificación). Esto anula vectores de ataque XSS en navegadores cliente.
+      </div>
+    </li>
+  </ul>
+
+  <pre><code>// Implementación esquemática del Custom Hook useDraftSync en src/features/dashboard/hooks/useDraftSync.ts
+
+import { useEffect, useRef } from 'react';
+import { ListingSchema } from '../types/dashboard.schema';
+
+const STORAGE_KEY = 'venestay_listing_draft_v2';
+const DEBOUNCE_DELAY = 500;
+
+export const useDraftSync = (formData: Partial&lt;ListingSchema&gt;, step: number, isResetting: boolean = false) => {
+  const timeoutRef = useRef&lt;ReturnType&lt;typeof setTimeout&gt; | null&gt;(null);
+
+  // Efecto de persistencia reactiva en localStorage
+  useEffect(() => {
+    if (isResetting) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    timeoutRef.current = setTimeout(() => {
+      // Filtrado estricto para evitar almacenamiento de datos financieros sensibles
+      const secureDraft: Partial&lt;ListingSchema&gt; = {
+        title: formData.title,
+        description: formData.description,
+        city: formData.city,
+        location: formData.location,
+        maxGuests: formData.maxGuests,
+        bedrooms: formData.bedrooms,
+        beds: formData.beds,
+        baths: formData.baths,
+        checkInTime: formData.checkInTime,
+        checkOutTime: formData.checkOutTime,
+        houseRules: formData.houseRules,
+        images: formData.images,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        manualAddress: formData.manualAddress
+        // NOTA: depositAmount, paymentMethods y bankDetails se descartan explícitamente por seguridad
+      };
+
+      const payload = {
+        data: secureDraft,
+        step,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }, DEBOUNCE_DELAY);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [formData, step, isResetting]);
+
+  // Función para recuperar el borrador guardado de forma segura
+  const loadDraft = (): { data: Partial&lt;ListingSchema&gt;; step: number } | null => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+
+      const payload = JSON.parse(raw);
+      const isExpired = Date.now() - payload.timestamp &gt; 48 * 60 * 60 * 1000; // Caduca en 48 horas
+
+      if (isExpired) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+
+      return { data: payload.data, step: payload.step };
+    } catch (e) {
+      console.error("Error al cargar borrador corrupto de localStorage", e);
+      return null;
+    }
+  };
+
+  return { loadDraft };
+};
+</code></pre>
+
+  <h2>4.3 Calidad de Software y Quality Gates Obligatorios para Producción</h2>
+  <p>
+    Para asegurar la longevidad del código y evitar la inyección de deuda técnica que degrade la experiencia de usuario o cause fallas en producción, el pipeline de integración y despliegue continuo (CI/CD) exige la superación obligatoria de tres filtros de calidad (Quality Gates):
+  </p>
+
+  <h3>Gate 1: Verificación Estricta de Tipos en Compilación (Strict Compilation Gate)</h3>
+  <p>
+    Se bloquea la subida de código en caso de existir cualquier error de tipado o bypass mediante el tipo genérico <code>any</code>. El pipeline de GitHub Actions ejecuta el comando de validación sin emisión de archivos compilados finales:
+  </p>
+  <pre><code>npx tsc --noEmit</code></pre>
+  <p>
+    Esto garantiza que todas las llamadas a funciones de los SDK de Firebase, manejo de hooks y renderizado de componentes cumplan estrictamente con las firmas definidas en los contratos de datos de TypeScript.
+  </p>
+
+  <h3>Gate 2: Auditoría de Linting para Ciclos de Renderizado</h3>
+  <p>
+    Se despliegan reglas de análisis estático del código (ESLint) configuradas a nivel de error para prevenir fugas de memoria y sobrecarga en los ciclos de actualización del DOM virtual de React. Son de especial atención las siguientes directivas:
+  </p>
+  <ul>
+    <li>
+      <code>react-hooks/rules-of-hooks: "error"</code> — Garantiza que los hooks solo se llamen en el nivel superior de funciones de React, evitando condicionales de ejecución.
+    </li>
+    <li>
+      <code>react-hooks/exhaustive-deps: "error"</code> — Fuerza a que todas las variables utilizadas dentro de un efecto reactivo (<code>useEffect</code>, <code>useCallback</code>, <code>useMemo</code>) se declaren de forma explícita en su array de dependencias, lo que anula bucles infinitos de renderizado que congelen la pantalla del navegador del usuario.
+    </li>
+  </ul>
+
+  <h3>Gate 3: Accesibilidad WCAG 2.2 Nivel AA</h3>
+  <p>
+    En consistencia con las regulaciones de la industria y la inclusión digital, toda la UI de VeneStay se audita bajo los estándares internacionales de accesibilidad WCAG 2.2 AA, implementando los siguientes requerimientos estructurales en HTML5:
+  </p>
+  <ul>
+    <li>
+      <strong>Soporte para Lectores de Pantalla (Screen Readers):</strong> Uso estricto de etiquetas semánticas (<code>&lt;header&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;section&gt;</code>). Todos los elementos interactivos o botones con iconos puros (como los selectores con iconos de <i>Lucide-React</i> en las reglas de la casa) deben incorporar descriptores textuales descriptivos mediante el atributo <code>aria-label</code>.
+    </li>
+    <li>
+      <strong>Navegabilidad Completa por Teclado:</strong> Todos los componentes visuales personalizados, switches y cuadros de diálogo (Modales) deben poder enfocarse y activarse únicamente mediante el teclado, manteniendo un orden lógico de pestañas con la correcta gestión del índice de tabulación (<code>tabindex="0"</code>) y capturando eventos de tecla <i>Enter</i> o <i>Space</i>.
+    </li>
+    <li>
+      <strong>Contraste Visual Elegante:</strong> Asegura que todas las combinaciones cromáticas de la marca (Deep Navy <code>#0B132B</code> de fondo frente al Gold <code>#C1A25A</code> de primer plano) cumplan con la relación mínima de contraste cromático de <strong>4.5:1</strong> para textos estándar de tamaño de lectura.
+    </li>
+    <li>
+      <strong>Indicadores de Enfoque Claros (Focus Ring):</strong> Se prohíbe explícitamente el uso de hojas de estilo que anulen el contorno de foco sin proveer un reemplazo premium. VeneStay implementa un anillo de foco personalizado de alta visibilidad para elementos seleccionados por teclado:
+      <pre><code>/* Estilo CSS premium de enfoque visible */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(193, 162, 90, 0.4);
+  border-color: #C1A25A;
+}</code></pre>
+    </li>
+  </ul>
+
+</body>
+</html>

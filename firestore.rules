@@ -135,8 +135,12 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if isSignedIn() && request.auth.uid == userId && 
                     isValidUser(incoming()) && 
-                    incoming().role == 'user'; // Prevent self-escalation
-      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+                    incoming().role == 'user' && // Prevent self-escalation
+                    !incoming().keys().hasAny(['loyaltyStats', 'currentCommissionRate']);
+      allow update: if isSignedIn() && (
+                    (request.auth.uid == userId && !incoming().diff(existing()).affectedKeys().hasAny(['loyaltyStats', 'currentCommissionRate', 'role'])) ||
+                    isAdmin()
+                  );
     }
 
     // Property Listings
