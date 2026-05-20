@@ -212,7 +212,7 @@ const StepGeneral: React.FC = () => {
             className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 font-bold outline-none transition-all appearance-none"
             value={editingListing.city || 'Lechería'}
             onChange={(e) => {
-              const val = 'Lechería' as City;
+              const val = e.target.value as City;
               setEditingListing(prev => prev ? { ...prev, city: val } : null);
               validateField('city', val);
             }}
