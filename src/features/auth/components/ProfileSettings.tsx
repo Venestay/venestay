@@ -13,6 +13,7 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { usePassportForm, ALL_INTERESTS } from '../hooks/usePassportForm';
 import VerificationModal from './VerificationModal';
 import PaymentMethodModal from './PaymentMethodModal';
+import ConfirmExitModal from './ConfirmExitModal';
 import Navbar from '@/components/ui/Navbar';
 
 // Sub-componentes
@@ -30,6 +31,7 @@ const ProfileSettings: React.FC = () => {
   // Estados de UI locales (apertura de modales)
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isConfirmExitOpen, setIsConfirmExitOpen] = useState(false);
   const [isGeneratingQA, setIsGeneratingQA] = useState(false);
 
   // Toda la lógica de negocio y estado del formulario viene del hook
@@ -78,12 +80,10 @@ const ProfileSettings: React.FC = () => {
 
   const handleLogoClick = () => {
     if (isDirty) {
-      const confirmExit = window.confirm(
-        'Tienes cambios sin guardar en tu pasaporte. ¿Estás seguro de que deseas salir? Los datos no guardados se mantendrán como borrador.'
-      );
-      if (!confirmExit) return;
+      setIsConfirmExitOpen(true);
+    } else {
+      navigate('/');
     }
-    navigate('/');
   };
 
   const handleGenerateQAProfile = async () => {
@@ -272,6 +272,15 @@ const ProfileSettings: React.FC = () => {
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
           onAdd={handleAddPaymentMethod}
+        />
+
+        <ConfirmExitModal
+          isOpen={isConfirmExitOpen}
+          onClose={() => setIsConfirmExitOpen(false)}
+          onConfirm={() => {
+            setIsConfirmExitOpen(false);
+            navigate('/');
+          }}
         />
 
       </div>

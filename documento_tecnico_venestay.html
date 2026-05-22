@@ -238,11 +238,10 @@
   <table>
     <thead>
       <tr>
-        <th style="width: 8%;">Sprint</th>
-        <th style="width: 15%;">Módulo Objetivo</th>
-        <th style="width: 32%;">Acciones Técnicas Principales</th>
-        <th style="width: 25%;">Skills de Agente (.agents/skills) & Priorización RICE</th>
-        <th style="width: 20%;">Riesgo Crítico que Mitiga</th>
+        <th style="width: 10%;">Sprint</th>
+        <th style="width: 20%;">Módulo Objetivo</th>
+        <th style="width: 45%;">Acciones Técnicas Principales</th>
+        <th style="width: 25%;">Riesgo Crítico que Mitiga</th>
       </tr>
     </thead>
     <tbody>
@@ -250,19 +249,9 @@
         <td><strong>Sprint 1</strong></td>
         <td>Cimientos de Datos y Seguridad</td>
         <td>
-          - Refactorización de interfaces TypeScript en <code>src/types/</code> (incluyendo el nuevo modelo <code>HostLoyaltyStats</code> en perfiles).<br>
-          - Corrección de los 13 errores críticos de tipado implícito <code>any</code> en componentes UI y hooks para cumplir con el compilador estricto.<br>
+          - Refactorización de interfaces TypeScript en <code>src/types/</code>.<br>
           - Creación de esquemas Zod con validación cruzada condicional.<br>
-          - Despliegue inicial de Firebase Storage y Firestore Security Rules restrictivas (incluyendo blindaje de lealtad).
-        </td>
-        <td>
-          <strong>Skills Clave:</strong><br>
-          - <code>typescript-advanced-types</code><br>
-          - <code>zod</code><br>
-          - <code>nodejs-backend-patterns</code><br><br>
-          <strong>Métrica RICE:</strong><br>
-          - <strong>Score: 13.5 (Muy Alto)</strong><br>
-          - <i>Kano: Básica (Core Security)</i>
+          - Despliegue inicial de Firebase Storage y Firestore Security Rules restrictivas.
         </td>
         <td><strong>Inconsistencia de Datos y Escalación de Privilegios:</strong> Impide el almacenamiento de esquemas de propiedad inválidos en la base de datos y bloquea accesos no autorizados.</td>
       </tr>
@@ -274,16 +263,6 @@
           - Implementación de la carga segmentada por ambientes en el gestor de imágenes.<br>
           - Desarrollo del hook de persistencia local <code>useDraftSync</code>.
         </td>
-        <td>
-          <strong>Skills Clave:</strong><br>
-          - <code>tailwind-css-patterns</code><br>
-          - <code>frontend-design</code><br>
-          - <code>composition-patterns</code><br>
-          - <code>react-best-practices</code><br><br>
-          <strong>Métrica RICE:</strong><br>
-          - <strong>Score: 3.4 (Medio)</strong><br>
-          - <i>Kano: Rendimiento (Resiliencia)</i>
-        </td>
         <td><strong>Fuga de Conversión por Pérdida de Datos:</strong> Previene que fallos de conexión o caídas eléctricas fuercen al host a reescribir la información del listado desde cero.</td>
       </tr>
       <tr>
@@ -293,15 +272,6 @@
           - Integración de Google Maps con fijación de coordenadas geográficas precisas.<br>
           - Desarrollo de la sección de blindaje financiero (depósitos de seguridad dinámicos y políticas de cancelación).<br>
           - Implementación de desgloses de tarifas reactivos en base al input del host.
-        </td>
-        <td>
-          <strong>Skills Clave:</strong><br>
-          - <code>zod</code> (superRefine condicional)<br>
-          - <code>frontend-design</code><br>
-          - <code>react-best-practices</code><br><br>
-          <strong>Métrica RICE:</strong><br>
-          - <strong>Score: 5.4 (Alto)</strong><br>
-          - <i>Kano: Básica (Precisión Financiera)</i>
         </td>
         <td><strong>Fugas Financieras y Errores de Cálculo:</strong> Garantiza que el depósito de seguridad y la tarifa de limpieza estén estructurados y validados condicionalmente según las políticas de negocio.</td>
       </tr>
@@ -313,15 +283,6 @@
           - Lógica asíncrona de cálculo de Trust Score basado en datos de Firestore.<br>
           - Implementación del validador de checkout (Trust Gate) en el flujo de reservas.
         </td>
-        <td>
-          <strong>Skills Clave:</strong><br>
-          - <code>typescript-advanced-types</code><br>
-          - <code>react-best-practices</code><br>
-          - <code>nodejs-backend-patterns</code><br><br>
-          <strong>Métrica RICE:</strong><br>
-          - <strong>Score: 6.0 (Alto)</strong><br>
-          - <i>Kano: Deliciadora / Rendimiento</i>
-        </td>
         <td><strong>Fraude de Identidad y Daños Colaterales:</strong> Impide que usuarios anónimos o no verificados reserven propiedades de ultra-lujo, protegiendo los activos del anfitrión.</td>
       </tr>
       <tr>
@@ -329,19 +290,8 @@
         <td>Cálculo en Servidor y Quality Gates</td>
         <td>
           - Migración de cálculos matemáticos y conversión BCV a Firebase Cloud Functions.<br>
-          - Despliegue del disparador Cloud Function <code>onReservationCompleted</code> para el recálculo atómico de comisiones dinámicas y niveles de lealtad.<br>
           - Integración de transacciones atómicas en Firestore para evitar dobles reservas.<br>
           - Auditoría de accesibilidad WCAG 2.2 AA y paso de linters strict en CI/CD.
-        </td>
-        <td>
-          <strong>Skills Clave:</strong><br>
-          - <code>nodejs-backend-patterns</code><br>
-          - <code>nodejs-best-practices</code><br>
-          - <code>accessibility</code> (WCAG 2.2 AA)<br>
-          - <code>seo</code><br><br>
-          <strong>Métrica RICE:</strong><br>
-          - <strong>Score: 9.5 (Muy Alto)</strong><br>
-          - <i>Kano: Básica (Cumplimiento legal/seguridad)</i>
         </td>
         <td><strong>Manipulación de Precios desde el Cliente:</strong> Evita que usuarios malintencionados modifiquen los montos finales a pagar alterando las variables del frontend.</td>
       </tr>
@@ -832,233 +782,6 @@ export const useDraftSync = (formData: Partial&lt;ListingSchema&gt;, step: numbe
 }</code></pre>
     </li>
   </ul>
-
-  <!-- SECCIÓN 5 -->
-  <h1>5. Sistema Gamificado de Niveles de Lealtad y Comisiones Dinámicas (v2.3.0)</h1>
-  
-  <h2>5.1 Reglas de Negocio y Matriz de Niveles (Tiers)</h2>
-  <p>
-    Para incentivar la retención de los anfitriones de alto valor dentro del ecosistema VeneStay y mitigar de forma proactiva la desintermediación transaccional (desviación de huéspedes a canales externos como WhatsApp), se introduce un sistema híbrido y gamificado de comisiones dinámicas. El sistema recompensa la lealtad, el volumen y la calidad de servicio de los hosts a través de una reducción en la comisión sobre el subtotal de las reservas, evaluando de forma automática una ventana rodante de los últimos 365 días del anfitrión.
-  </p>
-
-  <div class="highlight-card">
-    <strong>Matriz Oficial de Niveles (Tiers) de Comisión para Anfitriones:</strong>
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 15%;">Nivel (Tier)</th>
-          <th style="width: 15%;">Comisión Fija</th>
-          <th style="width: 45%;">Requisitos Mínimos Obligatorios (Ventana Rodante - Últimos 365 Días)</th>
-          <th style="width: 25%;">Beneficio Directo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Bronce</strong><br>(Base)</td>
-          <td><strong>12%</strong></td>
-          <td>
-            - Estado inicial por defecto para todo nuevo anfitrión registrado.<br>
-            - 0 alquileres o métricas por debajo de los requisitos del nivel Plata.
-          </td>
-          <td>Tasa estándar de entrada a la plataforma.</td>
-        </tr>
-        <tr>
-          <td><strong>Plata</strong><br>(Verificado)</td>
-          <td><strong>10%</strong></td>
-          <td>
-            - Haber completado <strong>&gt; 10 alquileres</strong> concretados con éxito <strong>Ó</strong> haber procesado <strong>&gt; $3,000 USD</strong> en Volumen Bruto de Mercancías (GMV).<br>
-            - Poseer la verificación de identidad (KYC) aprobada en el Pasaporte VeneStay.<br>
-            - Mantener una calificación promedio de reseñas <strong>&ge; 4.3 estrellas</strong>.
-          </td>
-          <td>Rebaja de 2% en la comisión de servicio para reservas futuras.</td>
-        </tr>
-        <tr>
-          <td><strong>Oro</strong><br>(Elite)</td>
-          <td><strong>8%</strong></td>
-          <td>
-            - Haber completado <strong>&gt; 30 alquileres</strong> concretados con éxito <strong>Ó</strong> haber procesado <strong>&gt; $10,000 USD</strong> en Volumen Bruto de Mercancías (GMV).<br>
-            - Poseer la verificación de identidad (KYC) aprobada en el Pasaporte VeneStay.<br>
-            - Mantener una calificación promedio de reseñas <strong>&ge; 4.7 estrellas</strong>.
-          </td>
-          <td>Tasa de comisión preferencial y priorización de listados en búsquedas.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h2>5.2 Modelado de Datos Eficiente (Firestore)</h2>
-  <p>
-    En línea con el principio serverless de optimización de costos y el control estricto de cuotas de lectura/escritura en Firebase, queda estrictamente prohibido realizar agregaciones en vivo o recuentos (<code>Count</code>) manuales de la colección de reservas en el momento del checkout. Para lograr esto, se modela un subdocumento indexado y desnormalizado directamente en el documento del perfil de usuario (colección <code>/users/{userId}</code>) llamado <code>HostLoyaltyStats</code>.
-  </p>
-
-  <pre><code>// Definición de Interfaces TypeScript en src/features/dashboard/types/loyalty.types.ts
-
-export type LoyaltyTier = 'BRONZE' | 'SILVER' | 'GOLD';
-
-export interface HostLoyaltyStats {
-  completedRentalsCount: number;      // Contador acumulado en la ventana rodante
-  rollingTwelveMonthsGMV: number;     // Volumen bruto procesado (USD) en los últimos 365 días
-  averageRating: number;              // Calificación promedio otorgada por huéspedes
-  currentCommissionRate: number;      // Multiplicador de comisión aplicable (0.12 | 0.10 | 0.08)
-  currentTier: LoyaltyTier;           // Nivel actual calculado
-  lastUpdated: string | Date;         // Timestamp de la última corrida de evaluación
-}
-
-// Extensión del perfil del usuario (User) en src/types/user.ts
-export interface UserProfile {
-  uid: string;
-  email: string;
-  role: 'host' | 'guest' | 'admin';
-  displayName: string;
-  photoURL?: string;
-  isKycVerified: boolean;             // Requisito sine qua non para Tiers Plata y Oro
-  loyaltyStats?: HostLoyaltyStats;    // Subdocumento desnormalizado para anfitriones
-  createdAt: string | Date;
-}
-</code></pre>
-
-  <h2>5.3 Arquitectura de Eventos (Cloud Functions Triggers)</h2>
-  <p>
-    La sincronización y recálculo del nivel del anfitrión se realiza de forma totalmente asíncrona mediante un disparador en segundo plano (Background Cloud Function) que reacciona a cambios en los documentos de reservas. El motor atómico asegura que las transacciones financieras y la lealtad se actualicen sin posibilidad de condiciones de carrera (race conditions).
-  </p>
-
-  <pre><code>// Implementación esquemática de Firebase Cloud Functions (v2) en functions/src/loyalty/onReservationCompleted.ts
-
-import { onDocumentUpdated } from "firebase-functions/v2/firestore";
-import * as admin from "firebase-admin";
-
-export const onReservationCompleted = onDocumentUpdated("bookings/{bookingId}", async (event) => {
-  const newValue = event.data?.after.data();
-  const oldValue = event.data?.before.data();
-
-  if (!newValue || !oldValue) return null;
-
-  // Se dispara ÚNICAMENTE cuando la reserva cambia de cualquier estado previo a "COMPLETED"
-  if (newValue.status === "COMPLETED" && oldValue.status !== "COMPLETED") {
-    const hostId = newValue.ownerId; // ID del anfitrión
-    const totalBookingAmount = newValue.totalAmount || 0; // GMV generado
-
-    const db = admin.firestore();
-    const hostRef = db.collection("users").doc(hostId);
-
-    try {
-      await db.runTransaction(async (transaction) => {
-        const hostDoc = await transaction.get(hostRef);
-        if (!hostDoc.exists) {
-          throw new Error("El anfitrión especificado no existe.");
-        }
-
-        const hostData = hostDoc.data();
-        const kycVerified = hostData?.isKycVerified || false;
-        
-        // Obtener estadísticas previas o inicializar por defecto
-        const currentStats: HostLoyaltyStats = hostData?.loyaltyStats || {
-          completedRentalsCount: 0,
-          rollingTwelveMonthsGMV: 0,
-          averageRating: 5.0,
-          currentCommissionRate: 0.12,
-          currentTier: "BRONZE",
-          lastUpdated: new Date().toISOString()
-        };
-
-        // 1. Actualización atómica de contadores y volumen
-        const newCount = currentStats.completedRentalsCount + 1;
-        const newGMV = currentStats.rollingTwelveMonthsGMV + totalBookingAmount;
-
-        // 2. Obtener la calificación promedio actualizada de las reseñas
-        // Nota: En producción, el averageRating se calcula a partir de reviews/
-        const averageRating = hostData?.averageRating || currentStats.averageRating || 5.0;
-
-        // 3. Determinar el nuevo nivel en base a reglas de negocio
-        let calculatedTier: LoyaltyTier = "BRONZE";
-        let commissionRate = 0.12;
-
-        if (kycVerified) {
-          // Evaluación para nivel ORO
-          if ((newCount > 30 || newGMV > 10000) && averageRating >= 4.7) {
-            calculatedTier = "GOLD";
-            commissionRate = 0.08;
-          } 
-          // Evaluación para nivel PLATA
-          else if ((newCount > 10 || newGMV > 3000) && averageRating >= 4.3) {
-            calculatedTier = "SILVER";
-            commissionRate = 0.10;
-          }
-        }
-
-        const updatedStats: HostLoyaltyStats = {
-          completedRentalsCount: newCount,
-          rollingTwelveMonthsGMV: newGMV,
-          averageRating,
-          currentCommissionRate: commissionRate,
-          currentTier: calculatedTier,
-          lastUpdated: admin.firestore.FieldValue.serverTimestamp()
-        };
-
-        // 4. Escribir los resultados consolidados de vuelta al perfil del anfitrión
-        transaction.update(hostRef, {
-          loyaltyStats: updatedStats,
-          // Actualización de campo global por indexación veloz en listados
-          currentCommissionRate: commissionRate 
-        });
-      });
-
-      console.log(`Lealtad de anfitrión ${hostId} calculada con éxito.`);
-    } catch (error) {
-      console.error("Fallo de transacción en la actualización de lealtad:", error);
-    }
-  }
-
-  return null;
-});
-</code></pre>
-
-  <h2>5.4 Blindaje y Seguridad (Firestore Security Rules)</h2>
-  <p>
-    Dado que una tasa de comisión reducida se traduce directamente en un menor débito del subtotal de cobros para el anfitrión, es imperativo que las propiedades de lealtad (<code>loyaltyStats</code> y <code>currentCommissionRate</code>) no puedan ser manipuladas de ninguna manera por el cliente. Las reglas de seguridad de Firestore actúan como el validador final de integridad y acceso.
-  </p>
-
-  <div class="alert-card">
-    <strong>⚠️ CRÍTICO - REGLA DE INTEGRIDAD TÉCNICA:</strong>
-    El cliente frontend tiene estrictamente restringida la escritura en los campos de lealtad. Cualquier intento de inyección de propiedades dinámicas de comisión (por ejemplo, mediante llamadas directas al SDK desde el navegador) será inmediatamente rechazado en los servidores de Google.
-  </div>
-
-  <pre><code>// Modificaciones agregadas a firestore.rules para el resguardo de loyaltyStats
-
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function isAdmin() {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Regla de seguridad para la colección de usuarios
-    match /users/{userId} {
-      allow read: if isSignedIn(); // Lectura autorizada para miembros de la plataforma
-
-      // Creación/Actualización por el cliente
-      allow create: if isSignedIn() && isOwner(userId);
-      
-      allow update: if isSignedIn() && (
-        isOwner(userId) && 
-        // 🔐 BLINDAJE ABSOLUTO: El usuario no puede modificar el objeto loyaltyStats ni la tasa de comisión
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['loyaltyStats', 'currentCommissionRate'])
-      ) || isAdmin();
-    }
-  }
-}
-</code></pre>
 
 </body>
 </html>

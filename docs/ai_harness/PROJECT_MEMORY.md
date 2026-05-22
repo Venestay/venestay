@@ -1,3 +1,17 @@
+# ⚠️ DEPRECADO — VeneStay Project Memory (The Blackboard)
+
+> **Este archivo fue reemplazado por el sistema Tiered Memory el 2026-05-22.**
+> El agente ya NO lo carga como memoria activa.
+>
+> **Sistema activo:**
+> - `docs/ai_harness/MEMORY_HOT.md` — estado del sprint actual (carga siempre)
+> - `docs/ai_harness/MEMORY_WARM.md` — historial de sprints recientes (carga bajo demanda)
+> - `docs/ai_harness/MEMORY_ARCHIVE/` — historial completo (solo bajo confirmación explícita)
+>
+> Este archivo se conserva como referencia histórica. No editar.
+
+---
+
 # 📒 VeneStay Project Memory (The Blackboard)
 
 ## 🚦 Estado de Sincronización Global
