@@ -180,17 +180,20 @@
     <li>
       <strong>Verificación Manual de Flujos Financieros:</strong> Pantalla especializada que permite al host revisar los comprobantes de pago subidos por los huéspedes (Zelle/Binance/Pago Móvil). El anfitrión puede contrastar la referencia de la transacción y el adjunto gráfico antes de marcar la reserva como "Confirmada".
     </li>
+    <li>
+      <strong>Garantía de Protección al Anfitrión (Propuesta en Estimación):</strong> Una cobertura corporativa automática en fase de propuesta contra daños materiales, roturas o pérdidas estructurales en las propiedades de alta gama que superen la fianza de seguridad básica provista por el huésped. Esta cobertura actuaría como un respaldo de confianza por parte de la plataforma, aplicable únicamente a reservas realizadas y verificadas dentro del sistema con usuarios que posean un <i>Pasaporte VeneStay</i> activo, blindando el patrimonio del anfitrión e incentivando las transacciones seguras dentro de la aplicación (el límite financiero de cobertura final se encuentra en fase de estimación actuarial).
+    </li>
   </ul>
 
-  <h3>C. El "Listing Form" Evolutivo en 4 Pasos</h3>
+  <h3>C. El "Listing Form" Evolutivo en 5 Pasos</h3>
   <p>
-    Para mitigar la fatiga del formulario y asegurar que la tasa de abandono en la creación de propiedades sea mínima, el formulario de publicación de VeneStay se fragmenta en un wizard interactivo asíncrono optimizado con validación por paso:
+    Para mitigar la fatiga del formulario y asegurar que la tasa de abandono en la creación de propiedades sea mínima, el formulario de publicación de VeneStay se fragmenta en un wizard interactivo asíncrono optimizado con validación estricta por paso:
   </p>
   <div class="highlight-card">
-    <strong>Evolución del Flujo Wizard en 4 Pasos:</strong>
+    <strong>Evolución del Flujo Wizard en 5 Pasos (Fase 2 - Alineación Premium):</strong>
     <ol>
       <li>
-        <strong>Paso 1: Información General y Reglas:</strong> Título, descripción de alto impacto, capacidad de huéspedes, cantidad de dormitorios/camas/baños, y el nuevo <strong>Selector de Reglas de la Casa</strong> (permitido fumar, mascotas, eventos, niños, y una ventana de horarios obligatoria para el Check-in y Check-out).
+        <strong>Paso 1: Identificación y Categorización:</strong> Título con evaluación de calidad, subtipo de propiedad (Apartamento, Casa, Villa, etc.), privacidad (Entero, Habitación Privada, Compartida), superficie en metros cuadrados (m²), y capacidad base (huéspedes, dormitorios, camas, baños).
       </li>
       <li>
         <strong>Paso 2: Galería de Ambientes y Premium Touch:</strong> Carga obligatoria de al menos 1 imagen. Se introducen los "Ambiente Photos", permitiendo segmentar la carga de fotos en alta resolución por áreas específicas: "Área Social", "Habitaciones" y "Muelle/Vistas al Canal".
@@ -199,7 +202,10 @@
         <strong>Paso 3: Geolocalización Precisa:</strong> Integración del mapa interactivo con arrastre de marcador (Drag & Drop) para fijar las coordenadas exactas de latitud y longitud. Esto se complementa con un área de texto para instrucciones específicas de acceso a urbanizaciones privadas ("Casas Bote A", "Isla Paraíso", etc.).
       </li>
       <li>
-        <strong>Paso 4: Blindaje Financiero y Políticas:</strong> Entrada numérica para el precio por noche y la tarifa de limpieza. Toggle premium para activar el <strong>Depósito de Seguridad (Fianza de Daños)</strong> que despliega con una suave transición CSS el campo numérico del monto requerido. Selector de <strong>Políticas de Cancelación (Flexible, Moderada, Estricta)</strong> y configuración detallada de cuentas receptoras para cobros en dólares y bolívares.
+        <strong>Paso 4: Logística y Reglas de la Casa:</strong> Horarios obligatorios para el Check-in y Check-out, selector de políticas de cancelación (Flexible, Moderada, Estricta), y configuración de reglas de convivencia mediante toggles interactivos con <i>Progressive Disclosure</i> para la tarifa y límites de mascotas si son aceptadas.
+      </li>
+      <li>
+        <strong>Paso 5: Blindaje Financiero y Tarifas:</strong> Entrada numérica para el precio base por noche. Desglose detallado de tarifas opcionales: gastos de limpieza y <strong>Depósito de Seguridad (Fianza de Daños)</strong> condicional. Configuración de descuentos por estancias prolongadas (semanal y mensual) y cuentas de cobro receptoras en divisas y moneda nacional.
       </li>
     </ol>
   </div>
@@ -286,14 +292,72 @@
         <td><strong>Fraude de Identidad y Daños Colaterales:</strong> Impide que usuarios anónimos o no verificados reserven propiedades de ultra-lujo, protegiendo los activos del anfitrión.</td>
       </tr>
       <tr>
-        <td><strong>Sprint 5</strong></td>
-        <td>Cálculo en Servidor y Quality Gates</td>
+        <td><strong>Sprint 5 (Base)</strong></td>
+        <td>Servidor & Quality Gates</td>
         <td>
           - Migración de cálculos matemáticos y conversión BCV a Firebase Cloud Functions.<br>
           - Integración de transacciones atómicas en Firestore para evitar dobles reservas.<br>
           - Auditoría de accesibilidad WCAG 2.2 AA y paso de linters strict en CI/CD.
         </td>
         <td><strong>Manipulación de Precios desde el Cliente:</strong> Evita que usuarios malintencionados modifiquen los montos finales a pagar alterando las variables del frontend.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Fase 2: Alineación con Estándares del Marketplace (Evolución de Listados)</h3>
+  <p>
+    Para elevar la plataforma a niveles de competitividad y conversión internacionales, la Fase 2 del desarrollo introduce cuatro sprints incrementales especializados. Estos integran parámetros logísticos, descriptivos y de control financiero que mitigan la fricción transaccional entre anfitriones y huéspedes.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 10%;">Sprint</th>
+        <th style="width: 20%;">Módulo Objetivo</th>
+        <th style="width: 45%;">Acciones Técnicas Principales</th>
+        <th style="width: 25%;">Riesgo Crítico que Mitiga</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Sprint 5 (v2)</strong></td>
+        <td>Identidad y Clasificación de Propiedad</td>
+        <td>
+          - Incorporación de tipados y campos <code>propertySubtype</code>, <code>accommodationPrivacy</code> y <code>surfaceArea</code>.<br>
+          - Diseño de componentes selectores interactivos visuales con iconos y toggle pills estilizados en <code>StepGeneral.tsx</code>.<br>
+          - Validaciones nativas y almacenamiento estructurado de clasificación.
+        </td>
+        <td><strong>Clasificación Errónea y Rebote de Tráfico:</strong> Evita frustración y rebote de usuarios al permitir segmentar con alta fidelidad las búsquedas en el canal.</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 6</strong></td>
+        <td>Logística del Viaje (Check-in, Cancelación, Reglas)</td>
+        <td>
+          - Creación de nuevo paso interactivo de formulario <code>StepRules.tsx</code> (crecimiento del wizard a 5 pasos).<br>
+          - Desarrollo de toggles y selectores de horas (Check-in/Check-out) y tarjetas de política de cancelación.<br>
+          - Lógica de revelación progresiva (Progressive Disclosure) para tarifas y limitaciones de mascotas.
+        </td>
+        <td><strong>Fricciones y Malentendidos Pos-Reserva:</strong> Reduce las consultas de soporte de huéspedes y reclamos pos-reserva al formalizar la logística y reglamentos previo al pago.</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 7</strong></td>
+        <td>Desglose de Precios y Amenidades Categorizadas</td>
+        <td>
+          - Refactorización de la entrada de precio base a un panel expandible con desgloses de limpieza y depósito de fianza condicional.<br>
+          - Integración de descuentos automatizados por estancias (semanal y mensual).<br>
+          - Agrupación de amenidades de una lista plana a un sistema de menús colapsables categorizados.
+        </td>
+        <td><strong>Falta de Transparencia e Inconsistencia:</strong> Elimina sorpresas en el Checkout y abandono del carrito al transparentar todos los costes desde la carga inicial de datos.</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 8</strong></td>
+        <td>Distribución de Camas y Title Quality Score</td>
+        <td>
+          - Diseño e integración de subformulario dinámico de distribución de camas por dormitorio de manera reactiva.<br>
+          - Algoritmo de evaluación en tiempo real de la calidad del título (Title Quality Score) con indicador circular.<br>
+          - Separación y concatenación transparente de la descripción en tres áreas estructuradas.
+        </td>
+        <td><strong>Expectativas Incumplidas y Títulos Ineficientes:</strong> Previene reportes de huéspedes por mala asignación física de camas y maximiza el CTR (Click-Through Rate) en los feeds de búsqueda.</td>
       </tr>
     </tbody>
   </table>
@@ -307,27 +371,43 @@
 
   <pre><code>// Modificaciones en src/features/listings/types/index.ts o src/types/index.ts
 
-export type CancellationPolicy = 'flexible' | 'moderate' | 'strict';
+export type PropertySubtype = 'Apartamento' | 'Casa' | 'Loft' | 'Villa' | 'Estudio' | 'Anexo' | 'Penthouse';
+export type AccommodationPrivacy = 'Entero' | 'Habitación Privada' | 'Habitación Compartida';
+export type CancellationPolicy = 'Flexible' | 'Moderada' | 'Estricta';
+
+export interface BedConfig {
+  type: 'King' | 'Queen' | 'Doble' | 'Individual' | 'Litera' | 'Sofá Cama';
+  count: number;
+}
+
+export interface RoomBedDistribution {
+  roomName: string; // Ej: "Habitación Principal", "Habitación 2"
+  beds: BedConfig[];
+}
 
 export interface HouseRules {
-  allowPets: boolean;
-  allowSmoking: boolean;
-  allowParties: boolean;
-  allowChildren: boolean;
-  additionalRules?: string;
+  smokingAllowed: boolean;
+  partiesAllowed: boolean;
+  quietHoursStart?: string; // Ej: "22:00"
+  quietHoursEnd?: string;   // Ej: "08:00"
+  childrenAllowed: boolean;
+  petsAllowed: boolean;
+  petFee?: number;          // Requerido condicionalmente si petsAllowed es true
+  petSizeLimit?: string;    // Restricciones opcionales de tamaño de mascota
+  additionalRules?: string; // Reglas de comportamiento adicionales libres
 }
 
 export interface Listing {
   id: string;
   title: string;
-  description: string;
+  description: string;      // Texto concatenado de los 3 campos descriptivos estructurados
   city: 'Caracas' | 'Margarita' | 'Falcon' | 'Lechería' | 'Maracaibo' | 'Puerto La Cruz';
   location: string;
   pricePerNight: number;
   rating: number;
   reviewsCount: number;
   images: string[];
-  amenities: string[];
+  amenities: string[];      // Lista de tags estructurada por categorías en la UI
   maxGuests: number;
   bedrooms: number;
   beds: number;
@@ -336,12 +416,11 @@ export interface Listing {
   hostAvatar: string;
   hostId: string;
   isVerified: boolean;
-  isPetFriendly: boolean;
   blockedDates?: string[];
   createdAt?: string | Date;
   updatedAt?: string | Date;
   
-  // Campos de infraestructura y geolocalización exigidos por el validador
+  // Campos de infraestructura y geolocalización
   buildingFloors: number;
   propertyFloor: number;
   constructionYear: number;
@@ -349,30 +428,40 @@ export interface Listing {
   longitude: number;
   manualAddress?: string;
 
-  // Parámetros financieros y logísticos v2.3.0
-  houseRules?: HouseRules;
-  checkInTime?: string;  
-  checkOutTime?: string; 
-  requiresDeposit?: boolean;
-  depositAmount?: number;
-  cleaningFee?: number;
+  // Fase 2 - Clasificación & Identidad Premium (Sprint 5)
+  propertySubtype?: PropertySubtype;
+  accommodationPrivacy?: AccommodationPrivacy;
+  surfaceArea?: number;      // Superficie en metros cuadrados (m²)
+
+  // Fase 2 - Logística & Políticas de Convivencia (Sprint 6)
+  checkInTime?: string;      // Formato HH:MM
+  checkOutTime?: string;     // Formato HH:MM
   cancellationPolicy?: CancellationPolicy;
-  minNights?: number;
-  maxNights?: number;
-  environmentPhotos?: Record&lt;string, string&gt;; 
+  houseRules?: HouseRules;
+
+  // Fase 2 - Desglose de Tarifas y Descuentos (Sprint 7)
+  cleaningFee?: number;
+  requiresDeposit?: boolean; // Activa la fianza de daños en el checkout
+  depositAmount?: number;    // Requerido condicionalmente si requiresDeposit es true
+  weeklyDiscount?: number;   // Porcentaje de descuento semanal (0-100)
+  monthlyDiscount?: number;  // Porcentaje de descuento mensual (0-100)
+
+  // Fase 2 - Distribución y Organización (Sprint 8)
+  bedDistribution?: RoomBedDistribution[];
+  environmentPhotos?: Record&lt;string, string&gt;; // Segmentación por ambientes
 }
 </code></pre>
 
   <h3>B. Esquemas de Validación Cruzada Condicional con Zod en <code>dashboard.schema.ts</code></h3>
   <p>
-    Para blindar la base de datos a nivel de tipo de datos de entrada en el cliente, implementamos una regla de validación de Zod con refinamiento condicional estricto: si <code>requiresDeposit</code> está activo (es <code>true</code>), el campo de monto de fianza <code>depositAmount</code> se convierte en obligatorio y debe ser un valor positivo mayor a cero.
+    Para blindar la base de datos a nivel de tipo de datos de entrada en el cliente, implementamos una regla de validación de Zod con refinamiento condicional estricto: si <code>requiresDeposit</code> está activo (es <code>true</code>), el campo de monto de fianza <code>depositAmount</code> se convierte en obligatorio y debe ser un valor positivo mayor a cero. Asimismo, si se habilitan mascotas, la tarifa correspondiente se valida según las políticas de negocio en la fianza.
   </p>
 
   <pre><code>import { z } from 'zod';
 
 export const listingSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres'),
-  description: z.string().min(20, 'La descripción debe tener al menos 20 caracteres'),
+  description: z.string().min(20, 'La descripción consolidada debe tener al menos 20 caracteres'),
   city: z.enum(['Caracas', 'Margarita', 'Falcon', 'Lechería', 'Maracaibo', 'Puerto La Cruz']),
   location: z.string().min(2, 'Debe especificar el sector o ubicación física'),
   pricePerNight: z.coerce.number().positive('El precio por noche debe ser un valor positivo'),
@@ -391,25 +480,48 @@ export const listingSchema = z.object({
   longitude: z.number().optional(),
   
   // ==========================================
-  // VALIDADORES DE NUEVOS CAMPOS CONDICIONALES
+  // VALIDADORES DE NUEVOS CAMPOS - FASE 2
   // ==========================================
+  
+  // Sprint 5: Identidad & Clasificación
+  propertySubtype: z.enum(['Apartamento', 'Casa', 'Loft', 'Villa', 'Estudio', 'Anexo', 'Penthouse']),
+  accommodationPrivacy: z.enum(['Entero', 'Habitación Privada', 'Habitación Compartida']),
+  surfaceArea: z.coerce.number().min(10, 'Superficie mínima es 10m²').max(2000, 'Superficie máxima es 2000m²').optional(),
+
+  // Sprint 6: Logística & Horarios
   checkInTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Formato de hora inválido (HH:MM)'),
   checkOutTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Formato de hora inválido (HH:MM)'),
-  cleaningFee: z.coerce.number().min(0, 'La tarifa de limpieza no puede ser negativa').default(0),
-  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict']).default('flexible'),
+  cancellationPolicy: z.enum(['Flexible', 'Moderada', 'Estricta']).default('Moderada'),
   
-  // Campos del Depósito de Seguridad
+  // Objeto de Reglas de la Casa Anidadas
+  houseRules: z.object({
+    smokingAllowed: z.boolean().default(false),
+    partiesAllowed: z.boolean().default(false),
+    quietHoursStart: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'HH:MM').optional(),
+    quietHoursEnd: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'HH:MM').optional(),
+    childrenAllowed: z.boolean().default(true),
+    petsAllowed: z.boolean().default(false),
+    petFee: z.coerce.number().min(0, 'La tarifa de mascota no puede ser negativa').optional(),
+    petSizeLimit: z.string().optional(),
+    additionalRules: z.string().max(1000, 'Máximo 1000 caracteres para reglas extras').optional()
+  }).optional(),
+
+  // Sprint 7: Tarifas Adicionales & Descuentos
+  cleaningFee: z.coerce.number().min(0, 'La tarifa de limpieza no puede ser negativa').optional(),
   requiresDeposit: z.boolean().default(false),
   depositAmount: z.coerce.number().optional(),
+  weeklyDiscount: z.coerce.number().min(0, 'El descuento no puede ser menor a 0%').max(100, 'El descuento no puede exceder el 100%').optional(),
+  monthlyDiscount: z.coerce.number().min(0, 'El descuento no puede ser menor a 0%').max(100, 'El descuento no puede exceder el 100%').optional(),
 
-  // Objeto de Reglas de la Casa
-  houseRules: z.object({
-    allowPets: z.boolean().default(false),
-    allowSmoking: z.boolean().default(false),
-    allowParties: z.boolean().default(false),
-    allowChildren: z.boolean().default(true),
-    additionalRules: z.string().max(1000, 'Máximo 1000 caracteres para reglas extras').optional()
-  })
+  // Sprint 8: Distribución de Camas
+  bedDistribution: z.array(z.object({
+    roomName: z.string().min(1, 'El nombre del dormitorio es obligatorio'),
+    beds: z.array(z.object({
+      type: z.enum(['King', 'Queen', 'Doble', 'Individual', 'Litera', 'Sofá Cama']),
+      count: z.coerce.number().min(1, 'Mínimo una cama de este tipo')
+    })).min(1, 'Debe configurar al menos una cama para esta habitación')
+  })).optional()
+
 }).refine(
   (data) => data.propertyFloor <= data.buildingFloors,
   {
@@ -417,7 +529,7 @@ export const listingSchema = z.object({
     path: ["propertyFloor"]
   }
 ).superRefine((data, ctx) => {
-  // Validación cruzada condicional: Si requiere depósito de seguridad, el monto es estrictamente requerido y &gt; 0
+  // 1. Validación cruzada condicional: Depósito de Seguridad
   if (data.requiresDeposit) {
     if (data.depositAmount === undefined || data.depositAmount === null) {
       ctx.addIssue({
@@ -428,8 +540,19 @@ export const listingSchema = z.object({
     } else if (data.depositAmount <= 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "El depósito de seguridad debe ser un monto mayor a cero",
+        message: "El depósito de seguridad debe ser un monto mayor a cero ($)",
         path: ["depositAmount"]
+      });
+    }
+  }
+
+  // 2. Validación de Progressive Disclosure: Reglas de Mascotas
+  if (data.houseRules?.petsAllowed) {
+    if (data.houseRules.petFee === undefined || data.houseRules.petFee === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Debe ingresar una tarifa de mascotas si las permite (puede ser 0)",
+        path: ["houseRules", "petFee"]
       });
     }
   }
@@ -437,6 +560,59 @@ export const listingSchema = z.object({
 
 export type ListingSchema = z.infer<typeof listingSchema>;
 </code></pre>
+
+  <h2>2.3 Diseño Funcional y Experiencia de Usuario Premium (Fase 2)</h2>
+  <p>
+    La incorporación de los nuevos parámetros de listado no solo implica cambios estructurales en tipos y validaciones, sino el diseño de una interfaz reactiva e inteligente que potencie la usabilidad y minimice la fatiga de carga de datos para el anfitrión.
+  </p>
+
+  <h3>A. Algoritmo de Calidad del Título (Title Quality Score)</h3>
+  <p>
+    Para evitar títulos descriptivos genéricos ("Lindo apartamento") y potenciar el posicionamiento SEO en el feed de VeneStay, se implementa un indicador circular interactivo de calidad (de 0 a 100) en el primer paso del formulario. El cálculo se ejecuta reactivamente del lado del cliente bajo las siguientes reglas ponderadas:
+  </p>
+  <ul>
+    <li><span class="tech-pill">+25 puntos:</span> Longitud óptima del título superior a 30 caracteres.</li>
+    <li><span class="tech-pill">+25 puntos:</span> Inclusión explícita de un sector de Lechería validado (ej. "Casas Bote", "Playa Mansa", "Cerro El Morro", "Complejo El Morro").</li>
+    <li><span class="tech-pill">+25 puntos:</span> Inclusión de al menos un adjetivo calificativo de alto impacto comercial (ej. "Premium", "Exclusivo", "Espectacular", "Lujoso", "Moderno").</li>
+    <li><span class="tech-pill">+25 puntos:</span> Inclusión de la tipología específica de la propiedad (ej. "Villa", "Penthouse", "Muelle", "Yate").</li>
+  </ul>
+  <p>
+    La interfaz de usuario despliega un medidor visual en tiempo real que varía su color mediante clases dinámicas o transiciones CSS: Rojo (0-49 pts, calidad baja), Dorado (50-74 pts, calidad aceptable) y Verde Esmeralda (&gt;75 pts, calidad premium recomendada).
+  </p>
+
+  <h3>B. Subformulario Dinámico de Camas y Distribución por Ambiente</h3>
+  <p>
+    En la Fase 2, se elimina el selector estático plano de camas y se introduce un subformulario de distribución de camas por habitación controlado dinámicamente:
+  </p>
+  <ul>
+    <li>
+      <strong>Auto-generación de Ambientes:</strong> El componente escucha de forma reactiva el valor del campo <code>bedrooms</code>. Al cambiar (ej. de 2 a 3), se auto-generan instantáneamente las tarjetas de configuración correspondientes ("Dormitorio Principal", "Dormitorio 2", "Dormitorio 3").
+    </li>
+    <li>
+      <strong>Configuración Multicama:</strong> Cada ambiente permite añadir múltiples tipos de cama (King, Queen, Doble, Individual, Litera, Sofá Cama) con un selector numérico (NumberStepper), permitiendo un mapeo fiel de la realidad física de la propiedad.
+    </li>
+    <li>
+      <strong>Sincronización de Totales:</strong> El hook del formulario calcula de forma transparente el valor global del campo <code>beds</code> sumando la cantidad de camas configuradas en cada ambiente particular, garantizando la consistencia de datos para los filtros del feed general.
+    </li>
+  </ul>
+
+  <h3>C. Concatenación Transparente de Descripción Estructurada</h3>
+  <p>
+    Para garantizar que los listings creados bajo el estándar de la Fase 2 sigan siendo legibles por componentes antiguos de la Fase 1, se rediseña la entrada de descripción. El Host rellena tres áreas textuales independientes:
+  </p>
+  <ol>
+    <li><strong>El Espacio:</strong> Distribución interna, vistas y equipamiento del alojamiento.</li>
+    <li><strong>Acceso de los Huéspedes:</strong> Áreas comunes, estacionamientos, uso de muelles o piscina privada.</li>
+    <li><strong>Otros Detalles:</strong> Reglas específicas del condominio, horarios especiales de servicios básicos, etc.</li>
+  </ol>
+  <p>
+    Al momento de procesar el paso, el validador concatena de manera programática estos tres campos delimitándolos por cabeceras estructuradas claras, y almacena el resultado en el único campo <code>description</code> de Firestore. Esto mantiene la retrocompatibilidad total del esquema de datos sin requerir migraciones complejas.
+  </p>
+
+  <h3>D. Seguridad en la Sincronización Local (useDraftSync)</h3>
+  <p>
+    Para resguardar el progreso de carga frente a cortes de energía en Lechería, el custom hook <code>useDraftSync</code> persiste el estado en <code>localStorage</code> tras un retardo (debounce) de 500ms. Bajo el **Principio de Mínimo Privilegio**, se aplica un filtro estricto antes del guardado: se excluye explícitamente cualquier variable sensible de tipo financiero (datos bancarios, correos de Zelle o referencias de cobro), evitando vulnerabilidades de robo de información por inyección de scripts (XSS).
+  </p>
 
   <!-- SECCIÓN 3 -->
   <h1>3. Arquitectura de Seguridad (Security Blueprint)</h1>
