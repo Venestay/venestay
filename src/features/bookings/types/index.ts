@@ -31,6 +31,7 @@ export interface Booking {
   rejectionReason?: string;
   guests: number;
   isDraft?: boolean;
+  cancellationPolicySnapshot?: 'flexible' | 'moderate' | 'strict';
   createdAt: string | Date | FieldValue;
   updatedAt: string | Date | FieldValue;
   statusHistory?: {

@@ -519,6 +519,14 @@ const Home: React.FC = () => {
                   </li>
                   <li>
                     <button
+                      onClick={() => openInfo('cancellation')}
+                      className="hover:text-brand-500 text-left text-sm font-bold text-white/30 transition-colors"
+                    >
+                      Políticas de Cancelación
+                    </button>
+                  </li>
+                  <li>
+                    <button
                       onClick={() => openInfo('contact')}
                       className="hover:text-brand-500 text-left text-sm font-bold text-white/30 transition-colors"
                     >

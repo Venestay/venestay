@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Edit2, Trash2, Plus } from 'lucide-react';
 import { Listing } from '@/types';
 
@@ -16,6 +16,8 @@ const ListingList: React.FC<ListingListProps> = ({
   handleDeleteListing,
   user,
 }) => {
+  const [now] = useState(() => Date.now());
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {listings.map((listing) => (
@@ -38,6 +40,12 @@ const ListingList: React.FC<ListingListProps> = ({
               <span className="text-brand-navy rounded-full bg-white/90 px-3 py-1 text-[10px] font-black uppercase shadow-sm backdrop-blur-sm">
                 {listing.city}
               </span>
+              {listing.createdAt && (now - new Date(listing.createdAt).getTime() < 24 * 60 * 60 * 1000) && (
+                <span className="flex items-center gap-1 bg-red-500/90 text-white rounded-full px-2.5 py-1 text-[8px] font-black uppercase shadow-sm backdrop-blur-sm tracking-widest animate-pulse">
+                  <span className="h-1.5 w-1.5 rounded-full bg-white block" />
+                  Nuevo
+                </span>
+              )}
             </div>
           </div>
           <div className="flex flex-grow flex-col p-6">

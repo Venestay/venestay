@@ -29,6 +29,7 @@ export const listingSchema = z.object({
   environmentPhotos: z.record(z.string(), z.string()).optional(),
   isVerified: z.boolean().default(true),
   isPetFriendly: z.boolean().default(false),
+  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict']).default('moderate'),
   paymentMethods: z.array(z.discriminatedUnion('type', [
     z.object({
       id: z.string(),

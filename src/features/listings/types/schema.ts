@@ -39,6 +39,7 @@ export const ListingSchema = z.object({
     idNumber: z.string(),
     phoneNumber: z.string().optional(),
   }).optional(),
+  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict']).optional().default('moderate'),
 });
 
 export type ValidatedListing = z.infer<typeof ListingSchema>;

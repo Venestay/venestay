@@ -21,7 +21,8 @@ export type InfoKey =
   | 'security'
   | 'support'
   | 'contact'
-  | 'how_to_publish';
+  | 'how_to_publish'
+  | 'cancellation';
 
 interface InfoModalProps {
   isOpen: boolean;
@@ -428,6 +429,58 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
               </div>
               <span className="text-[8px] font-black uppercase">Instant</span>
             </div>
+          </div>
+        </div>
+      ),
+    },
+    cancellation: {
+      title: 'Políticas de Cancelación (Reserva Protegida 20/80)',
+      icon: <Info className="text-brand-500 h-8 w-8" />,
+      body: (
+        <div className="space-y-6">
+          <p className="text-sm leading-relaxed font-medium">
+            En VeneStay operamos bajo la <strong>Garantía de Reserva Protegida 20/80</strong>. Esto significa que nuestras políticas rigen exclusivamente sobre el <strong>depósito del 20%</strong> abonado hoy a la plataforma. El 80% restante lo abonas directamente a tu anfitrión al momento del check-in.
+          </p>
+
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-emerald-500" />
+                <h4 className="text-emerald-950 text-xs font-black uppercase">Cancelación Flexible</h4>
+              </div>
+              <p className="text-xs leading-relaxed text-emerald-800 font-bold">
+                Reembolso completo del depósito del 20% si cancelas hasta <strong>48 horas antes</strong> del check-in. Posterior a este plazo, el depósito no es reembolsable.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-amber-500" />
+                <h4 className="text-amber-950 text-xs font-black uppercase">Cancelación Moderada</h4>
+              </div>
+              <p className="text-xs leading-relaxed text-amber-800 font-bold">
+                Reembolso completo del depósito del 20% si cancelas hasta <strong>7 días antes</strong> de la fecha de llegada. Posterior a este plazo, el depósito no es reembolsable.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-red-100 bg-red-50/50 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-red-500" />
+                <h4 className="text-red-950 text-xs font-black uppercase">Cancelación Estricta</h4>
+              </div>
+              <p className="text-xs leading-relaxed text-red-800 font-bold">
+                Reembolso completo del depósito del 20% hasta <strong>30 días antes</strong> del check-in. Reembolso del 50% del depósito si cancelas entre <strong>30 y 14 días antes</strong>. Sin reembolso en los últimos 14 días.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-brand-navy rounded-2xl p-4 text-center">
+            <p className="text-brand-500 mb-1 text-xs font-black tracking-widest uppercase italic select-none">
+              Seguridad en tu Reserva
+            </p>
+            <p className="text-[10px] text-white/60">
+              Todas las retenciones o reembolsos se gestionan de manera rápida mediante soporte de conserjería 24/7.
+            </p>
           </div>
         </div>
       ),

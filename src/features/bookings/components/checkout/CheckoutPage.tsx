@@ -59,6 +59,9 @@ import PaymentBanner from '@/features/bookings/components/checkout/PaymentBanner
 import { checkProfileCompletion } from '@/lib/user-utils';
 import { calculateTrustScore } from '@/services/user-service';
 import { useLocation } from 'react-router-dom';
+import { calculateCancellationDeadline } from '@/features/bookings/hooks/useCancellationDeadline';
+import { CANCELLATION_POLICIES } from '@/features/listings/utils/cancellationPolicies';
+import { CancellationPolicyType } from '@/features/listings/types';
 
 const CheckoutPage: React.FC = () => {
   const { bookingId: urlBookingId } = useParams<{ bookingId: string }>();
@@ -81,6 +84,7 @@ const CheckoutPage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isGuestsEditorOpen, setIsGuestsEditorOpen] = useState(false);
+  const [hasConsentedPolicy, setHasConsentedPolicy] = useState(false);
 
   const [reservedDates, setReservedDates] = useState<{ start: Date; end: Date }[]>([]);
   const [softReservedDates, setSoftReservedDates] = useState<{ start: Date; end: Date }[]>([]);
@@ -464,6 +468,7 @@ const CheckoutPage: React.FC = () => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         guests: booking.guests,
+        cancellationPolicySnapshot: listing.cancellationPolicy ?? 'moderate',
         statusHistory: [
           {
             status: 'PENDING_PAYMENT' as BookingStatus,
@@ -586,6 +591,7 @@ const CheckoutPage: React.FC = () => {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           guests: booking.guests,
+          cancellationPolicySnapshot: listing.cancellationPolicy ?? 'moderate',
           statusHistory: [
             {
               status: 'PENDING_PAYMENT',
@@ -1174,8 +1180,49 @@ const CheckoutPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-6 space-y-4">
                   <PaymentBanner />
+
+                  {/* BANNER DE POLÍTICA DE CANCELACIÓN */}
+                  {(() => {
+                    const policyKey = (listing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
+                    const policy = CANCELLATION_POLICIES[policyKey];
+                    const { deadlineFormatted, isExpired } = calculateCancellationDeadline(
+                      booking.startDate,
+                      policyKey
+                    );
+                    return (
+                      <div className={cn(
+                        'flex items-start gap-4 rounded-[28px] border p-6',
+                        isExpired ? 'border-red-100 bg-red-50' : 'border-amber-100 bg-amber-50/70'
+                      )}>
+                        <div className={cn(
+                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                          isExpired ? 'bg-red-100' : 'bg-amber-100'
+                        )}>
+                          <Info className={cn('h-5 w-5', isExpired ? 'text-red-500' : 'text-amber-600')} />
+                        </div>
+                        <div>
+                          <p className={cn(
+                            'text-[10px] font-black tracking-widest uppercase mb-1',
+                            isExpired ? 'text-red-600' : 'text-amber-700'
+                          )}>
+                            {policy.label}
+                          </p>
+                          {isExpired ? (
+                            <p className="text-xs font-semibold text-red-600">
+                              El plazo de cancelación gratuita ya venció. El depósito del 20% no es reembolsable.
+                            </p>
+                          ) : (
+                            <p className="text-xs font-semibold text-slate-700">
+                              Cancelación gratuita antes del <strong className="text-amber-800">{deadlineFormatted}</strong>.
+                              Después de esa fecha, el depósito del 20% no es reembolsable.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </section>
 
@@ -1561,11 +1608,42 @@ const CheckoutPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* CONSENTIMIENTO LEGAL — POLÍTICA DE CANCELACIÓN */}
+                <label
+                  htmlFor="policy-consent"
+                  className="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-100 bg-gray-50 p-4 select-none mt-6"
+                >
+                  <div className={cn(
+                    'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all',
+                    hasConsentedPolicy
+                      ? 'border-brand-navy bg-brand-navy'
+                      : 'border-gray-300 bg-white'
+                  )}>
+                    {hasConsentedPolicy && (
+                      <Check className="h-3 w-3 text-white" />
+                    )}
+                  </div>
+                  <input
+                    id="policy-consent"
+                    type="checkbox"
+                    className="hidden"
+                    checked={hasConsentedPolicy}
+                    onChange={(e) => setHasConsentedPolicy(e.target.checked)}
+                  />
+                  <p className="text-[10.5px] leading-relaxed font-semibold text-slate-500">
+                    Acepto los Términos de Servicio y la{' '}
+                    <strong className="text-brand-navy">
+                      {CANCELLATION_POLICIES[(listing.cancellationPolicy ?? 'moderate') as CancellationPolicyType].label}
+                    </strong>{' '}
+                    de este alojamiento. Entiendo que el depósito del 20% rige bajo esta política.
+                  </p>
+                </label>
+
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-4 rounded-[28px] border border-red-100 bg-red-50 p-6"
+                    className="flex items-center gap-4 rounded-[28px] border border-red-100 bg-red-50 p-6 mt-4"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500 shadow-lg shadow-red-500/10">
                       <ShieldAlert className="h-5 w-5 text-white" />
@@ -1591,7 +1669,7 @@ const CheckoutPage: React.FC = () => {
                   )}
                   <button
                     id="payment-submit-button-desktop"
-                    disabled={isSubmitting || !reference.trim() || !file || isBlockedByTrust}
+                    disabled={isSubmitting || !reference.trim() || !file || isBlockedByTrust || !hasConsentedPolicy}
                     onClick={handleSubmitPayment}
                     className="bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400 flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase shadow-2xl transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                   >
@@ -1602,7 +1680,7 @@ const CheckoutPage: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <span>Asegurar mi Estancia Ahora</span>
+                        <span>Asegurar mi Estadía Ahora</span>
                         <ChevronRight className="h-5 w-5" />
                       </>
                     )}
@@ -1625,7 +1703,7 @@ const CheckoutPage: React.FC = () => {
         <div className="pointer-events-none fixed right-0 bottom-16 left-0 z-[60] p-4 md:hidden">
           <button
             id="payment-submit-button-mobile"
-            disabled={isSubmitting || !reference.trim() || !file || isBlockedByTrust}
+            disabled={isSubmitting || !reference.trim() || !file || isBlockedByTrust || !hasConsentedPolicy}
             onClick={handleSubmitPayment}
             className="bg-brand-500 text-brand-navy shadow-brand-500/40 pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
           >
@@ -1634,7 +1712,7 @@ const CheckoutPage: React.FC = () => {
             ) : (
               <ChevronRight className="h-5 w-5" />
             )}
-            Asegurar mi Estancia Ahora
+            Asegurar mi Estadía Ahora
           </button>
         </div>
       )}

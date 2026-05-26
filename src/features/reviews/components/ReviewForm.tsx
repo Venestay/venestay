@@ -82,7 +82,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         </div>
         <div>
           <h3 className="text-xl font-black text-white tracking-tight">Comparte tu Experiencia</h3>
-          <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Reseña Verificada por UCP</p>
+          <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Reseña de Huésped Real</p>
         </div>
       </div>
 

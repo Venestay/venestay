@@ -11,6 +11,8 @@ export type City =
   | 'Puerto La Cruz';
 
 
+export type CancellationPolicyType = 'flexible' | 'moderate' | 'strict';
+
 export interface Listing {
   id: string;
   title: string;
@@ -49,6 +51,7 @@ export interface Listing {
   environmentPhotos?: Record<string, string>;
   paymentMethods?: PaymentMethod[];
   isPublishedFromDashboard?: boolean;
+  cancellationPolicy?: CancellationPolicyType;
   bankDetails?: {
     bankName: string;
     accountHolder: string;

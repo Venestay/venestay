@@ -301,7 +301,7 @@ const StepGeneral: React.FC = () => {
       <section className="space-y-4">
         <h3 className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase" id="amenities-label">Comodidades y Servicios Adicionales</h3>
         <div className="flex flex-wrap gap-2" role="group" aria-labelledby="amenities-label">
-          {['WiFi', 'A/A', 'TV', 'Cocina equipada', 'Piscina', 'Planta Eléctrica', 'Tanque de Agua', 'Vista al Mar', 'Gimnasio', 'Estacionamiento', 'Elementos de seguridad', 'Extintor de incendios', 'Botiquín de primeros auxilios'].map(amenity => {
+          {['WiFi', 'A/A', 'TV', 'Smart TV', 'Cocina equipada', 'Electrodomésticos', 'Calentador de agua', 'Purificador de Agua', 'Lavadora', 'Secadora', 'Piscina', 'Planta Eléctrica', 'Tanque de Agua', 'Vista al Mar', 'Muelle Privado / Acceso al Canal', 'Parrillera / BBQ (a Gas o Carbón)', 'Kayak / Paddle Board incluido', 'Gimnasio', 'Estacionamiento', 'Cerradura Inteligente', 'Elementos de seguridad', 'Extintor de incendios', 'Botiquín de primeros auxilios'].map(amenity => {
             const isActive = editingListing.amenities?.includes(amenity);
             return (
               <button key={amenity} type="button" aria-pressed={isActive} onClick={() => {
@@ -324,6 +324,77 @@ const StepGeneral: React.FC = () => {
           onChange={(e) => setEditingListing(prev => prev ? { ...prev, nearbyActivities: e.target.value } : null)}
           placeholder="Menciona centros comerciales, playas, restaurantes u otros sitios de interés cerca..."
         />
+      </section>
+
+      {/* Política de Cancelación */}
+      <section className="space-y-3" aria-labelledby="cancellation-policy-label">
+        <div className="ml-1 flex items-center gap-2">
+          <label id="cancellation-policy-label" className="text-brand-navy/40 text-[10px] font-black tracking-widest uppercase">
+            Política de Cancelación Aplicable
+          </label>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" role="group" aria-labelledby="cancellation-policy-label">
+          {([
+            {
+              key: 'flexible' as const,
+              title: 'Flexible',
+              desc: 'Reembolso del 100% del depósito hasta 48 horas antes del check-in.',
+              dot: 'bg-emerald-400',
+            },
+            {
+              key: 'moderate' as const,
+              title: 'Moderada',
+              desc: 'Reembolso del 100% del depósito hasta 7 días antes del check-in.',
+              dot: 'bg-amber-400',
+            },
+            {
+              key: 'strict' as const,
+              title: 'Estricta',
+              desc: 'Reembolso del 100% hasta 30 días antes. 50% entre 30 y 14 días.',
+              dot: 'bg-red-400',
+            },
+          ]).map((policy) => {
+            const isActive = (editingListing.cancellationPolicy ?? 'moderate') === policy.key;
+            return (
+              <button
+                key={policy.key}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setEditingListing(prev => prev ? { ...prev, cancellationPolicy: policy.key } : null)}
+                className={cn(
+                  'relative flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-all duration-200',
+                  isActive
+                    ? 'border-brand-navy bg-brand-navy/[0.03] ring-1 ring-brand-navy/20 shadow-sm'
+                    : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 hover:bg-gray-50'
+                )}
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <span className={cn('h-2 w-2 shrink-0 rounded-full', policy.dot)} />
+                  <span className={cn(
+                    'text-[11px] font-black tracking-wide transition-colors',
+                    isActive ? 'text-brand-navy' : 'text-brand-navy/60'
+                  )}>
+                    {policy.title}
+                  </span>
+                  {isActive && (
+                    <span className="ml-auto">
+                      <Check className="h-3.5 w-3.5 text-brand-navy" />
+                    </span>
+                  )}
+                </div>
+                <p className={cn(
+                  'text-[10px] font-semibold leading-relaxed transition-colors',
+                  isActive ? 'text-slate-500' : 'text-slate-400'
+                )}>
+                  {policy.desc}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+        <p className="ml-1 text-[9px] font-semibold text-slate-400 tracking-wide">
+          Solo rige el depósito del 20%. El 80% restante se abona al check-in.
+        </p>
       </section>
     </motion.div>
   );
