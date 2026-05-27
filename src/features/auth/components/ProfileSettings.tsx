@@ -15,6 +15,9 @@ import VerificationModal from './VerificationModal';
 import PaymentMethodModal from './PaymentMethodModal';
 import ConfirmExitModal from './ConfirmExitModal';
 import Navbar from '@/components/ui/Navbar';
+import { motion } from 'motion/react';
+import { ShieldCheck, ChevronRight } from 'lucide-react';
+import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
 
 // Sub-componentes
 import { PassportHeader } from './passport/PassportHeader';
@@ -27,6 +30,7 @@ import { toast } from 'sonner';
 
 const ProfileSettings: React.FC = () => {
   const navigate = useNavigate();
+  const { restoreDraft } = useBookingDraft();
 
   // Estados de UI locales (apertura de modales)
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
@@ -64,6 +68,11 @@ const ProfileSettings: React.FC = () => {
     handleRemovePaymentMethod,
     updateProfile,
   } = usePassportForm();
+
+  const draft = React.useMemo(() => restoreDraft(), [restoreDraft]);
+  const isKycVerified = React.useMemo(() => {
+    return profile?.kycStatus === 'VERIFIED' || profile?.isIdentityVerified === true;
+  }, [profile]);
 
   // Interceptar la recarga/cierre de la pestaña si el formulario tiene cambios
   React.useEffect(() => {
@@ -179,6 +188,32 @@ const ProfileSettings: React.FC = () => {
           onGenerateQAProfile={handleGenerateQAProfile}
           isGeneratingQA={isGeneratingQA}
         />
+
+        {isKycVerified && draft && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={() => navigate(draft.returnUrl)}
+            className="flex cursor-pointer items-center justify-between gap-4 rounded-3xl border border-emerald-100 bg-emerald-50/50 p-6 transition-all duration-300 hover:scale-[1.01] hover:border-emerald-200 hover:bg-emerald-50 shadow-sm"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
+                <ShieldCheck className="h-6 w-6 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-emerald-800">
+                  ¡Identidad Verificada!
+                </p>
+                <p className="mt-0.5 text-xs font-semibold text-slate-600 leading-normal">
+                  Tienes una reserva pendiente esperándote.
+                  <br />
+                  <span className="text-emerald-700 font-bold underline">Haz clic aquí para retomar tu última estadía ahora.</span>
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-emerald-600 shrink-0" />
+          </motion.div>
+        )}
 
         {/* 
           ── FORMULARIO CON SECCIONES ESCALONADAS ──

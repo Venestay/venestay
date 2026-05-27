@@ -139,6 +139,25 @@ const CheckoutPage: React.FC = () => {
     return trustScore < 40;
   }, [trustScore]);
 
+  const isKycVerified = useMemo(() => {
+    const kycStatus = profileData?.kycStatus;
+    return kycStatus === 'VERIFIED' || profileData?.isIdentityVerified === true;
+  }, [profileData]);
+
+  const isFormDisabled = useMemo(() => {
+    if (isSubmitting) return true;
+    if (isBlockedByTrust) return true;
+    if (!hasConsentedPolicy) return true;
+    
+    // Si el usuario ya está autenticado y tiene su pasaporte completo (KYC), se exige comprobante y referencia
+    if (user && isKycVerified) {
+      return !reference.trim() || !file;
+    }
+    
+    // Si no está autenticado o le falta KYC, habilitamos para permitir hacer clic y abrir Auth/KYC modals
+    return false;
+  }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file]);
+
   useEffect(() => {
     const fetchDraftData = async () => {
       const state = location.state as { bookingData: unknown } | null;
@@ -1709,9 +1728,34 @@ const CheckoutPage: React.FC = () => {
                       para asegurar tus fechas.
                     </div>
                   )}
+
+                  {user && !isKycVerified && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={handleGoToPassport}
+                      className="mb-6 flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-amber-100 bg-amber-50/40 p-4 transition-all duration-300 hover:scale-[1.01] hover:border-amber-200 hover:bg-amber-50 shadow-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 animate-pulse">
+                          <ShieldAlert className="h-4.5 w-4.5" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-black tracking-widest text-amber-800 uppercase">
+                            Completa tu pasaporte para reservar
+                          </p>
+                          <p className="text-[10px] font-medium text-amber-700 mt-0.5">
+                            Haz clic aquí para terminar tu verificación y asegurar tu estadía.
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-amber-600 shrink-0" />
+                    </motion.div>
+                  )}
+
                   <button
                     id="payment-submit-button-desktop"
-                    disabled={isSubmitting || !reference.trim() || !file || isBlockedByTrust || !hasConsentedPolicy}
+                    disabled={isFormDisabled}
                     onClick={handleSubmitPayment}
                     className="bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400 flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase shadow-2xl transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                   >
@@ -1745,7 +1789,7 @@ const CheckoutPage: React.FC = () => {
         <div className="pointer-events-none fixed right-0 bottom-16 left-0 z-[60] p-4 md:hidden">
           <button
             id="payment-submit-button-mobile"
-            disabled={isSubmitting || !reference.trim() || !file || isBlockedByTrust || !hasConsentedPolicy}
+            disabled={isFormDisabled}
             onClick={handleSubmitPayment}
             className="bg-brand-500 text-brand-navy shadow-brand-500/40 pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
           >
