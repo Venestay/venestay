@@ -111,7 +111,7 @@ const ListingList: React.FC<ListingListProps> = ({
             hostId: user?.uid || 'admin',
             blockedDates: [],
             paymentInstructions: '',
-            minNights: 1,
+            minNights: 2,
             maxNights: 30,
             propertyType: 'Apartamento',
             accommodationType: 'Alojamiento entero',

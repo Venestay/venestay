@@ -13,7 +13,7 @@ export const listingSchema = z.object({
   bedrooms: z.coerce.number().min(0),
   beds: z.coerce.number().min(1, 'Mínimo 1 cama'),
   baths: z.coerce.number().min(1, 'Mínimo 1 baño'),
-  minNights: z.coerce.number().min(1).default(1),
+  minNights: z.coerce.number().min(2, 'La estadía mínima debe ser de al menos 2 noches').default(2),
   maxNights: z.coerce.number().min(1).default(30),
   propertyType: z.string().default('Apartamento'),
   accommodationType: z.string().default('Alojamiento entero'),

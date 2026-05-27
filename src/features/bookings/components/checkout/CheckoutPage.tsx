@@ -54,6 +54,7 @@ import Chat from '@/components/Chat';
 import * as bookingService from '@/services/booking-service';
 import Skeleton from '@/components/ui/Skeleton';
 import AuthModal from '@/features/auth/components/AuthModal';
+import KYCRequiredModal from '@/features/auth/components/KYCRequiredModal';
 import Calendar from '@/features/bookings/components/Calendar';
 import PaymentBanner from '@/features/bookings/components/checkout/PaymentBanner';
 import { checkProfileCompletion } from '@/lib/user-utils';
@@ -62,6 +63,7 @@ import { useLocation } from 'react-router-dom';
 import { calculateCancellationDeadline } from '@/features/bookings/hooks/useCancellationDeadline';
 import { CANCELLATION_POLICIES } from '@/features/listings/utils/cancellationPolicies';
 import { CancellationPolicyType } from '@/features/listings/types';
+import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
 
 const CheckoutPage: React.FC = () => {
   const { bookingId: urlBookingId } = useParams<{ bookingId: string }>();
@@ -82,9 +84,12 @@ const CheckoutPage: React.FC = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showKYCModal, setShowKYCModal] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isGuestsEditorOpen, setIsGuestsEditorOpen] = useState(false);
   const [hasConsentedPolicy, setHasConsentedPolicy] = useState(false);
+
+  const { saveDraft, clearDraft } = useBookingDraft();
 
   const [reservedDates, setReservedDates] = useState<{ start: Date; end: Date }[]>([]);
   const [softReservedDates, setSoftReservedDates] = useState<{ start: Date; end: Date }[]>([]);
@@ -543,16 +548,51 @@ const CheckoutPage: React.FC = () => {
     }
   };
 
+  /**
+   * Persiste el borrador de reserva en localStorage (TTL 4h) para que el
+   * usuario pueda reanudar el checkout tras completar Auth o KYC.
+   */
+  const persistDraftAndReturn = () => {
+    if (!booking || !listing) return;
+    saveDraft({
+      listingId: listing.id,
+      startDate: booking.startDate,
+      endDate: booking.endDate,
+      guests: booking.guests ?? 2,
+      returnUrl: window.location.pathname + window.location.search,
+    });
+  };
+
+  /** Guarda el draft y navega al pasaporte para completar KYC */
+  const handleGoToPassport = () => {
+    persistDraftAndReturn();
+    setShowKYCModal(false);
+    navigate('/mi-pasaporte');
+  };
+
   const handleSubmitPayment = async () => {
-    // 1. Check Auth FIRST, without requiring files
+    // 1. Verificar autenticación primero
     if (!user) {
+      persistDraftAndReturn();
       setShowAuthModal(true);
       return;
     }
 
     if (!booking || !listing) return;
 
-    // 2. Check Input
+    // 2. Verificar KYC — bloquear UNVERIFIED y REJECTED, avisar PENDING_REVIEW
+    const kycStatus = profileData?.kycStatus;
+    const isKycVerified =
+      kycStatus === 'VERIFIED' || profileData?.isIdentityVerified === true;
+
+    if (!isKycVerified && kycStatus !== 'PENDING_REVIEW') {
+      // UNVERIFIED o REJECTED → abrir modal de KYC
+      persistDraftAndReturn();
+      setShowKYCModal(true);
+      return;
+    }
+
+    // 3. Check Input
     if (!file || !reference.trim()) {
       setError(
         'Por favor sube tu comprobante de pago y escribe el número de referencia.'
@@ -560,7 +600,7 @@ const CheckoutPage: React.FC = () => {
       return;
     }
 
-    // 3. Check Trust Score Gatekeeper (VeneStay Passport)
+    // 4. Check Trust Score Gatekeeper (VeneStay Passport)
     if (isBlockedByTrust) {
       setError(
         `Tu nivel de confianza (${trustScore}%) es insuficiente para reservar. El mínimo requerido es 40%.`
@@ -703,6 +743,7 @@ const CheckoutPage: React.FC = () => {
       });
 
       setUploadSuccess(true);
+      clearDraft(); // Limpiar draft al completar el pago
       if (booking.isDraft) {
         // Navigate to the real booking checkout page for visual consistency
         navigate(`/checkout/${currentBookingId}`, { replace: true });
@@ -1030,6 +1071,7 @@ const CheckoutPage: React.FC = () => {
                               endDate={parseLocalDate(booking.endDate)}
                               reservedDates={reservedDates}
                               softReservedDates={softReservedDates}
+                              minNights={listing.minNights ?? 2}
                               onChange={handleDateChange}
                               onClose={() => setIsCalendarOpen(false)}
                             />
@@ -1588,7 +1630,7 @@ const CheckoutPage: React.FC = () => {
                   <div className="flex flex-col justify-between space-y-6 lg:col-span-3">
                     <div className="space-y-2 rounded-[35px] border border-gray-100 bg-white p-8 shadow-sm">
                       <label className="text-brand-navy ml-1 block text-[10px] font-black tracking-widest uppercase">
-                        Referencia de la Operación
+                        Número de comprobante
                       </label>
                       <input
                         type="text"
@@ -1862,6 +1904,13 @@ const CheckoutPage: React.FC = () => {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         initialView="login"
+      />
+
+      <KYCRequiredModal
+        isOpen={showKYCModal}
+        onClose={() => setShowKYCModal(false)}
+        kycStatus={profileData?.kycStatus}
+        onGoToPassport={handleGoToPassport}
       />
     </div>
   );

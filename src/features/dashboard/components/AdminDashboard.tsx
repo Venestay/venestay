@@ -160,12 +160,14 @@ const AdminDashboard: React.FC = () => {
     const listingId = editingListing?.id;
     if (!listingId || !user) return;
 
-    const fileList = 'target' in e ? e.target.files : (e as { files: FileList }).files;
+    const fileList: FileList | null = 'target' in e
+      ? (e as React.ChangeEvent<HTMLInputElement>).target.files
+      : (e as { files: FileList }).files;
     if (!fileList || fileList.length === 0) return;
     
     // CRITICAL: Convert FileList to Array synchronously before any 'await' 
     // to prevent losing references if the input value is reset in the UI.
-    const files = Array.from(fileList);
+    const files: File[] = Array.from(fileList);
 
     setIsUploading(true);
 

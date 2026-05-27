@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   User,
@@ -25,9 +26,14 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { checkProfileCompletion } from '@/lib/user-utils';
 import { cn } from '@/lib/utils';
+import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
 
 const UserProfileSetup: React.FC = () => {
   const { user, profileData, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+  const { restoreDraft, hasDraft, clearDraft } = useBookingDraft();
+  const [pendingDraft, setPendingDraft] = useState<{ returnUrl: string } | null>(null);
+
   const [editingProfile, setEditingProfile] = useState<UserProfile | null>(
     null
   );
@@ -36,6 +42,13 @@ const UserProfileSetup: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const completionPercentage = checkProfileCompletion(profileData);
+
+  // Detectar si hay un draft de reserva pendiente al montar (solo una vez)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const draft = restoreDraft();
+    if (draft) setPendingDraft({ returnUrl: draft.returnUrl });
+  }, []); // hasDraft/restoreDraft son funciones puras estables, no necesitan como dep
 
   useEffect(() => {
     if (profileData) {
@@ -267,6 +280,49 @@ const UserProfileSetup: React.FC = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Banner: Retomar reserva pendiente */}
+      <AnimatePresence>
+        {pendingDraft && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            className="mb-6 flex items-center justify-between gap-4 rounded-3xl border border-brand-500/20 bg-brand-navy p-5 shadow-xl"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-500">
+                <CheckCircle2 className="h-5 w-5 text-brand-navy" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black tracking-widest text-brand-500 uppercase">
+                  Reserva pendiente
+                </p>
+                <p className="mt-0.5 text-xs font-semibold text-white/80">
+                  Completa tu perfil y retoma tu reserva donde la dejaste.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  navigate(pendingDraft.returnUrl);
+                }}
+                className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-brand-500 px-4 py-2.5 text-[10px] font-black tracking-widest text-brand-navy uppercase transition-all hover:bg-brand-400 active:scale-95"
+              >
+                Continuar reserva
+              </button>
+              <button
+                onClick={() => { clearDraft(); setPendingDraft(null); }}
+                className="rounded-xl p-2 text-white/40 transition-colors hover:text-white"
+                aria-label="Descartar reserva pendiente"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Form Grid */}
       <form

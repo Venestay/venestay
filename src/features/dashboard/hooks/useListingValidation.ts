@@ -10,7 +10,7 @@ export type FieldValidation<T> = {
 };
 
 export type FormStepState =
-  | { step: 1; data: Partial<Pick<ListingSchema, 'title' | 'description' | 'pricePerNight' | 'city' | 'maxGuests' | 'bedrooms' | 'beds' | 'baths' | 'buildingFloors' | 'propertyFloor' | 'constructionYear'>> }
+  | { step: 1; data: Partial<Pick<ListingSchema, 'title' | 'description' | 'pricePerNight' | 'city' | 'maxGuests' | 'bedrooms' | 'beds' | 'baths' | 'buildingFloors' | 'propertyFloor' | 'constructionYear' | 'minNights'>> }
   | { step: 2; data: Partial<Pick<ListingSchema, 'images' | 'environmentPhotos'>> }
   | { step: 3; data: Partial<Pick<ListingSchema, 'latitude' | 'longitude' | 'manualAddress'>> }
   | { step: 4; data: Partial<Pick<ListingSchema, 'paymentMethods'>> };

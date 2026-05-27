@@ -10,8 +10,8 @@ const PaymentBanner: React.FC = () => {
           <span className="mb-1 block text-xs font-black tracking-widest text-white uppercase">
             Reserva Protegida
           </span>
-          Solo transfieres el 20% de anticipo a VeneStay. El saldo restante se
-          liquida directamente con el anfitrión tras verificar la propiedad.
+          Solo transfiere el 20% de anticipo y el saldo restante se liquida
+          directamente con el anfitrión al ingresar a la propiedad.
         </p>
       </div>
     </div>

@@ -12,10 +12,22 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-  };
+  public declare props: Props;
+  public declare state: State;
+  public declare setState: (
+    state: Partial<State> | ((prevState: Readonly<State>, props: Readonly<Props>) => Partial<State> | null),
+    callback?: () => void
+  ) => void;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+    };
+    this.handleReset = this.handleReset.bind(this);
+    this.handleReload = this.handleReload.bind(this);
+  }
 
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
@@ -25,14 +37,14 @@ class ErrorBoundary extends Component<Props, State> {
     logger.error('CRITICAL UI ERROR:', error, errorInfo);
   }
 
-  private handleReset = () => {
+  private handleReset() {
     this.setState({ hasError: false, error: null });
     window.location.href = '/';
-  };
+  }
 
-  private handleReload = () => {
+  private handleReload() {
     window.location.reload();
-  };
+  }
 
   public render() {
     if (this.state.hasError) {
@@ -81,3 +93,5 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
+
+

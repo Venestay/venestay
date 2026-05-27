@@ -291,6 +291,14 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
         return;
       }
 
+      const minNightsRequired = currentListing?.minNights ?? 2;
+      if (totalNights < minNightsRequired) {
+        setBookingError(`La estadía mínima para este alojamiento es de ${minNightsRequired} noches.`);
+        setIsCalendarOpen(true);
+        setTimeout(() => setBookingError(null), 4000);
+        return;
+      }
+
       const bookingData = {
         listingId: currentListing.id,
         startDate: format(startDate, 'yyyy-MM-dd'),
@@ -409,6 +417,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   startDate={startDate}
                   endDate={endDate}
                   reservedDates={reservedDates}
+                  minNights={currentListing?.minNights ?? 2}
                   onChange={(start, end) => {
                     setStartDate(start);
                     setEndDate(end);
@@ -1523,6 +1532,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                                   endDate={endDate}
                                   reservedDates={reservedDates}
                                   softReservedDates={softReservedDates}
+                                  minNights={currentListing?.minNights ?? 2}
                                   onChange={(start, end) => {
                                     setStartDate(start);
                                     setEndDate(end);

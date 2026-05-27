@@ -56,6 +56,7 @@ const ListingFormContent: React.FC<{
           buildingFloors: editingListing.buildingFloors,
           propertyFloor: editingListing.propertyFloor,
           constructionYear: editingListing.constructionYear,
+          minNights: editingListing.minNights,
         };
       case 2:
         return {

@@ -46,14 +46,14 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({
   activeCity = 'All',
-  setActiveCity = () => {},
+  setActiveCity = (_city: City) => {},
   searchQuery = '',
-  setSearchQuery = () => {},
+  setSearchQuery = (_query: string) => {},
   startDate = null,
   endDate = null,
-  setDates = () => {},
+  setDates = (_start: Date | null, _end: Date | null) => {},
   onOpenAdmin,
-  onOpenAuth = () => {},
+  onOpenAuth = (_view?: 'login' | 'register') => {},
   hideFilters = false,
   onSearchSubmit,
   onLogoClick,

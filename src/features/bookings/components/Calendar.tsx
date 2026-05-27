@@ -14,10 +14,12 @@ import {
   isBefore,
   startOfToday,
   startOfDay,
+  differenceInDays,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface CalendarProps {
   startDate: Date | null;
@@ -26,6 +28,7 @@ interface CalendarProps {
   softReservedDates?: { start: Date; end: Date }[];
   onChange: (start: Date | null, end: Date | null) => void;
   onClose: () => void;
+  minNights?: number;
 }
 
 const Calendar: React.FC<CalendarProps> = ({
@@ -35,6 +38,7 @@ const Calendar: React.FC<CalendarProps> = ({
   softReservedDates = [],
   onChange,
   onClose,
+  minNights = 2,
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -82,6 +86,12 @@ const Calendar: React.FC<CalendarProps> = ({
           // Si hay solape, reiniciamos la selección con el nuevo día como inicio
           onChange(normalizedDay, null);
         } else {
+          // Verificar la estadía mínima
+          const diffNights = differenceInDays(normalizedDay, startDate);
+          if (diffNights < minNights) {
+            toast.error(`La estadía mínima para este alojamiento es de ${minNights} noches.`);
+            return;
+          }
           onChange(startDate, normalizedDay);
         }
       }
