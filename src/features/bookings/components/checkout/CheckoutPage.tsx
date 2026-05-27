@@ -146,16 +146,17 @@ const CheckoutPage: React.FC = () => {
 
   const isFormDisabled = useMemo(() => {
     if (isSubmitting) return true;
+    
+    // FASE 1: Usuario No Autenticado -> Totalmente habilitado para capturar el clic y abrir el AuthModal
+    if (!user) return false;
+    
+    // FASE 2: Usuario Autenticado sin KYC -> Totalmente habilitado para capturar el clic y guiar a verificación
+    if (!isKycVerified) return false;
+    
+    // FASE 3: Usuario Autenticado y Verificado -> Exigir validaciones estrictas de pasarela de pago
     if (isBlockedByTrust) return true;
     if (!hasConsentedPolicy) return true;
-    
-    // Si el usuario ya está autenticado y tiene su pasaporte completo (KYC), se exige comprobante y referencia
-    if (user && isKycVerified) {
-      return !reference.trim() || !file;
-    }
-    
-    // Si no está autenticado o le falta KYC, habilitamos para permitir hacer clic y abrir Auth/KYC modals
-    return false;
+    return !reference.trim() || !file;
   }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file]);
 
   useEffect(() => {
