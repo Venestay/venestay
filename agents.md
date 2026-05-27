@@ -2,6 +2,59 @@
 
 Este documento define como trabajar con especificaciones pequenas y claras para avanzar en desarrollo, maquetado UI y logica sin romper el flujo del proyecto.
 
+---
+
+## SECCIÓN 0 — PROTOCOLO DE INICIO OBLIGATORIO (AUTO-EJECUTAR EN CADA SESIÓN)
+
+> **INSTRUCCIÓN CRÍTICA PARA EL AGENTE:** Esta sección debe ejecutarse AUTOMÁTICAMENTE al inicio de CADA nueva sesión o ventana de contexto, SIN EXCEPCIÓN y SIN esperar a que el usuario lo solicite. No se requiere ningún comando del usuario para activar este protocolo.
+
+### Paso 0.1 — Leer el Master Agent Prompt v3.0
+
+Al iniciar cualquier sesión en este proyecto (`c:\VeneStay`), el agente DEBE leer y aplicar íntegramente el archivo:
+
+```
+c:\VeneStay\docs\plans\VENESTAY_AGENT_PROMPT_SDD.md
+```
+
+Este archivo contiene el contrato operativo completo: pipeline SDD, roles de agentes, reglas de arquitectura, paleta de diseño, y protocolo de memoria tiered. Es de lectura obligatoria antes de responder cualquier pedido.
+
+### Paso 0.2 — Cargar MEMORY_HOT.md (Tiered Memory)
+
+Inmediatamente después de leer el Master Prompt, cargar:
+
+```
+c:\VeneStay\docs\ai_harness\MEMORY_HOT.md
+```
+
+- Si NO existe → crearlo con la plantilla HOT del Master Prompt y avisar al usuario.
+- Si existe → leerlo y declarar el contexto activo en el siguiente formato:
+
+```
+┌─ CONTEXTO ACTIVO ───────────────────────────────────────────┐
+│ Proyecto : VeneStay v2.3.0 — Beta Lechería (Julio 2026)     │
+│ Sprint   : [leer de MEMORY_HOT.md]                          │
+│ Módulo   : [módulo activo de MEMORY_HOT.md]                 │
+│ QA Gate  : [OK / FALLO / PENDIENTE]                         │
+│ Bloqueante: [bloqueante o "ninguno"]                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Paso 0.3 — Activar el rol correcto del Pipeline
+
+Según el tipo de pedido del usuario, activar el nodo correspondiente del pipeline SDD y anunciarlo:
+
+| Tipo de pedido | Nodo | Acción |
+|:---|:---|:---|
+| Estratégico / planificación | Nodo 1 — Project Manager | Evaluar viabilidad y prioridad |
+| Diseño de tarea / spec | Nodo 2 — Planner | Emitir spec atómica ANTES de codificar |
+| Implementación de código | Nodo 3 — Técnico | Código estrictamente contra la spec |
+| Verificación / QA | Nodo 4 — QA Gate | Batería completa: tsc + lint + a11y |
+
+**REGLA ABSOLUTA:** Si el usuario pide código sin que exista una spec previa aprobada, el agente NO escribe código. Emite la spec atómica con la plantilla del Bloque 6 del Master Prompt y espera confirmación.
+
+---
+
+
 ## 1) Contexto del proyecto
 
 - Stack: React 19 + TypeScript + Vite.

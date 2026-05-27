@@ -32,6 +32,7 @@ import FloatingChat from '@/components/FloatingChat';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
 import Skeleton from '@/components/ui/Skeleton';
 import UserProfileSetup from '@/features/auth/components/UserProfileSetup';
+import { cleanupExpiredBookings } from '@/services/booking-service';
 
 // v2.2 Refactored Components
 import DashboardHeader, { DashboardTab } from './DashboardHeader';
@@ -137,6 +138,11 @@ const AdminDashboard: React.FC = () => {
       unsubscribeListings();
     };
   }, [isAdmin, user]);
+
+  // Ejecutar limpieza pasiva (Lazy Expiry) de reservas expiradas al montar
+  useEffect(() => {
+    cleanupExpiredBookings();
+  }, []);
 
   // v2.2 Persistencia: Recuperar borrador y reabrir formulario al refrescar
   useEffect(() => {

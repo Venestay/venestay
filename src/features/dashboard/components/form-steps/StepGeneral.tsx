@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AlertCircle, Check, Minus, Plus } from 'lucide-react';
+import { AlertCircle, Check, Minus, Plus, Zap, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { City } from '@/types';
 import { useListingForm } from '../ListingFormContext';
@@ -397,6 +397,88 @@ const StepGeneral: React.FC = () => {
         <p className="ml-1 text-[9px] font-semibold text-slate-400 tracking-wide">
           Solo rige el depósito del 20%. El 80% restante se abona al check-in.
         </p>
+      </section>
+
+      {/* Modo de Reserva */}
+      <section className="space-y-4 border-t border-gray-200/60 pt-8" aria-labelledby="booking-mode-label">
+        <div className="ml-1 flex items-center gap-2">
+          <label id="booking-mode-label" className="text-brand-navy/40 text-[10px] font-black tracking-widest uppercase">
+            Modo de Reserva Preferido
+          </label>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" role="group" aria-labelledby="booking-mode-label">
+          {/* Opción Reserva Inmediata */}
+          <button
+            type="button"
+            aria-pressed={(editingListing.bookingMode ?? 'instant') === 'instant'}
+            onClick={() => setEditingListing(prev => prev ? { ...prev, bookingMode: 'instant' } : null)}
+            className={cn(
+              'relative flex items-start gap-4 rounded-2xl border p-5 text-left transition-all duration-300 min-h-[44px]',
+              (editingListing.bookingMode ?? 'instant') === 'instant'
+                ? 'border-brand-navy bg-brand-navy/[0.03] ring-1 ring-brand-navy/20 shadow-md'
+                : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 hover:bg-gray-50'
+            )}
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+              <Zap className="h-5 w-5 fill-amber-500/10" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  'text-[12px] font-black tracking-wide transition-colors',
+                  (editingListing.bookingMode ?? 'instant') === 'instant' ? 'text-brand-navy' : 'text-brand-navy/60'
+                )}>
+                  Reserva Inmediata
+                </span>
+                {(editingListing.bookingMode ?? 'instant') === 'instant' && (
+                  <Check className="h-4 w-4 text-brand-navy ml-1 shrink-0" />
+                )}
+              </div>
+              <p className={cn(
+                'text-[10px] font-semibold leading-relaxed transition-colors',
+                (editingListing.bookingMode ?? 'instant') === 'instant' ? 'text-slate-500' : 'text-slate-400'
+              )}>
+                Los huéspedes reservan al instante sin confirmación manual previa. Mayor conversión.
+              </p>
+            </div>
+          </button>
+
+          {/* Opción Solicitar Reserva */}
+          <button
+            type="button"
+            aria-pressed={editingListing.bookingMode === 'request'}
+            onClick={() => setEditingListing(prev => prev ? { ...prev, bookingMode: 'request' } : null)}
+            className={cn(
+              'relative flex items-start gap-4 rounded-2xl border p-5 text-left transition-all duration-300 min-h-[44px]',
+              editingListing.bookingMode === 'request'
+                ? 'border-brand-gold bg-brand-gold/[0.03] ring-1 ring-brand-gold/20 shadow-md'
+                : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 hover:bg-gray-50'
+            )}
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-gold/10 text-brand-gold">
+              <MessageSquare className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  'text-[12px] font-black tracking-wide transition-colors',
+                  editingListing.bookingMode === 'request' ? 'text-brand-navy' : 'text-brand-navy/60'
+                )}>
+                  Solicitar Reserva
+                </span>
+                {editingListing.bookingMode === 'request' && (
+                  <Check className="h-4 w-4 text-brand-gold ml-1 shrink-0" />
+                )}
+              </div>
+              <p className={cn(
+                'text-[10px] font-semibold leading-relaxed transition-colors',
+                editingListing.bookingMode === 'request' ? 'text-slate-500' : 'text-slate-400'
+              )}>
+                El huésped te contacta primero. Apruebas o rechazas en 24h. Mayor control sobre quién se queda.
+              </p>
+            </div>
+          </button>
+        </div>
       </section>
     </motion.div>
   );

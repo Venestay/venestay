@@ -59,6 +59,7 @@ export interface Listing {
     idNumber: string;
     phoneNumber?: string; // Pago Móvil
   };
+  bookingMode?: 'instant' | 'request';
 }
 
 

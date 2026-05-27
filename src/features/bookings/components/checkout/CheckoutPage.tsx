@@ -88,6 +88,13 @@ const CheckoutPage: React.FC = () => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isGuestsEditorOpen, setIsGuestsEditorOpen] = useState(false);
   const [hasConsentedPolicy, setHasConsentedPolicy] = useState(false);
+  const [guestMessage, setGuestMessage] = useState('');
+
+  useEffect(() => {
+    if (listing && !guestMessage) {
+      setGuestMessage(`Hola ${listing.hostName || 'Anfitrión'}, me encantaría solicitar una reserva en tu propiedad para mis próximas fechas.`);
+    }
+  }, [listing, guestMessage]);
 
   const { saveDraft, clearDraft } = useBookingDraft();
 
@@ -156,8 +163,12 @@ const CheckoutPage: React.FC = () => {
     // FASE 3: Usuario Autenticado y Verificado -> Exigir validaciones estrictas de pasarela de pago
     if (isBlockedByTrust) return true;
     if (!hasConsentedPolicy) return true;
+    
+    // Si es modo request, no exigimos comprobante ni referencia obligatoria en esta fase
+    if (listing?.bookingMode === 'request') return false;
+    
     return !reference.trim() || !file;
-  }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file]);
+  }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file, listing?.bookingMode]);
 
   useEffect(() => {
     const fetchDraftData = async () => {
@@ -633,10 +644,16 @@ const CheckoutPage: React.FC = () => {
 
     try {
       let currentBookingId = urlBookingId;
+      const isRequestMode = listing.bookingMode === 'request';
 
       // 3. Create booking if it's a draft
       if (booking.isDraft) {
-        const bookingData = {
+        const initialStatus = isRequestMode ? 'PENDING_APPROVAL' : 'PENDING_PAYMENT';
+        const expiresAtVal = isRequestMode 
+          ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          : undefined;
+
+        const bookingData: Partial<Booking> = {
           listingId: listing.id,
           listingTitle: listing.title,
           guestId: user.uid,
@@ -646,40 +663,48 @@ const CheckoutPage: React.FC = () => {
           endDate: booking.endDate,
           totalAmount: booking.totalAmount,
           agreedPercentage: 20,
-          status: 'PENDING_PAYMENT' as BookingStatus,
+          status: initialStatus as BookingStatus,
+          bookingMode: listing.bookingMode,
+          guestMessage: isRequestMode ? guestMessage : undefined,
+          expiresAt: expiresAtVal,
           paymentInstructions: listing.paymentInstructions || '',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
           guests: booking.guests,
           cancellationPolicySnapshot: listing.cancellationPolicy ?? 'moderate',
           statusHistory: [
             {
-              status: 'PENDING_PAYMENT',
+              status: initialStatus as BookingStatus,
               timestamp: new Date().toISOString(),
               actorId: user.uid,
               actorName: user.displayName || 'Huésped',
-              note: 'Reserva creada desde el proceso de checkout (flujo frictionless)',
+              note: isRequestMode 
+                ? 'Solicitud de reserva enviada para aprobación del anfitrión'
+                : 'Reserva creada desde el proceso de checkout (flujo frictionless)',
             },
           ],
         };
 
-        const docRef = await addDoc(collection(db, 'bookings'), bookingData);
-        currentBookingId = docRef.id;
-        // Update local state to reflect it's no longer a draft (though we'll redirect or refresh soon)
+        // Invocar la transacción atómica
+        currentBookingId = await bookingService.createBookingWithTransaction(bookingData, isRequestMode ? guestMessage : undefined);
       }
 
       if (!currentBookingId) throw new Error('No booking ID available');
 
-      // 4. Compress Image
-      const imageCompression = (await import('browser-image-compression'))
-        .default;
+      // 4. Si es modo Request y no hay comprobante ni referencia, completamos la solicitud de forma directa
+      if (isRequestMode && (!file || !reference.trim())) {
+        setUploadSuccess(true);
+        clearDraft();
+        return;
+      }
+
+      // 4. Compress Image (solo si se provee file)
+      const imageCompression = (await import('browser-image-compression')).default;
       const options = {
         maxSizeMB: 0.6,
         maxWidthOrHeight: 1600,
         useWebWorker: true,
         initialQuality: 0.75,
       };
-      const compressedFile = await imageCompression(file, options);
+      const compressedFile = await imageCompression(file!, options);
 
       // 5. Upload to Storage
       const fileName = `${Date.now()}_receipt.jpg`;
@@ -724,10 +749,8 @@ const CheckoutPage: React.FC = () => {
             : 'USD',
         amounts: {
           total: booking.totalAmount,
-          depositRequired: calculatePaymentBreakdown(booking.totalAmount)
-            .depositAmount,
-          offlineBalance: calculatePaymentBreakdown(booking.totalAmount)
-            .remainingBalance,
+          depositRequired: calculatePaymentBreakdown(booking.totalAmount).depositAmount,
+          offlineBalance: calculatePaymentBreakdown(booking.totalAmount).remainingBalance,
         },
         metadata: { agenticReady: true },
       };
@@ -742,35 +765,36 @@ const CheckoutPage: React.FC = () => {
         createdAt: serverTimestamp(),
       });
 
-      // 7. Update Booking status to AWAITING_VERIFICATION
+      // 7. Update Booking status (PENDING_APPROVAL si es request, AWAITING_VERIFICATION si es instant)
       const bookingRef = doc(db, 'bookings', currentBookingId);
       await updateDoc(bookingRef, {
-        status: 'AWAITING_VERIFICATION',
+        status: isRequestMode ? 'PENDING_APPROVAL' : 'AWAITING_VERIFICATION',
         proofUrl,
         paymentReference: reference,
-        financials: booking.financials, // Seal the deal
+        financials: booking.financials,
         updatedAt: serverTimestamp(),
         statusHistory: [
           ...(booking.statusHistory || []),
           {
-            status: 'AWAITING_VERIFICATION',
+            status: isRequestMode ? 'PENDING_APPROVAL' : 'AWAITING_VERIFICATION',
             timestamp: new Date().toISOString(),
             actorId: user.uid,
             actorName: user.displayName || 'Huésped',
-            note: 'Comprobante de pago subido desde página de checkout',
+            note: isRequestMode 
+              ? 'Solicitud enviada adjuntando comprobante de pago preliminar'
+              : 'Comprobante de pago subido desde página de checkout',
           },
         ],
       });
 
       setUploadSuccess(true);
-      clearDraft(); // Limpiar draft al completar el pago
+      clearDraft(); // Limpiar draft al completar
       if (booking.isDraft) {
-        // Navigate to the real booking checkout page for visual consistency
         navigate(`/checkout/${currentBookingId}`, { replace: true });
       }
     } catch (err) {
       console.error('Error submitting payment:', err);
-      setError('Error al procesar el pago. Por favor intenta de nuevo.');
+      setError((err as Error).message || 'Error al procesar el pago. Por favor intenta de nuevo.');
     } finally {
       setIsSubmitting(false);
     }
@@ -919,18 +943,28 @@ const CheckoutPage: React.FC = () => {
                 <CheckCircle2 className="h-10 w-10 text-white" />
               </div>
               <h2 className="text-brand-navy text-3xl font-black tracking-tight">
-                ¡Estancia Asegurada!
+                {listing?.bookingMode === 'request' ? '¡Solicitud Enviada!' : '¡Estancia Asegurada!'}
               </h2>
               <p className="mx-auto max-w-md leading-relaxed font-medium text-gray-600">
-                Hemos enviado tu comprobante al anfitrión. Recibirás una
-                notificación una vez que sea validado (usualmente en 2-4 horas).
+                {listing?.bookingMode === 'request'
+                  ? `Tu mensaje y pasaporte han sido presentados a ${listing.hostName || 'el anfitrión'}. Recibirás una respuesta en un plazo máximo de 24 horas. ¡Puedes chatear con el anfitrión ahora mismo!`
+                  : 'Hemos enviado tu comprobante al anfitrión. Recibirás una notificación una vez que sea validado (usualmente en 2-4 horas).'}
               </p>
-              <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
+              <div className="flex flex-col justify-center items-center gap-4 pt-4 sm:flex-row">
+                {listing?.bookingMode === 'request' && (
+                  <button
+                    onClick={() => setIsChatOpen(true)}
+                    className="bg-brand-500 hover:bg-brand-400 text-brand-navy rounded-2xl px-10 py-4 text-xs font-black tracking-widest uppercase transition-all shadow-lg shadow-brand-500/10 flex items-center gap-2"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Chatear con Anfitrión
+                  </button>
+                )}
                 <button
                   onClick={() => navigate('/')}
                   className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy rounded-2xl px-10 py-4 text-xs font-black tracking-widest text-white uppercase transition-all"
                 >
-                  Explorar más stancias
+                  Explorar más estancias
                 </button>
               </div>
             </motion.div>
@@ -1295,8 +1329,8 @@ const CheckoutPage: React.FC = () => {
                     1
                   </div>
                   <div className="flex flex-grow items-center justify-between">
-                    <h2 className="text-brand-navy text-sm font-black tracking-widest uppercase">
-                      Método de Pago
+                    <h2 className="text-brand-navy text-sm font-black tracking-widest uppercase flex items-center gap-2">
+                      Datos de Pago {listing?.bookingMode === 'request' && <span className="text-[9px] text-[#b08f23] font-black italic tracking-widest lowercase bg-brand-gold/10 px-2 py-0.5 rounded-md leading-none select-none">(Opcional)</span>}
                     </h2>
                     <div className="bg-brand-navy/5 flex items-center gap-2 rounded-xl px-3 py-1.5">
                       <ShieldCheck className="text-brand-navy h-3 w-3" />
@@ -1594,8 +1628,8 @@ const CheckoutPage: React.FC = () => {
                   <div className="bg-brand-navy text-brand-500 flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
                     2
                   </div>
-                  <h2 className="text-brand-navy text-sm font-black tracking-widest uppercase">
-                    Carga de Comprobante
+                  <h2 className="text-brand-navy text-sm font-black tracking-widest uppercase flex items-center gap-2">
+                    Carga de Comprobante {listing?.bookingMode === 'request' && <span className="text-[9px] text-[#b08f23] font-black italic tracking-widest lowercase bg-brand-gold/10 px-2 py-0.5 rounded-md leading-none select-none">(Opcional)</span>}
                   </h2>
                 </div>
 
@@ -1669,6 +1703,24 @@ const CheckoutPage: React.FC = () => {
                     <PaymentBanner />
                   </div>
                 </div>
+
+                {listing?.bookingMode === 'request' && (
+                  <div className="space-y-3 rounded-[32px] border border-brand-gold/20 bg-brand-gold/[0.01] p-6 shadow-sm mt-6">
+                    <label className="text-brand-navy ml-1 block text-[10px] font-black tracking-widest uppercase flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-[#b08f23]" />
+                      Preséntate al anfitrión (Mensaje de solicitud)
+                    </label>
+                    <textarea
+                      value={guestMessage}
+                      onChange={(e) => setGuestMessage(e.target.value)}
+                      placeholder="Escribe algo sobre ti y el motivo del viaje para generar confianza..."
+                      className="focus:border-brand-gold text-brand-navy w-full h-28 resize-none rounded-2xl border border-gray-100 bg-white px-6 py-4 text-xs font-bold transition-all outline-none"
+                    />
+                    <p className="ml-1 text-[9px] font-semibold text-slate-400 tracking-wide leading-relaxed">
+                      El anfitrión revisará tu pasaporte y este mensaje para evaluar la aprobación en menos de 24 horas.
+                    </p>
+                  </div>
+                )}
 
                 {/* CONSENTIMIENTO LEGAL — POLÍTICA DE CANCELACIÓN */}
                 <label
@@ -1758,16 +1810,21 @@ const CheckoutPage: React.FC = () => {
                     id="payment-submit-button-desktop"
                     disabled={isFormDisabled}
                     onClick={handleSubmitPayment}
-                    className="bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400 flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase shadow-2xl transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+                    className={cn(
+                      "shadow-2xl flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
+                      listing?.bookingMode === 'request'
+                        ? "border border-brand-gold bg-transparent text-brand-navy shadow-brand-gold/10 hover:bg-brand-gold/5"
+                        : "bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400"
+                    )}
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="text-brand-navy h-6 w-6 animate-spin" />
-                        <span>Procesando...</span>
+                        <span>Enviando...</span>
                       </>
                     ) : (
                       <>
-                        <span>Asegurar mi Estadía Ahora</span>
+                        <span>{listing?.bookingMode === 'request' ? 'Enviar Solicitud de Reserva' : 'Asegurar mi Estadía Ahora'}</span>
                         <ChevronRight className="h-5 w-5" />
                       </>
                     )}
@@ -1792,14 +1849,19 @@ const CheckoutPage: React.FC = () => {
             id="payment-submit-button-mobile"
             disabled={isFormDisabled}
             onClick={handleSubmitPayment}
-            className="bg-brand-500 text-brand-navy shadow-brand-500/40 pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+            className={cn(
+              "pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
+              listing?.bookingMode === 'request'
+                ? "border border-brand-gold bg-white text-brand-navy shadow-brand-gold/10 shadow-lg"
+                : "bg-brand-500 text-brand-navy shadow-brand-500/40"
+            )}
           >
             {isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <ChevronRight className="h-5 w-5" />
             )}
-            Asegurar mi Estadía Ahora
+            {listing?.bookingMode === 'request' ? 'Enviar Solicitud' : 'Asegurar mi Estadía Ahora'}
           </button>
         </div>
       )}

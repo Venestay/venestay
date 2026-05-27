@@ -63,7 +63,7 @@ service cloud.firestore {
              data.guestId == request.auth.uid && // Identity Integrity
              data.listingId is string && data.listingId.size() <= 128 &&
              data.listingTitle is string && data.listingTitle.size() <= 200 &&
-             data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED'] &&
+             data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED', 'PENDING_APPROVAL', 'EXPIRED'] &&
              data.totalAmount is number && 
              data.guests is number &&
              data.statusHistory is list && data.statusHistory.size() <= 20;
@@ -212,10 +212,14 @@ service cloud.firestore {
         )) ||
         // Owner Actions
         (request.auth.uid == resource.data.ownerId && (
-          // Action: Confirm/Reject
-          (incoming().status in ['CONFIRMED', 'REJECTED'] &&
-           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'verifiedAt', 'verifiedBy', 'rejectionReason', 'updatedAt', 'statusHistory']))
-        ))
+          // Action: Confirm/Reject/Approve Request
+          (incoming().status in ['CONFIRMED', 'AWAITING_VERIFICATION', 'REJECTED'] &&
+           incoming().diff(existing()).affectedKeys().hasAny(['status', 'verifiedAt', 'verifiedBy', 'rejectionReason', 'hostResponseNote', 'updatedAt', 'statusHistory']))
+        )) ||
+        // Lazy Expiry (Guest or Owner can transition a pending approval request to EXPIRED)
+        ((request.auth.uid == resource.data.guestId || request.auth.uid == resource.data.ownerId) &&
+         existing().status == 'PENDING_APPROVAL' && incoming().status == 'EXPIRED' &&
+         incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']))
       );
       
       allow delete: if isAdmin();

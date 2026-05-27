@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   CheckCircle2,
@@ -16,6 +16,39 @@ import { Booking, BookingStatus } from '@/types';
 import { calculateCommission, getCommissionTier, CommissionTier } from '@/lib/commission';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { PromptDialog } from '@/components/ui/PromptDialog';
+
+const CountdownTimer: React.FC<{ expiresAt?: string }> = ({ expiresAt }) => {
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    if (!expiresAt) return;
+    const calculateTime = () => {
+      const difference = new Date(expiresAt).getTime() - new Date().getTime();
+      if (difference <= 0) {
+        setTimeLeft('Expirado');
+        return;
+      }
+      const hours = Math.floor(difference / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+    };
+
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  if (!expiresAt) return null;
+
+  return (
+    <div className="flex items-center gap-1 w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[9px] font-black tracking-widest text-amber-700 uppercase animate-pulse">
+      <Clock className="h-3 w-3 text-amber-600" />
+      <span>Vence en: {timeLeft}</span>
+    </div>
+  );
+};
 
 interface BookingListProps {
   bookings: Booking[];
@@ -113,14 +146,18 @@ const BookingList: React.FC<BookingListProps> = ({
                     ? 'border-blue-100 bg-blue-50 text-blue-600'
                     : booking.status === 'PENDING_PAYMENT'
                       ? 'border-amber-100 bg-amber-50 text-amber-600'
-                      : booking.status === 'REJECTED'
-                        ? 'border-red-100 bg-red-50 text-red-600'
-                        : 'border-gray-100 bg-gray-50 text-gray-600'
+                      : booking.status === 'PENDING_APPROVAL'
+                        ? 'border-amber-200 bg-amber-50/50 text-amber-700'
+                        : booking.status === 'EXPIRED'
+                          ? 'border-gray-200 bg-gray-50 text-gray-400'
+                          : booking.status === 'REJECTED'
+                            ? 'border-red-100 bg-red-50 text-red-600'
+                            : 'border-gray-100 bg-gray-50 text-gray-600'
               )}
             >
               {booking.status === 'CONFIRMED' ? (
                 <CheckCircle2 className="h-3 w-3" />
-              ) : booking.status === 'REJECTED' ? (
+              ) : booking.status === 'REJECTED' || booking.status === 'EXPIRED' ? (
                 <XCircle className="h-3 w-3" />
               ) : (
                 <Clock className="h-3 w-3" />
@@ -131,10 +168,17 @@ const BookingList: React.FC<BookingListProps> = ({
                   ? 'Verificación Pendiente'
                   : booking.status === 'PENDING_PAYMENT'
                     ? 'Esperando Pago'
-                    : booking.status === 'REJECTED'
-                      ? 'Rechazada'
-                      : 'Cancelada'}
+                    : booking.status === 'PENDING_APPROVAL'
+                      ? 'Solicitud Pendiente'
+                      : booking.status === 'EXPIRED'
+                        ? 'Solicitud Expirada'
+                        : booking.status === 'REJECTED'
+                          ? 'Rechazada'
+                          : 'Cancelada'}
               </div>
+              {booking.status === 'PENDING_APPROVAL' && (
+                <CountdownTimer expiresAt={booking.expiresAt} />
+              )}
               {isConflicting && booking.status === 'AWAITING_VERIFICATION' && (
                 <div className="flex w-fit items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1 animate-pulse">
                   <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
@@ -195,6 +239,16 @@ const BookingList: React.FC<BookingListProps> = ({
                     </span>
                   </div>
                 </div>
+                {booking.guestMessage && (
+                  <div className="relative mt-2 rounded-2xl bg-amber-50/40 border border-amber-100 p-3 text-xs text-brand-navy">
+                    <p className="font-semibold text-[9px] uppercase tracking-wider text-amber-700 mb-1">
+                      Presentación del huésped:
+                    </p>
+                    <p className="italic text-gray-600 font-medium">
+                      "{booking.guestMessage}"
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="bg-brand-navy flex w-full flex-col gap-4 rounded-3xl p-5 text-white sm:w-56">
@@ -248,6 +302,28 @@ const BookingList: React.FC<BookingListProps> = ({
                     className="flex-grow transform rounded-2xl bg-emerald-500 py-3 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-95"
                   >
                     Validar Pago
+                  </button>
+                  <button
+                    onClick={() => setBookingToReject(booking)}
+                    className="transform rounded-2xl border-2 border-red-100 px-6 py-3 text-[10px] font-black tracking-widest text-red-500 uppercase transition-all hover:bg-red-50 active:scale-95"
+                  >
+                    Rechazar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {booking.status === 'PENDING_APPROVAL' && (
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      const nextStatus = (booking.proofUrl || booking.paymentReference) ? 'AWAITING_VERIFICATION' : 'CONFIRMED';
+                      handleUpdateStatus(booking, nextStatus, 'Solicitud de reserva aprobada por el anfitrión.');
+                    }}
+                    className="flex-grow transform rounded-2xl bg-emerald-500 py-3 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-95"
+                  >
+                    Aprobar Solicitud
                   </button>
                   <button
                     onClick={() => setBookingToReject(booking)}
@@ -325,6 +401,16 @@ const BookingList: React.FC<BookingListProps> = ({
                     {booking.rejectionReason}
                   </p>
                 )}
+              </div>
+            )}
+            {booking.status === 'EXPIRED' && (
+              <div className="flex w-full flex-col items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 py-3">
+                <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
+                  Solicitud Expirada ✕
+                </span>
+                <p className="mt-1 text-[9px] font-medium text-gray-400">
+                  Expiró automáticamente a las 24 horas sin respuesta.
+                </p>
               </div>
             )}
             {booking.status === 'PENDING_PAYMENT' && (

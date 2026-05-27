@@ -1657,16 +1657,31 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
 
                       {/* 6. CTA PRINCIPAL */}
                       <div className="space-y-3.5">
-                        <button
-                          id="reserve-button-desktop"
-                          className="bg-gradient-to-r from-brand-navy via-[#0d1b3a] to-brand-navy hover:from-[#0d1b3a] hover:to-brand-navy active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] text-white uppercase shadow-[0_10px_30px_rgba(10,15,40,0.18)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_14px_35px_rgba(10,15,40,0.22)] cursor-pointer"
-                          onClick={handleBooking}
-                        >
-                          <span className="relative z-10">Asegurar mi Estadía</span>
-                          <div className="bg-brand-500 absolute inset-0 -translate-x-full opacity-10 transition-transform duration-500 group-hover/btn:translate-x-0" />
-                        </button>
+                        {currentListing.bookingMode === 'request' ? (
+                          <button
+                            id="reserve-button-desktop"
+                            className="border border-brand-gold bg-transparent text-brand-navy hover:bg-brand-gold/10 active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] uppercase shadow-[0_10px_30px_rgba(197,160,89,0.08)] transition-all duration-300 hover:scale-[1.01] cursor-pointer"
+                            onClick={handleBooking}
+                          >
+                            <span className="relative z-10 flex items-center justify-center gap-2">
+                              <MessageCircle className="h-4 w-4 animate-pulse" />
+                              Solicitar Reserva
+                            </span>
+                          </button>
+                        ) : (
+                          <button
+                            id="reserve-button-desktop"
+                            className="bg-gradient-to-r from-brand-navy via-[#0d1b3a] to-brand-navy hover:from-[#0d1b3a] hover:to-brand-navy active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] text-white uppercase shadow-[0_10px_30px_rgba(10,15,40,0.18)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_14px_35px_rgba(10,15,40,0.22)] cursor-pointer"
+                            onClick={handleBooking}
+                          >
+                            <span className="relative z-10">Asegurar mi Estadía</span>
+                            <div className="bg-brand-500 absolute inset-0 -translate-x-full opacity-10 transition-transform duration-500 group-hover/btn:translate-x-0" />
+                          </button>
+                        )}
                         <p className="text-center text-[10.5px] text-slate-500 font-semibold tracking-normal select-none">
-                          No se realizará ningún cargo adicional.
+                          {currentListing.bookingMode === 'request'
+                            ? 'El anfitrión tiene 24h para confirmar. No se realiza ningún cargo hasta su aprobación.'
+                            : 'No se realizará ningún cargo adicional.'}
                         </p>
                       </div>
 
@@ -1772,12 +1787,21 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       <div className="h-8 w-px bg-slate-100" />
 
                       {/* CTA compacto */}
-                      <button
-                        onClick={handleBooking}
-                        className="bg-gradient-to-r from-brand-navy to-[#0d1b3a] rounded-[14px] px-5 py-2.5 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] cursor-pointer"
-                      >
-                        Reservar
-                      </button>
+                      {currentListing.bookingMode === 'request' ? (
+                        <button
+                          onClick={handleBooking}
+                          className="border border-brand-gold bg-transparent text-brand-navy hover:bg-brand-gold/10 rounded-[14px] px-5 py-2.5 text-[10px] font-black tracking-[0.2em] uppercase shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                        >
+                          Solicitar
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleBooking}
+                          className="bg-gradient-to-r from-brand-navy to-[#0d1b3a] rounded-[14px] px-5 py-2.5 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] cursor-pointer"
+                        >
+                          Reservar
+                        </button>
+                      )}
 
                       {/* Botón de expansión */}
                       <button
@@ -1828,9 +1852,16 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
         <button
           id="reserve-button-mobile"
           onClick={handleBooking}
-          className="bg-brand-500 text-brand-navy shadow-brand-500/20 flex h-[60px] min-w-[160px] items-center justify-center rounded-2xl px-10 py-5 text-xs font-black tracking-[0.1em] uppercase shadow-xl transition-all active:scale-95"
+          className={cn(
+            "flex h-[60px] min-w-[160px] items-center justify-center rounded-2xl px-10 py-5 text-xs font-black tracking-[0.1em] uppercase shadow-xl transition-all active:scale-95",
+            currentListing.bookingMode === 'request'
+              ? "border border-brand-gold bg-transparent text-brand-navy shadow-brand-gold/10"
+              : "bg-brand-500 text-brand-navy shadow-brand-500/20"
+          )}
         >
-          {startDate && endDate ? 'Asegurar Estadía' : 'Disponibilidad'}
+          {startDate && endDate 
+            ? (currentListing.bookingMode === 'request' ? 'Solicitar Reserva' : 'Asegurar Estadía')
+            : 'Disponibilidad'}
         </button>
       </div>
 

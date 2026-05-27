@@ -96,6 +96,7 @@ export const listingSchema = z.object({
     phoneNumber: z.string().optional(),
   }).optional(),
   paymentInstructions: z.string().optional(),
+  bookingMode: z.enum(['instant', 'request']).default('instant'),
 }).refine((data) => data.propertyFloor <= data.buildingFloors, {
   message: "El piso del alojamiento no puede ser mayor que el total de pisos del edificio",
   path: ["propertyFloor"],

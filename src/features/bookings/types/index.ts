@@ -7,7 +7,9 @@ export type BookingStatus =
   | 'AWAITING_VERIFICATION'
   | 'CONFIRMED'
   | 'REJECTED'
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'PENDING_APPROVAL'
+  | 'EXPIRED';
 
 export interface Booking {
   id: string;
@@ -32,6 +34,10 @@ export interface Booking {
   guests: number;
   isDraft?: boolean;
   cancellationPolicySnapshot?: 'flexible' | 'moderate' | 'strict';
+  bookingMode?: 'instant' | 'request';
+  guestMessage?: string;
+  hostResponseNote?: string;
+  expiresAt?: string;
   createdAt: string | Date | FieldValue;
   updatedAt: string | Date | FieldValue;
   statusHistory?: {
