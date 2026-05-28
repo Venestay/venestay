@@ -1660,7 +1660,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                         {currentListing.bookingMode === 'request' ? (
                           <button
                             id="reserve-button-desktop"
-                            className="border border-brand-gold bg-transparent text-brand-navy hover:bg-brand-gold/10 active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] uppercase shadow-[0_10px_30px_rgba(197,160,89,0.08)] transition-all duration-300 hover:scale-[1.01] cursor-pointer"
+                            className="animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] uppercase shadow-[0_10px_30px_rgba(197,160,89,0.18)] hover:shadow-[0_15px_35px_rgba(197,160,89,0.28)] transition-all duration-500 hover:scale-[1.01] cursor-pointer"
                             onClick={handleBooking}
                           >
                             <span className="relative z-10 flex items-center justify-center gap-2">
@@ -1790,7 +1790,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       {currentListing.bookingMode === 'request' ? (
                         <button
                           onClick={handleBooking}
-                          className="border border-brand-gold bg-transparent text-brand-navy hover:bg-brand-gold/10 rounded-[14px] px-5 py-2.5 text-[10px] font-black tracking-[0.2em] uppercase shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                          className="animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy rounded-[14px] px-5 py-2.5 text-[10px] font-black tracking-[0.2em] uppercase shadow-[0_4px_12px_rgba(197,160,89,0.15)] hover:shadow-[0_6px_16px_rgba(197,160,89,0.25)] transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                         >
                           Solicitar
                         </button>
@@ -1855,7 +1855,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
           className={cn(
             "flex h-[60px] min-w-[160px] items-center justify-center rounded-2xl px-10 py-5 text-xs font-black tracking-[0.1em] uppercase shadow-xl transition-all active:scale-95",
             currentListing.bookingMode === 'request'
-              ? "border border-brand-gold bg-transparent text-brand-navy shadow-brand-gold/10"
+              ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
               : "bg-brand-500 text-brand-navy shadow-brand-500/20"
           )}
         >

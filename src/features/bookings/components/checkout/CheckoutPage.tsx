@@ -25,6 +25,7 @@ import {
   Landmark,
   Sparkles,
   Info,
+  PlusCircle,
 } from 'lucide-react';
 import {
   Listing,
@@ -623,12 +624,16 @@ const CheckoutPage: React.FC = () => {
       return;
     }
 
-    // 3. Check Input
-    if (!file || !reference.trim()) {
-      setError(
-        'Por favor sube tu comprobante de pago y escribe el número de referencia.'
-      );
-      return;
+    const isRequestMode = listing.bookingMode === 'request';
+
+    // 3. Check Input (solo si no es modo solicitud de reserva)
+    if (!isRequestMode) {
+      if (!file || !reference.trim()) {
+        setError(
+          'Por favor sube tu comprobante de pago y escribe el número de referencia.'
+        );
+        return;
+      }
     }
 
     // 4. Check Trust Score Gatekeeper (VeneStay Passport)
@@ -644,7 +649,6 @@ const CheckoutPage: React.FC = () => {
 
     try {
       let currentBookingId = urlBookingId;
-      const isRequestMode = listing.bookingMode === 'request';
 
       // 3. Create booking if it's a draft
       if (booking.isDraft) {
@@ -1353,7 +1357,9 @@ const CheckoutPage: React.FC = () => {
                             ? Sparkles
                             : method.type === 'PagoMovil'
                               ? Smartphone
-                              : Landmark;
+                              : method.type === 'Otro'
+                                ? PlusCircle
+                                : Landmark;
                       const isActive = selectedMethod?.id === method.id;
 
                       return (
@@ -1400,17 +1406,17 @@ const CheckoutPage: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="bg-brand-navy group relative overflow-hidden rounded-[40px] p-10 text-white shadow-2xl"
+                      className="bg-brand-navy group relative overflow-hidden rounded-[32px] md:rounded-[40px] p-6 md:p-8 text-white shadow-2xl"
                     >
-                      <div className="absolute top-0 right-0 p-10 opacity-5 transition-transform duration-700 group-hover:scale-110">
-                        <Landmark className="h-32 w-32" />
+                      <div className="absolute top-0 right-0 p-6 md:p-8 opacity-5 transition-transform duration-700 group-hover:scale-110">
+                        <Landmark className="h-24 w-24 md:h-32 md:w-32" />
                       </div>
 
-                      <div className="relative z-10 space-y-8">
-                        <div className="mb-2 flex items-center gap-2">
+                      <div className="relative z-10 space-y-6">
+                        <div className="flex items-center gap-2">
                           <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                           <span className="text-brand-500 text-[10px] font-black tracking-widest uppercase">
-                            Datos para {selectedMethod.label}
+                            Datos para {selectedMethod.type === 'Otro' ? (selectedMethod.data.otherName || selectedMethod.label) : selectedMethod.label}
                           </span>
                           <div className="ml-auto flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5">
                             <ShieldCheck className="h-3 w-3 text-emerald-400" />
@@ -1420,13 +1426,13 @@ const CheckoutPage: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           {selectedMethod.data.bankName && (
                             <div className="space-y-1">
                               <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
                                 Banco
                               </p>
-                              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
+                              <div className="flex h-[52px] items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-2">
                                 <p className="text-sm font-black">
                                   {selectedMethod.data.bankName}
                                 </p>
@@ -1448,89 +1454,158 @@ const CheckoutPage: React.FC = () => {
                               </div>
                             </div>
                           )}
-                          <div className="space-y-1">
-                            <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
-                              Titular
-                            </p>
-                            <div className="flex h-[52px] items-center rounded-2xl border border-white/10 bg-white/5 p-4">
-                              <p className="text-sm font-black">
-                                {selectedMethod.data.accountHolder}
-                              </p>
-                            </div>
-                          </div>
-
-                          {(selectedMethod.data.accountNumber ||
-                            selectedMethod.data.phoneNumber ||
-                            selectedMethod.data.email ||
-                            selectedMethod.data.binanceId) && (
-                            <div className="space-y-1 md:col-span-2">
+                          {selectedMethod.data.accountHolder && (
+                            <div className="space-y-1">
                               <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
-                                {selectedMethod.type === 'Zelle'
-                                  ? 'Email'
-                                  : selectedMethod.type === 'Binance'
-                                    ? 'Pay ID / Email'
-                                    : selectedMethod.type === 'PagoMovil'
-                                      ? 'Número Celular'
-                                      : 'Número de Cuenta'}
+                                Titular
                               </p>
-                              <div
-                                className="flex items-center justify-between rounded-3xl border border-white/20 bg-white/5 p-5 transition-colors active:bg-white/10"
-                                onClick={() =>
-                                  handleCopy(
-                                    (selectedMethod.data.email ||
-                                      selectedMethod.data.binanceId ||
-                                      selectedMethod.data.accountNumber ||
-                                      selectedMethod.data.phoneNumber)!,
-                                    'main'
-                                  )
-                                }
-                              >
-                                <p className="truncate pr-2 font-mono text-lg font-black tracking-tight">
-                                  {selectedMethod.data.email ||
-                                    selectedMethod.data.binanceId ||
-                                    selectedMethod.data.accountNumber ||
-                                    selectedMethod.data.phoneNumber}
+                              <div className="flex h-[52px] items-center rounded-2xl border border-white/10 bg-white/5 p-4">
+                                <p className="text-sm font-black">
+                                  {selectedMethod.data.accountHolder}
                                 </p>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCopy(
-                                      (selectedMethod.data.email ||
-                                        selectedMethod.data.binanceId ||
-                                        selectedMethod.data.accountNumber ||
-                                        selectedMethod.data.phoneNumber)!,
-                                      'main'
-                                    );
-                                  }}
-                                  className="bg-brand-500 text-brand-navy hover:bg-brand-400 shrink-0 rounded-2xl p-3 shadow-lg transition-colors"
-                                >
-                                  {isCopied === 'main' ? (
-                                    <Check className="h-5 w-5" />
-                                  ) : (
-                                    <Copy className="h-5 w-5" />
-                                  )}
-                                </button>
                               </div>
                             </div>
                           )}
 
-                          {selectedMethod.data.idNumber && (
-                            <div className="space-y-1">
-                              <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
-                                Identificación (RIF/V)
-                              </p>
-                              <div className="flex h-[52px] items-center rounded-2xl border border-white/10 bg-white/5 p-4">
-                                <p className="text-sm font-black">
-                                  {selectedMethod.data.idNumber}
-                                </p>
-                              </div>
-                            </div>
+                          {selectedMethod.type === 'Otro' ? (
+                            <>
+                              {selectedMethod.data.email && (
+                                <div className="space-y-1">
+                                  <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
+                                    Correo Asociado
+                                  </p>
+                                  <div
+                                    className="flex h-[52px] items-center justify-between rounded-2xl border border-white/20 bg-white/5 px-4 py-2 transition-colors active:bg-white/10 cursor-pointer"
+                                    onClick={() =>
+                                      handleCopy(selectedMethod.data.email!, 'other-email')
+                                    }
+                                  >
+                                    <p className="truncate pr-2 font-mono text-sm font-black tracking-tight">
+                                      {selectedMethod.data.email}
+                                    </p>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCopy(selectedMethod.data.email!, 'other-email');
+                                      }}
+                                      className="bg-brand-500 text-brand-navy hover:bg-brand-400 shrink-0 rounded-xl p-2.5 shadow-md transition-colors"
+                                    >
+                                      {isCopied === 'other-email' ? (
+                                        <Check className="h-4 w-4" />
+                                      ) : (
+                                        <Copy className="h-4 w-4" />
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                              {selectedMethod.data.otherDetails && (
+                                <div className="space-y-1">
+                                  <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
+                                    Detalles / Cuenta
+                                  </p>
+                                  <div
+                                    className="flex h-[52px] items-center justify-between rounded-2xl border border-white/20 bg-white/5 px-4 py-2 transition-colors active:bg-white/10 cursor-pointer"
+                                    onClick={() =>
+                                      handleCopy(selectedMethod.data.otherDetails!, 'other-details')
+                                    }
+                                  >
+                                    <p className="truncate pr-2 font-mono text-sm font-black tracking-tight">
+                                      {selectedMethod.data.otherDetails}
+                                    </p>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCopy(selectedMethod.data.otherDetails!, 'other-details');
+                                      }}
+                                      className="bg-brand-500 text-brand-navy hover:bg-brand-400 shrink-0 rounded-xl p-2.5 shadow-md transition-colors"
+                                    >
+                                      {isCopied === 'other-details' ? (
+                                        <Check className="h-4 w-4" />
+                                      ) : (
+                                        <Copy className="h-4 w-4" />
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {(selectedMethod.data.accountNumber ||
+                                selectedMethod.data.phoneNumber ||
+                                selectedMethod.data.email ||
+                                selectedMethod.data.binanceId) && (
+                                <div className="space-y-1">
+                                  <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
+                                    {selectedMethod.type === 'Zelle'
+                                      ? 'Email'
+                                      : selectedMethod.type === 'Binance'
+                                        ? 'Pay ID / Email'
+                                        : selectedMethod.type === 'PagoMovil'
+                                          ? 'Número Celular'
+                                          : 'Número de Cuenta'}
+                                  </p>
+                                  <div
+                                    className="flex h-[52px] items-center justify-between rounded-2xl border border-white/20 bg-white/5 px-4 py-2 transition-colors active:bg-white/10 cursor-pointer"
+                                    onClick={() =>
+                                      handleCopy(
+                                        (selectedMethod.data.email ||
+                                          selectedMethod.data.binanceId ||
+                                          selectedMethod.data.accountNumber ||
+                                          selectedMethod.data.phoneNumber)!,
+                                        'main'
+                                      )
+                                    }
+                                  >
+                                    <p className="truncate pr-2 font-mono text-sm font-black tracking-tight">
+                                      {selectedMethod.data.email ||
+                                        selectedMethod.data.binanceId ||
+                                        selectedMethod.data.accountNumber ||
+                                        selectedMethod.data.phoneNumber}
+                                    </p>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCopy(
+                                          (selectedMethod.data.email ||
+                                            selectedMethod.data.binanceId ||
+                                            selectedMethod.data.accountNumber ||
+                                            selectedMethod.data.phoneNumber)!,
+                                          'main'
+                                        );
+                                      }}
+                                      className="bg-brand-500 text-brand-navy hover:bg-brand-400 shrink-0 rounded-xl p-2.5 shadow-md transition-colors"
+                                    >
+                                      {isCopied === 'main' ? (
+                                        <Check className="h-4 w-4" />
+                                      ) : (
+                                        <Copy className="h-4 w-4" />
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {selectedMethod.data.idNumber && (
+                                <div className="space-y-1">
+                                  <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
+                                    Identificación (RIF/V)
+                                  </p>
+                                  <div className="flex h-[52px] items-center rounded-2xl border border-white/10 bg-white/5 p-4">
+                                    <p className="text-sm font-black">
+                                      {selectedMethod.data.idNumber}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
 
                       {/* Privacy Footer */}
-                      <div className="mt-8 flex items-center gap-3 border-t border-white/5 pt-8 text-white/40">
+                      <div className="mt-6 flex items-center gap-3 border-t border-white/5 pt-6 text-white/40">
                         <Info className="h-3.5 w-3.5" />
                         <p className="text-[9px] font-medium italic">
                           Estos datos son confidenciales y se muestran solo
@@ -1624,85 +1699,89 @@ const CheckoutPage: React.FC = () => {
               </section>
 
               <section className="space-y-8 pb-20">
-                <div className="mb-2 flex items-center space-x-4">
-                  <div className="bg-brand-navy text-brand-500 flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
-                    2
-                  </div>
-                  <h2 className="text-brand-navy text-sm font-black tracking-widest uppercase flex items-center gap-2">
-                    Carga de Comprobante {listing?.bookingMode === 'request' && <span className="text-[9px] text-[#b08f23] font-black italic tracking-widest lowercase bg-brand-gold/10 px-2 py-0.5 rounded-md leading-none select-none">(Opcional)</span>}
-                  </h2>
-                </div>
+                {listing?.bookingMode !== 'request' && (
+                  <>
+                    <div className="mb-2 flex items-center space-x-4">
+                      <div className="bg-brand-navy text-brand-500 flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
+                        2
+                      </div>
+                      <h2 className="text-brand-navy text-sm font-black tracking-widest uppercase flex items-center gap-2">
+                        Carga de Comprobante
+                      </h2>
+                    </div>
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-                  <div className="lg:col-span-2">
-                    <div
-                      className={cn(
-                        'group relative flex h-64 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[40px] border-2 border-dashed bg-white p-8 shadow-sm transition-all',
-                        previewUrl
-                          ? 'border-emerald-500'
-                          : 'hover:border-brand-500 border-gray-200 hover:bg-gray-50'
-                      )}
-                      onClick={() =>
-                        document.getElementById('receipt-upload')?.click()
-                      }
-                    >
-                      {previewUrl ? (
-                        <img
-                          src={previewUrl}
-                          className="absolute inset-0 h-full w-full object-cover"
-                        />
-                      ) : (
-                        <>
-                          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-50 transition-all duration-500 group-hover:scale-110">
-                            <Upload className="text-brand-navy/20 group-hover:text-brand-500 h-8 w-8" />
-                          </div>
-                          <p className="text-center text-xs leading-tight font-black tracking-widest text-gray-400 uppercase">
-                            Arrastra o toca para
-                            <br />
-                            subir captura
-                          </p>
-                        </>
-                      )}
-                      <input
-                        id="receipt-upload"
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                      />
-                      {previewUrl && (
-                        <div className="bg-brand-navy/60 absolute inset-0 flex flex-col items-center justify-center opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
-                          <Upload className="text-brand-500 mb-2 h-8 w-8" />
-                          <p className="text-[10px] font-black tracking-widest text-white uppercase">
-                            Cambiar Comprobante
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+                      <div className="lg:col-span-2">
+                        <div
+                          className={cn(
+                            'group relative flex h-64 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[40px] border-2 border-dashed bg-white p-8 shadow-sm transition-all',
+                            previewUrl
+                              ? 'border-emerald-500'
+                              : 'hover:border-brand-500 border-gray-200 hover:bg-gray-50'
+                          )}
+                          onClick={() =>
+                            document.getElementById('receipt-upload')?.click()
+                          }
+                        >
+                          {previewUrl ? (
+                            <img
+                              src={previewUrl}
+                              className="absolute inset-0 h-full w-full object-cover"
+                            />
+                          ) : (
+                            <>
+                              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-50 transition-all duration-500 group-hover:scale-110">
+                                <Upload className="text-brand-navy/20 group-hover:text-brand-500 h-8 w-8" />
+                              </div>
+                              <p className="text-center text-xs leading-tight font-black tracking-widest text-gray-400 uppercase">
+                                Arrastra o toca para
+                                <br />
+                                subir captura
+                              </p>
+                            </>
+                          )}
+                          <input
+                            id="receipt-upload"
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                          />
+                          {previewUrl && (
+                            <div className="bg-brand-navy/60 absolute inset-0 flex flex-col items-center justify-center opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+                              <Upload className="text-brand-500 mb-2 h-8 w-8" />
+                              <p className="text-[10px] font-black tracking-widest text-white uppercase">
+                                Cambiar Comprobante
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col justify-between space-y-6 lg:col-span-3">
+                        <div className="space-y-2 rounded-[35px] border border-gray-100 bg-white p-8 shadow-sm">
+                          <label className="text-brand-navy ml-1 block text-[10px] font-black tracking-widest uppercase">
+                            Número de comprobante
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            id="reference-input"
+                            value={reference}
+                            onChange={(e) => setReference(e.target.value)}
+                            placeholder="Introduce los números"
+                            className="focus:border-brand-500 text-brand-navy w-full rounded-2xl border-2 border-transparent bg-gray-50 px-6 py-5 text-sm font-black transition-all outline-none focus:bg-white"
+                          />
+                          <p className="mt-2 ml-1 text-[9px] font-bold tracking-widest text-gray-400 uppercase">
+                            Revisamos esta referencia para validar el pago
                           </p>
                         </div>
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col justify-between space-y-6 lg:col-span-3">
-                    <div className="space-y-2 rounded-[35px] border border-gray-100 bg-white p-8 shadow-sm">
-                      <label className="text-brand-navy ml-1 block text-[10px] font-black tracking-widest uppercase">
-                        Número de comprobante
-                      </label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        id="reference-input"
-                        value={reference}
-                        onChange={(e) => setReference(e.target.value)}
-                        placeholder="Introduce los números"
-                        className="focus:border-brand-500 text-brand-navy w-full rounded-2xl border-2 border-transparent bg-gray-50 px-6 py-5 text-sm font-black transition-all outline-none focus:bg-white"
-                      />
-                      <p className="mt-2 ml-1 text-[9px] font-bold tracking-widest text-gray-400 uppercase">
-                        Revisamos esta referencia para validar el pago
-                      </p>
+                        <PaymentBanner />
+                      </div>
                     </div>
-
-                    <PaymentBanner />
-                  </div>
-                </div>
+                  </>
+                )}
 
                 {listing?.bookingMode === 'request' && (
                   <div className="space-y-3 rounded-[32px] border border-brand-gold/20 bg-brand-gold/[0.01] p-6 shadow-sm mt-6">
@@ -1813,7 +1892,7 @@ const CheckoutPage: React.FC = () => {
                     className={cn(
                       "shadow-2xl flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
                       listing?.bookingMode === 'request'
-                        ? "border border-brand-gold bg-transparent text-brand-navy shadow-brand-gold/10 hover:bg-brand-gold/5"
+                        ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
                         : "bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400"
                     )}
                   >
@@ -1852,7 +1931,7 @@ const CheckoutPage: React.FC = () => {
             className={cn(
               "pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
               listing?.bookingMode === 'request'
-                ? "border border-brand-gold bg-white text-brand-navy shadow-brand-gold/10 shadow-lg"
+                ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
                 : "bg-brand-500 text-brand-navy shadow-brand-500/40"
             )}
           >
