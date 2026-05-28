@@ -39,25 +39,23 @@ VeneStay opera mediante un equipo de **Agentes Especializados (Skills)** que ase
 
 ---
 
-## 🏗️ Fase Actual: Performance & Host Ecosystem (v0.9.6)
+## 🏗️ Fase Actual: Confianza, Identidad & Ecosistema de Anfitriones (v2.3.0)
 
-Nos encontramos en la fase de **madurez funcional**. El sistema ha sido optimizado para condiciones de uso reales en Venezuela (redes móviles y latencia variable), incorporando capas de ciberseguridad estrictas.
+Nos encontramos en la fase de **madurez funcional y optimización premium**. El sistema ha sido blindado para condiciones de uso reales en Venezuela (redes móviles y latencia variable), integrando una capa estricta de seguridad y lógica de negocio avanzada.
 
 ### Hitos Recientes:
-- **Arquitectura Robusta**: Migración completa a **Feature-Sliced Design (FSD)** para máxima escalabilidad y mantenibilidad.
-- **Optimización Móvil Total**: Modales full-screen, gestos táctiles (swiping) y layouts adaptativos extremos.
-- **Modelado Zero-Trust**: Reglas de base de datos endurecidas en Firestore y Storage, protegiendo datos sensibles (PII) y previniendo fugas relacionales.
-- **UX de Transaccionalidad**: Sistema "In-place" para confirmación de pagos con "Tap-to-copy" y desgloses financieros transparentes.
-- **Whimsy & Nudges**: Inyección de micro-interacciones de deleite y disparadores psicológicos para aumentar la retención.
-- **Admin Dashboard Pro (v2.2)**: Sistema modular para anfitriones con arquitectura FSD, permitiendo una gestión fluida de reservas y propiedades.
-- **Rendimiento Harness**: Implementación de cargas en paralelo (`async-parallel`) y carga diferida (`lazy-loading`) para componentes de alta complejidad.
-- **Integridad con Zod**: Validación estricta y coerción de datos en formularios para asegurar sincronización perfecta con Firestore.
-- **Skeleton Loaders**: Experiencia visual de carga inmediata incluso en redes de baja latencia.
+- **Reserva Asíncrona & Soft-Block**: Lógica robusta de reservas con bloqueo suave de fechas en el lado del huésped para evitar el "double-booking" y optimizar la conversión.
+- **Optimización de Checkout Pro (v2.2)**: Rediseño visual minimalista en desktop, soporte de pago expandido ("Otro" / PayPal), y reparación de layout de botones (VFX Fix).
+- **Dashboard de Anfitrión Modular (Pro v2.3)**: Stepper UI completo para creación de alojamientos con validación Zod estricta para métodos de pago bancarios.
+- **Sistema de Comisiones Host Loyalty (12/10/8%)**: Cálculo de rentabilidad escalonada centralizado en `commission.ts` para motivar el onboarding de anfitriones.
+- **Pasaporte VeneStay v2.1**: Trust Score animado con efectos visuales premium (glow) y tarjeta VIP unificada.
+- **Micro-interacciones y UI Adaptativa**: Panel de reserva colapsable mediante Drawer lateral, modal interactivo `ConfirmExitModal`, distintivos visuales de novedad ("Nuevo") y evolución de comodidades premium.
+- **Gobernanza de Agentes (Tiered Memory)**: Arquitectura de memoria dividida en tres capas (`MEMORY_HOT.md`, `MEMORY_WARM.md`, `MEMORY_ARCHIVE/`) que incrementa la eficiencia de tokens y la precisión técnica en Spec-Driven Development.
 
 ### Próximos Pasos:
-- **Notificaciones Push**: Alertas inmediatas para mensajes y cambios en el estado de reservas.
-- **Buscador Avanzado**: Filtros granulares por precio, amenidades específicas y número de habitaciones.
-- **Lógica de Comisiones**: Implementación del modelo de rentabilidad 12/10/8% para socios fundadores.
+- **Panel de Verificación de Huéspedes (Guest Verification Dashboard)**: Implementación de la vista administrativa para anfitriones con el drawer interactivo `GuestRequestVerificationDrawer` para aprobar, rechazar y resolver conflictos de fechas de reservas pendientes en tiempo real.
+- **Authenticator v2.0**: Rediseño completo del flujo de autenticación al estándar "Premium Dark" con validación robusta Zod y manejo de rutas protegidas.
+- **PWA (Mobile Experience)**: Empaquetado offline para instalación móvil y mejora en la experiencia de aplicación nativa.
 
 ---
 
