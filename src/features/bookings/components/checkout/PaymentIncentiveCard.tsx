@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ExchangeRates } from '@/types';
-import { getExchangeRates } from '@/services/exchange-service';
+import { getExchangeRates, HIDE_BCV_PRICES } from '@/services/exchange-service';
 
 // Custom Hook to manage exchange rates
 export const useExchangeRate = () => {
@@ -68,51 +68,55 @@ const PaymentIncentiveCard: React.FC<PaymentIncentiveCardProps> = ({
           <h4 className="text-sm font-bold tracking-tight uppercase">
             Resumen de Pago
           </h4>
-          <div className="flex items-center space-x-2 rounded bg-white/10 px-2 py-1 font-mono text-[10px]">
-            <span className="opacity-70">Brecha:</span>
-            <span className="text-brand-500 font-bold">
-              {gapPercentage.toFixed(1)}%
-            </span>
-          </div>
+          {!HIDE_BCV_PRICES && (
+            <div className="flex items-center space-x-2 rounded bg-white/10 px-2 py-1 font-mono text-[10px]">
+              <span className="opacity-70">Brecha:</span>
+              <span className="text-brand-500 font-bold">
+                {gapPercentage.toFixed(1)}%
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="p-5">
         {/* Tabs/Toggle */}
-        <div className="mb-6 flex rounded-xl bg-gray-100 p-1">
-          <button
-            onClick={() => setPaymentMethod('VES')}
-            className={`flex flex-1 items-center justify-center rounded-lg py-2.5 text-xs font-bold transition-all ${
-              paymentMethod === 'VES'
-                ? 'text-brand-navy bg-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <i className="fa-solid fa-university mr-2"></i>
-            Bolívares
-          </button>
-          <button
-            onClick={() => setPaymentMethod('USDT')}
-            className={`relative flex flex-1 items-center justify-center rounded-lg py-2.5 text-xs font-bold transition-all ${
-              paymentMethod === 'USDT'
-                ? 'bg-white text-emerald-600 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <i className="fa-solid fa-coins mr-2"></i>
-            USDT (Crypto)
-            {paymentMethod !== 'USDT' && (
-              <span className="absolute -top-2 -right-1 flex h-3 w-3">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500"></span>
-              </span>
-            )}
-          </button>
-        </div>
+        {!HIDE_BCV_PRICES && (
+          <div className="mb-6 flex rounded-xl bg-gray-100 p-1">
+            <button
+              onClick={() => setPaymentMethod('VES')}
+              className={`flex flex-1 items-center justify-center rounded-lg py-2.5 text-xs font-bold transition-all ${
+                paymentMethod === 'VES'
+                  ? 'text-brand-navy bg-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <i className="fa-solid fa-university mr-2"></i>
+              Bolívares
+            </button>
+            <button
+              onClick={() => setPaymentMethod('USDT')}
+              className={`relative flex flex-1 items-center justify-center rounded-lg py-2.5 text-xs font-bold transition-all ${
+                paymentMethod === 'USDT'
+                  ? 'bg-white text-emerald-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <i className="fa-solid fa-coins mr-2"></i>
+              USDT (Crypto)
+              {paymentMethod !== 'USDT' && (
+                <span className="absolute -top-2 -right-1 flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500"></span>
+                </span>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Price Display */}
         <div className="space-y-4">
-          {paymentMethod === 'VES' ? (
+          {paymentMethod === 'VES' && !HIDE_BCV_PRICES ? (
             <div className="animate-fadeIn">
               <div className="mb-1 flex items-baseline justify-between">
                 <span className="text-sm text-gray-500">Total a pagar</span>

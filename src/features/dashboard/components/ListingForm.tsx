@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, Loader2, ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react';
@@ -35,10 +35,69 @@ const ListingFormContent: React.FC<{
   setShowWarningModal: React.Dispatch<React.SetStateAction<boolean>>;
   isPublished: boolean;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
-}> = ({ step, setStep, setShowWarningModal, isPublished, handleSubmit }) => {
+  initialListingSnapshot: React.MutableRefObject<Listing | null>;
+  handleCloseAttempt: () => void;
+}> = ({ step, setStep, setShowWarningModal, isPublished, handleSubmit, initialListingSnapshot, handleCloseAttempt }) => {
   const { editingListing, isSaving, isUploading, validation, setEditingListing: contextSetEditingListing } = useListingForm();
   const { isStepValid, validateStep, errors } = validation;
   const navigate = useNavigate();
+
+  const isStepModified = (currentStep: number): boolean => {
+    if (editingListing.id.startsWith('listing-')) return false;
+    if (!initialListingSnapshot.current) return false;
+
+    const currentData = getStepData(currentStep);
+    const originalListing = initialListingSnapshot.current;
+
+    const originalData = (() => {
+      switch (currentStep) {
+        case 1:
+          return {
+            title: originalListing.title,
+            description: originalListing.description,
+            pricePerNight: originalListing.pricePerNight,
+            city: originalListing.city,
+            maxGuests: originalListing.maxGuests,
+            bedrooms: originalListing.bedrooms,
+            beds: originalListing.beds,
+            baths: originalListing.baths,
+            buildingFloors: originalListing.buildingFloors,
+            propertyFloor: originalListing.propertyFloor,
+            constructionYear: originalListing.constructionYear,
+            minNights: originalListing.minNights,
+            cancellationPolicy: originalListing.cancellationPolicy,
+            bookingMode: originalListing.bookingMode,
+          };
+        case 2:
+          return {
+            images: originalListing.images,
+            environmentPhotos: originalListing.environmentPhotos,
+          };
+        case 3:
+          return {
+            latitude: originalListing.latitude,
+            longitude: originalListing.longitude,
+            manualAddress: originalListing.manualAddress,
+          };
+        case 4:
+          return {
+            paymentMethods: originalListing.paymentMethods,
+          };
+        default:
+          return {};
+      }
+    })();
+
+    const currentStepFields = {
+      ...currentData,
+      ...(currentStep === 1 ? {
+        cancellationPolicy: editingListing.cancellationPolicy,
+        bookingMode: editingListing.bookingMode,
+      } : {})
+    };
+
+    return JSON.stringify(currentStepFields) !== JSON.stringify(originalData);
+  };
 
   // Extracts only the fields relevant to the current step for scoped validation
   const getStepData = (currentStep: number) => {
@@ -137,7 +196,7 @@ const ListingFormContent: React.FC<{
                 </AnimatePresence>
               </div>
             </div>
-            <button type="button" onClick={() => setShowWarningModal(true)} className="rounded-2xl bg-white/10 p-3 transition-transform hover:bg-white/20 active:scale-95 z-10">
+            <button type="button" onClick={handleCloseAttempt} className="rounded-2xl bg-white/10 p-3 transition-transform hover:bg-white/20 active:scale-95 z-10">
               <X className="h-6 w-6" />
             </button>
             
@@ -210,22 +269,32 @@ const ListingFormContent: React.FC<{
             )}
 
             {step < 4 ? (
-              <button
-                type="button"
-                onClick={handleNextStep}
-                disabled={!isStepValid({ step, data: getStepData(step) } as unknown as FormStepState)}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
-                  isStepValid({ step, data: getStepData(step) } as unknown as FormStepState)
-                    ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
-                )}
-              >
-                Siguiente <ArrowRight className="h-4 w-4" />
-              </button>
+              isStepModified(step) ? (
+                <button
+                  type="submit"
+                  disabled={isSaving || isUploading}
+                  className="bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow disabled:opacity-50"
+                >
+                  {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Guardando...</> : <><Check className="h-4 w-4" /> Actualizar Propiedad</>}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  disabled={!isStepValid({ step, data: getStepData(step) } as unknown as FormStepState)}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
+                    isStepValid({ step, data: getStepData(step) } as unknown as FormStepState)
+                      ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                  )}
+                >
+                  Siguiente <ArrowRight className="h-4 w-4" />
+                </button>
+              )
             ) : (
               <button type="submit" disabled={isSaving || isUploading} className="bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow disabled:opacity-50">
-                {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Guardando...</> : <><Check className="h-4 w-4" /> Publicar Propiedad</>}
+                {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Guardando...</> : <><Check className="h-4 w-4" /> {editingListing.id.startsWith('listing-') ? 'Publicar Propiedad' : 'Actualizar Propiedad'}</>}
               </button>
             )}
           </div>
@@ -298,6 +367,13 @@ const ListingForm: React.FC<ListingFormProps> = ({
   const [showWarningModal, setShowWarningModal] = useState(false);
   const validation = useListingValidation();
   const [isPublished, setIsPublished] = useState(false);
+  const initialListingSnapshot = useRef<Listing | null>(null);
+
+  useEffect(() => {
+    if (editingListing && !initialListingSnapshot.current) {
+      initialListingSnapshot.current = JSON.parse(JSON.stringify(editingListing));
+    }
+  }, [editingListing]);
 
   useEffect(() => {
     const currentCount = parseInt(document.body.dataset.modalCount || '0', 10);
@@ -334,13 +410,82 @@ const ListingForm: React.FC<ListingFormProps> = ({
     }
   }, [editingListing]);
 
+  const handleCloseAttempt = () => {
+    const hasChanges = (() => {
+      if (editingListing.id.startsWith('listing-')) {
+        return editingListing.title.trim() !== '' || editingListing.images.length > 0;
+      }
+      if (!initialListingSnapshot.current) return false;
+      return JSON.stringify(editingListing) !== JSON.stringify(initialListingSnapshot.current);
+    })();
+
+    if (!hasChanges) {
+      localStorage.removeItem('venestay_draft_listing');
+      setEditingListing(null);
+    } else {
+      setShowWarningModal(true);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = listingSchema.safeParse(editingListing);
-    if (!result.success) {
-      const errorMsg = result.error.issues[0].message;
-      toast.error(`Error: ${errorMsg}`);
-      return;
+
+    // Guardado rápido condicional si es edición y está en etapa intermedia
+    if (step < 4 && !editingListing.id.startsWith('listing-')) {
+      const getStepData = (currentStep: number) => {
+        switch (currentStep) {
+          case 1:
+            return {
+              title: editingListing.title,
+              description: editingListing.description,
+              pricePerNight: editingListing.pricePerNight,
+              city: editingListing.city,
+              maxGuests: editingListing.maxGuests,
+              bedrooms: editingListing.bedrooms,
+              beds: editingListing.beds,
+              baths: editingListing.baths,
+              buildingFloors: editingListing.buildingFloors,
+              propertyFloor: editingListing.propertyFloor,
+              constructionYear: editingListing.constructionYear,
+              minNights: editingListing.minNights,
+            };
+          case 2:
+            return {
+              images: editingListing.images,
+              environmentPhotos: editingListing.environmentPhotos,
+            };
+          case 3:
+            return {
+              latitude: editingListing.latitude,
+              longitude: editingListing.longitude,
+              manualAddress: editingListing.manualAddress,
+            };
+          default:
+            return {};
+        }
+      };
+
+      const stepState = { step, data: {
+        ...getStepData(step),
+        ...(step === 1 ? {
+          cancellationPolicy: editingListing.cancellationPolicy,
+          bookingMode: editingListing.bookingMode,
+        } : {})
+      } } as unknown as FormStepState;
+
+      const isCurrentStepValid = validation.validateStep(stepState);
+      if (!isCurrentStepValid) {
+        const firstError = Object.values(validation.errors)[0] as string || 'Campos requeridos faltantes';
+        toast.error(`Error en el paso actual: ${firstError}`);
+        return;
+      }
+    } else {
+      const result = listingSchema.safeParse(editingListing);
+      if (!result.success) {
+        const errorMsg = result.error.issues[0].message;
+        toast.error(`Error: ${errorMsg}`);
+        return;
+      }
     }
 
     const finalizedListing = {
@@ -382,6 +527,8 @@ const ListingForm: React.FC<ListingFormProps> = ({
             setShowWarningModal={setShowWarningModal}
             isPublished={isPublished}
             handleSubmit={handleSubmit}
+            initialListingSnapshot={initialListingSnapshot}
+            handleCloseAttempt={handleCloseAttempt}
           />
         </ListingFormProvider>
       </motion.div>

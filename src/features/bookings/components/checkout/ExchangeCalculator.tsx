@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ExchangeRates, PaymentMethod } from '@/types';
 import { ShieldCheck, Info } from 'lucide-react';
-import { getExchangeRates } from '@/services/exchange-service';
+import { getExchangeRates, HIDE_BCV_PRICES } from '@/services/exchange-service';
 
 interface ExchangeCalculatorProps {
   totalPrice: number;
@@ -120,7 +120,7 @@ const ExchangeCalculator: React.FC<ExchangeCalculatorProps> = ({
 
           {/* Dynamic equivalents (VES / USDT) shown cleanly beneath the USD amount */}
           <div className="mt-3.5 pt-3 border-t border-brand-navy/[0.04] space-y-2">
-            {supportsVES && (
+            {supportsVES && !HIDE_BCV_PRICES && (
               <div className="flex justify-between items-center text-[11px] font-medium text-slate-500">
                 <span className="text-slate-500">Equivalente en Bolívares (VES)</span>
                 <span className="text-brand-navy font-extrabold font-sans">
@@ -174,8 +174,12 @@ const ExchangeCalculator: React.FC<ExchangeCalculatorProps> = ({
       {/* Tasa BCV & Live polling info metadata */}
       <div className="flex items-center justify-between px-1 text-[9px] font-semibold text-slate-500 uppercase tracking-wider select-none">
         <div className="flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-          <span>Tasa Oficial BCV: <span className="text-slate-700 font-extrabold">{rates.bcv.toFixed(2)} VES</span></span>
+          {!HIDE_BCV_PRICES && (
+            <>
+              <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span>Tasa Oficial BCV: <span className="text-slate-700 font-extrabold">{rates.bcv.toFixed(2)} VES</span></span>
+            </>
+          )}
         </div>
         <span className="text-[8.5px] font-semibold text-slate-400">
           Actualizado {timeAgoMsg}

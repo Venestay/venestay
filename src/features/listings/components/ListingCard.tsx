@@ -4,6 +4,7 @@ import { Star, Heart, CheckCircle2, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { useBcvRate } from '../hooks/useBcvRate';
+import { HIDE_BCV_PRICES } from '@/services/exchange-service';
 
 interface ListingCardProps {
   listing: Listing;
@@ -111,14 +112,16 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
               / noche (Anticipo 20%)
             </span>
           </div>
-          <div className="text-brand-500 mt-0.5 text-[10px] font-black tracking-widest uppercase">
-            ≈{' '}
-            {(listing.pricePerNight * bcvRate).toLocaleString('es-VE', {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            })}{' '}
-            Bs. <span className="font-medium opacity-50">(Tasa BCV)</span>
-          </div>
+          {!HIDE_BCV_PRICES && (
+            <div className="text-brand-500 mt-0.5 text-[10px] font-black tracking-widest uppercase">
+              ≈{' '}
+              {(listing.pricePerNight * bcvRate).toLocaleString('es-VE', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}{' '}
+              Bs. <span className="font-medium opacity-50">(Tasa BCV)</span>
+            </div>
+          )}
         </div>
       </div>
     </Link>

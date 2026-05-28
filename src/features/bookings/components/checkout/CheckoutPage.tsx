@@ -38,7 +38,7 @@ import {
 } from '@/types';
 import { CommissionTier } from '@/lib/commission';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
-import { getExchangeRates } from '@/services/exchange-service';
+import { getExchangeRates, HIDE_BCV_PRICES } from '@/services/exchange-service';
 import { db, storage } from '@/lib/firebase';
 import {
   doc,
@@ -1247,7 +1247,7 @@ const CheckoutPage: React.FC = () => {
                           booking.totalAmount
                         ).depositAmount.toFixed(2)}
                       </p>
-                      {convertedAmount && rates && (
+                      {!HIDE_BCV_PRICES && convertedAmount && rates && (
                         <motion.p
                           aria-label="deposit-amount-converted"
                           initial={{ opacity: 0, x: -10 }}

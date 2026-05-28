@@ -1,5 +1,8 @@
 import { ExchangeRates } from '@/types';
 
+// Flag global para ocultación temporal de precios y tasas en Bolívares (BCV)
+export const HIDE_BCV_PRICES = true;
+
 let cachedRates: ExchangeRates | null = null;
 let cacheTimestamp: number | null = null;
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
