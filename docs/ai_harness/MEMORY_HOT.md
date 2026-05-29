@@ -3,7 +3,7 @@ _Sprint: S03 · Actualizado: 2026-05-29_
 
 ## Estado ahora
 SPRINT    : S03 — Loyalty System + Reserva Async + Authenticator v2.0
-QA_GATE   : PENDIENTE (Compilación estática OK, pruebas manuales pendientes de validación final)
+QA_GATE   : OK (Compilación estática y linter limpios; segregadas perfectamente las fases de solicitud y pago en CheckoutPage bajo SPEC-CHECKOUT-004)
 BLOQUEANTE: ninguno
 
 ## Módulos activos (solo los del sprint actual)
@@ -12,7 +12,7 @@ BLOQUEANTE: ninguno
 | Host Loyalty System | src/features/auth/types/ + functions/src/ | SPEC_LISTA / IMPL_PENDIENTE | 0/3 |
 | Reserva Asíncrona & Soft-Block | src/features/bookings/ & src/features/dashboard/components/ | LISTO | 1/3 |
 | Authenticator v2.0 | src/features/auth/ | SPEC_PENDIENTE | 0/3 |
-| Corrección guestMessage en Transacción | src/services/booking-service.ts | LISTO (Guardado en documento raíz de la reserva) | 1/3 |
+| Corrección guestMessage en Transacción | src/services/booking-service.ts | LISTO (Mensaje inicial creado post-commit) | 0/3 |
 | Optimización UX Botón Dinámico de Reserva | src/features/dashboard/components/BookingList.tsx | EN_PLANIFICACION (Propuesta UX contextual lista) | 0/3 |
 
 ## Próxima acción requerida

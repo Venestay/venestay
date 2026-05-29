@@ -80,14 +80,8 @@ service firebase.storage {
     // =========================================================================
     // Se aplican a 'receipts' y a 'bookings/{bookingId}/payments' (rutas app)
     match /receipts/{bookingId}/{fileName} {
-      // Lectura: Restringida a los involucrados en la reserva o admin
-      allow read: if isAuthenticated() && (
-        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
-        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
-        // Admin check requires fetching the user doc
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
-      );
+      // Lectura: Habilitada para cualquier usuario autenticado en la plataforma
+      allow read: if isAuthenticated();
       allow create, update: if isAuthenticated() && isValidImage();
       allow delete: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
@@ -97,12 +91,8 @@ service firebase.storage {
     }
 
     match /bookings/{bookingId}/payments/{fileName} {
-      allow read: if isAuthenticated() && (
-        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
-        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
-      );
+      // Lectura: Habilitada para cualquier usuario autenticado en la plataforma
+      allow read: if isAuthenticated();
       allow create, update: if isAuthenticated() && isValidImage();
       allow delete: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||

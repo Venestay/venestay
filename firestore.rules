@@ -59,12 +59,12 @@ service cloud.firestore {
     }
 
     function isValidBooking(data) {
-      return data.keys().hasAll(['listingId', 'listingTitle', 'guestId', 'guestName', 'ownerId', 'startDate', 'endDate', 'totalAmount', 'agreedPercentage', 'status', 'paymentInstructions', 'createdAt', 'updatedAt', 'guests', 'statusHistory']) &&
+      return data.keys().hasAll(['listingId', 'listingTitle', 'guestId', 'guestName', 'ownerId', 'startDate', 'endDate', 'totalAmount', 'agreedPercentage', 'status', 'paymentInstructions', 'guests', 'statusHistory']) &&
              data.guestId == request.auth.uid && // Identity Integrity
              data.listingId is string && data.listingId.size() <= 128 &&
              data.listingTitle is string && data.listingTitle.size() <= 200 &&
              data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED', 'PENDING_APPROVAL', 'EXPIRED'] &&
-             data.totalAmount is number && 
+             data.totalAmount is number &&
              data.guests is number &&
              data.statusHistory is list && data.statusHistory.size() <= 20;
     }
@@ -204,12 +204,12 @@ service cloud.firestore {
           (existing().status == 'PENDING_PAYMENT' && incoming().status == 'PENDING_PAYMENT' &&
            incoming().diff(existing()).affectedKeys().hasOnly(['guests', 'startDate', 'endDate', 'totalAmount', 'updatedAt', 'statusHistory'])) ||
           // Action: Convert auto-created booking into a request (PENDING_PAYMENT → PENDING_APPROVAL)
-          // Triggered when a guest submits the request form and the booking was pre-created by ensureBooking
+          // Triggered when a guest submits the request form (con o sin comprobante de pago preliminar).
           (existing().status == 'PENDING_PAYMENT' && incoming().status == 'PENDING_APPROVAL' &&
-           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'guestMessage', 'bookingMode', 'expiresAt', 'updatedAt', 'statusHistory'])) ||
-          // Action: Submit Payment info
-          (incoming().status == 'AWAITING_VERIFICATION' && 
-           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'proofUrl', 'paymentReference', 'paymentSubmittedAt', 'updatedAt', 'statusHistory'])) ||
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'guestMessage', 'bookingMode', 'expiresAt', 'updatedAt', 'statusHistory', 'proofUrl', 'paymentReference', 'financials'])) ||
+          // Action: Submit Payment info (con financials para almacenar el desglose UCP)
+          (incoming().status == 'AWAITING_VERIFICATION' &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'proofUrl', 'paymentReference', 'paymentSubmittedAt', 'updatedAt', 'statusHistory', 'financials'])) ||
           // Action: Cancel
           (incoming().status == 'CANCELLED' &&
             incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']))

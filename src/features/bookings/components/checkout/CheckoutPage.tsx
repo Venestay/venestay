@@ -91,6 +91,10 @@ const CheckoutPage: React.FC = () => {
   const [hasConsentedPolicy, setHasConsentedPolicy] = useState(false);
   const [guestMessage, setGuestMessage] = useState('');
 
+  const isDraft = booking?.isDraft || !booking?.id;
+  const isPaymentPhase = !isDraft && booking?.status === 'PENDING_PAYMENT';
+  const isRequestPhase = listing?.bookingMode === 'request' && !isPaymentPhase;
+
   useEffect(() => {
     if (listing && !guestMessage) {
       setGuestMessage(`Hola ${listing.hostName || 'Anfitrión'}, me encantaría solicitar una reserva en tu propiedad para mis próximas fechas.`);
@@ -165,11 +169,11 @@ const CheckoutPage: React.FC = () => {
     if (isBlockedByTrust) return true;
     if (!hasConsentedPolicy) return true;
     
-    // Si es modo request, no exigimos comprobante ni referencia obligatoria en esta fase
-    if (listing?.bookingMode === 'request') return false;
+    // Si estamos en fase de solicitud (Request), no exigimos comprobante ni referencia
+    if (isRequestPhase) return false;
     
     return !reference.trim() || !file;
-  }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file, listing?.bookingMode]);
+  }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file, isRequestPhase]);
 
   useEffect(() => {
     const fetchDraftData = async () => {
@@ -626,7 +630,7 @@ const CheckoutPage: React.FC = () => {
       return;
     }
 
-    const isRequestMode = listing.bookingMode === 'request';
+    const isRequestMode = isRequestPhase;
 
     // 3. Check Input (solo si no es modo solicitud de reserva)
     if (!isRequestMode) {
@@ -813,7 +817,7 @@ const CheckoutPage: React.FC = () => {
         status: isRequestMode ? 'PENDING_APPROVAL' : 'AWAITING_VERIFICATION',
         proofUrl,
         paymentReference: reference,
-        financials: booking.financials,
+        financials: booking.financials || null,
         updatedAt: serverTimestamp(),
         statusHistory: [
           ...(booking.statusHistory || []),
@@ -1737,7 +1741,7 @@ const CheckoutPage: React.FC = () => {
               </section>
 
               <section className="space-y-8 pb-20">
-                {listing?.bookingMode !== 'request' && (
+                {(!isRequestPhase) && (
                   <>
                     <div className="mb-2 flex items-center space-x-4">
                       <div className="bg-brand-navy text-brand-500 flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
@@ -1821,7 +1825,7 @@ const CheckoutPage: React.FC = () => {
                   </>
                 )}
 
-                {listing?.bookingMode === 'request' && (
+                {(isRequestPhase) && (
                   <div className="space-y-3 rounded-[32px] border border-brand-gold/20 bg-brand-gold/[0.01] p-6 shadow-sm mt-6">
                     <label className="text-brand-navy ml-1 block text-[10px] font-black tracking-widest uppercase flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-[#b08f23]" />
@@ -1929,7 +1933,7 @@ const CheckoutPage: React.FC = () => {
                     onClick={handleSubmitPayment}
                     className={cn(
                       "shadow-2xl flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
-                      listing?.bookingMode === 'request'
+                      isRequestPhase
                         ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
                         : "bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400"
                     )}
@@ -1941,7 +1945,13 @@ const CheckoutPage: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <span>{listing?.bookingMode === 'request' ? 'Enviar Solicitud de Reserva' : 'Asegurar mi Estadía Ahora'}</span>
+                        <span>{
+                          isPaymentPhase
+                            ? 'Enviar Comprobante de Pago'
+                            : isRequestPhase
+                              ? 'Enviar Solicitud de Reserva'
+                              : 'Asegurar mi Estadía Ahora'
+                        }</span>
                         <ChevronRight className="h-5 w-5" />
                       </>
                     )}
@@ -1968,7 +1978,7 @@ const CheckoutPage: React.FC = () => {
             onClick={handleSubmitPayment}
             className={cn(
               "pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
-              listing?.bookingMode === 'request'
+              isRequestPhase
                 ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
                 : "bg-brand-500 text-brand-navy shadow-brand-500/40"
             )}
@@ -1978,7 +1988,11 @@ const CheckoutPage: React.FC = () => {
             ) : (
               <ChevronRight className="h-5 w-5" />
             )}
-            {listing?.bookingMode === 'request' ? 'Enviar Solicitud' : 'Asegurar mi Estadía Ahora'}
+            {isPaymentPhase
+              ? 'Enviar Comprobante'
+              : isRequestPhase
+                ? 'Enviar Solicitud'
+                : 'Asegurar mi Estadía Ahora'}
           </button>
         </div>
       )}

@@ -9,6 +9,7 @@ import {
   runTransaction,
   doc,
   updateDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Booking, BookingStatus } from '@/types';
@@ -66,14 +67,18 @@ export const createBookingWithTransaction = async (
   bookingData: Partial<Booking>,
   initialMessage?: string
 ): Promise<string> => {
-  return await runTransaction(db, async (transaction) => {
+  const docId = await runTransaction(db, async (transaction) => {
     const listingId = bookingData.listingId;
     if (!listingId) throw new Error('Falta el ID del alojamiento.');
 
+    // AVAILABILITY CONFLICT CHECK: Solo estados "hard block" (confirmados o en verificación).
+    // PENDING_APPROVAL queda excluido intencionalmente: son solicitudes aún no aprobadas
+    // y las reglas de Firestore no permiten queryarlos públicamente (solo CONFIRMED y AWAITING_VERIFICATION
+    // están cubiertas por la regla pública de disponibilidad).
     const bookingsQuery = query(
       collection(db, 'bookings'),
       where('listingId', '==', listingId),
-      where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_APPROVAL'])
+      where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION'])
     );
     const querySnapshot = await getDocs(bookingsQuery);
     
@@ -109,10 +114,16 @@ export const createBookingWithTransaction = async (
 
     transaction.set(newBookingDocRef, finalBookingData);
 
-    if (initialMessage && initialMessage.trim().length > 0) {
+    return docId;
+  });
+
+  // Post-commit: Create the message document since the booking doc now exists.
+  // This satisfies the canAccessBooking() rule which get()s the booking document.
+  if (initialMessage && initialMessage.trim().length > 0) {
+    try {
       const messagesColRef = collection(db, 'messages');
       const newMessageDocRef = doc(messagesColRef);
-      transaction.set(newMessageDocRef, {
+      await setDoc(newMessageDocRef, {
         id: newMessageDocRef.id,
         bookingId: docId,
         senderId: bookingData.guestId || 'guest',
@@ -122,10 +133,12 @@ export const createBookingWithTransaction = async (
         status: 'sent',
         createdAt: new Date().toISOString(),
       });
+    } catch (msgError) {
+      console.error('Error writing initial message post-commit:', msgError);
     }
+  }
 
-    return docId;
-  });
+  return docId;
 };
 
 export const cleanupExpiredBookings = async (): Promise<void> => {
