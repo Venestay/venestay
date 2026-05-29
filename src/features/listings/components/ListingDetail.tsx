@@ -1536,7 +1536,6 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                                   onChange={(start, end) => {
                                     setStartDate(start);
                                     setEndDate(end);
-                                    onDatesChange(start, end);
                                   }}
                                   onClose={() => setIsCalendarOpen(false)}
                                 />

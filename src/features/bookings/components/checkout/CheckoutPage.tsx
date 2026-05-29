@@ -529,9 +529,11 @@ const CheckoutPage: React.FC = () => {
     }
   };
 
-  // Auto-create booking if user is logged in
+  // Auto-create booking if user is logged in — NEVER auto-create for request mode.
+  // In request mode the booking must only be created/updated when the guest explicitly submits.
   useEffect(() => {
-    if (user && booking?.isDraft && listing && !loading && !isSubmitting) {
+    const isRequestMode = listing?.bookingMode === 'request';
+    if (user && booking?.isDraft && listing && !loading && !isSubmitting && !isRequestMode) {
       ensureBooking();
     }
   }, [user, booking?.isDraft, listing, loading]);
@@ -650,10 +652,11 @@ const CheckoutPage: React.FC = () => {
     try {
       let currentBookingId = urlBookingId;
 
-      // 3. Create booking if it's a draft
+      // STEP 1: Create or update the booking document.
       if (booking.isDraft) {
+        // Draft path: booking not yet in Firestore — create it via atomic transaction.
         const initialStatus = isRequestMode ? 'PENDING_APPROVAL' : 'PENDING_PAYMENT';
-        const expiresAtVal = isRequestMode 
+        const expiresAtVal = isRequestMode
           ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
           : undefined;
 
@@ -680,20 +683,55 @@ const CheckoutPage: React.FC = () => {
               timestamp: new Date().toISOString(),
               actorId: user.uid,
               actorName: user.displayName || 'Huésped',
-              note: isRequestMode 
+              note: isRequestMode
                 ? 'Solicitud de reserva enviada para aprobación del anfitrión'
                 : 'Reserva creada desde el proceso de checkout (flujo frictionless)',
             },
           ],
         };
 
-        // Invocar la transacción atómica
-        currentBookingId = await bookingService.createBookingWithTransaction(bookingData, isRequestMode ? guestMessage : undefined);
+        currentBookingId = await bookingService.createBookingWithTransaction(
+          bookingData,
+          isRequestMode ? guestMessage : undefined
+        );
+      } else if (isRequestMode && currentBookingId) {
+        // Fix B — Non-draft request booking: ensureBooking already created the doc with
+        // PENDING_PAYMENT (wrong status). Patch it now with the correct values.
+        const expiresAtVal = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        const historyEntry = {
+          status: 'PENDING_APPROVAL' as BookingStatus,
+          timestamp: new Date().toISOString(),
+          actorId: user.uid,
+          actorName: user.displayName || 'Huésped',
+          note: 'Solicitud de reserva enviada para aprobación del anfitrión',
+        };
+
+        await updateDoc(doc(db, 'bookings', currentBookingId), {
+          status: 'PENDING_APPROVAL',
+          guestMessage: guestMessage || '',
+          bookingMode: 'request',
+          expiresAt: expiresAtVal,
+          updatedAt: serverTimestamp(),
+          statusHistory: [...(booking.statusHistory || []), historyEntry],
+        });
+
+        // Save guest message to root /messages collection so FloatingChat can read it.
+        if (guestMessage?.trim()) {
+          await addDoc(collection(db, 'messages'), {
+            bookingId: currentBookingId,
+            senderId: user.uid,
+            senderName: user.displayName || 'Huésped',
+            text: guestMessage,
+            type: 'text',
+            status: 'sent',
+            createdAt: serverTimestamp(),
+          });
+        }
       }
 
       if (!currentBookingId) throw new Error('No booking ID available');
 
-      // 4. Si es modo Request y no hay comprobante ni referencia, completamos la solicitud de forma directa
+      // STEP 2: If request mode with no proof, the submission is complete here.
       if (isRequestMode && (!file || !reference.trim())) {
         setUploadSuccess(true);
         clearDraft();

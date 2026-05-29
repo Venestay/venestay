@@ -58,6 +58,7 @@ interface BookingListProps {
   setActiveChatId: (id: string | null) => void;
   setActiveChatBooking: (booking: Booking | null) => void;
   tier: CommissionTier;
+  onVerifyRequest: (booking: Booking) => void;
 }
 
 const BookingList: React.FC<BookingListProps> = ({
@@ -68,6 +69,7 @@ const BookingList: React.FC<BookingListProps> = ({
   setActiveChatId,
   setActiveChatBooking,
   tier,
+  onVerifyRequest,
 }) => {
   const [bookingToReject, setBookingToReject] = useState<Booking | null>(null);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
@@ -314,25 +316,13 @@ const BookingList: React.FC<BookingListProps> = ({
             )}
 
             {booking.status === 'PENDING_APPROVAL' && (
-              <div className="flex flex-col gap-3">
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      const nextStatus = (booking.proofUrl || booking.paymentReference) ? 'AWAITING_VERIFICATION' : 'CONFIRMED';
-                      handleUpdateStatus(booking, nextStatus, 'Solicitud de reserva aprobada por el anfitrión.');
-                    }}
-                    className="flex-grow transform rounded-2xl bg-emerald-500 py-3 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-95"
-                  >
-                    Aprobar Solicitud
-                  </button>
-                  <button
-                    onClick={() => setBookingToReject(booking)}
-                    className="transform rounded-2xl border-2 border-red-100 px-6 py-3 text-[10px] font-black tracking-widest text-red-500 uppercase transition-all hover:bg-red-50 active:scale-95"
-                  >
-                    Rechazar
-                  </button>
-                </div>
-              </div>
+              <button
+                onClick={() => onVerifyRequest(booking)}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-brand-gold bg-white py-3 text-[10px] font-black tracking-widest text-brand-navy uppercase shadow-sm transition-all hover:bg-brand-gold/10 active:scale-95"
+                aria-label={`Verificar solicitud de ${booking.guestName}`}
+              >
+                Verificar Solicitud →
+              </button>
             )}
 
             {/* Status History / Info */}

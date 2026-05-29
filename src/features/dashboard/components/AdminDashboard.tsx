@@ -41,6 +41,7 @@ import ListingList from './ListingList';
 import StatsCards from './StatsCards';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import GuestRequestVerificationDrawer from './GuestRequestVerificationDrawer';
 
 // Rule: bundle-dynamic-imports
 const ListingForm = React.lazy(() => import('./ListingForm'));
@@ -65,11 +66,12 @@ const AdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'ALL' | 'AWAITING_VERIFICATION' | 'CONFIRMED' | 'PENDING_PAYMENT'>('ALL');
+  const [filter, setFilter] = useState<'ALL' | 'PENDING_APPROVAL' | 'AWAITING_VERIFICATION' | 'CONFIRMED' | 'PENDING_PAYMENT'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [activeChatBooking, setActiveChatBooking] = useState<Booking | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [selectedBookingForVerification, setSelectedBookingForVerification] = useState<Booking | null>(null);
   
   // v2.2 Centralized Financial Intelligence
   const confirmedCount = bookings.filter(b => b.status === 'CONFIRMED').length;
@@ -413,7 +415,7 @@ const AdminDashboard: React.FC = () => {
 
           {activeTab === 'bookings' && (
             <div className="no-scrollbar flex items-center space-x-2 overflow-x-auto pb-2 lg:pb-0">
-              {(['ALL', 'AWAITING_VERIFICATION', 'CONFIRMED', 'PENDING_PAYMENT'] as const).map((f) => (
+              {(['ALL', 'PENDING_APPROVAL', 'AWAITING_VERIFICATION', 'CONFIRMED', 'PENDING_PAYMENT'] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -422,7 +424,11 @@ const AdminDashboard: React.FC = () => {
                     filter === f ? 'bg-brand-navy border-brand-navy text-white' : 'hover:border-brand-500 hover:text-brand-navy border-gray-100 bg-white text-gray-500'
                   )}
                 >
-                  {f === 'ALL' ? 'Todos' : f === 'AWAITING_VERIFICATION' ? 'Por Verificar' : f === 'CONFIRMED' ? 'Confirmados' : 'Pendientes'}
+                  {f === 'ALL' ? 'Todos'
+                    : f === 'PENDING_APPROVAL' ? 'Solicitudes'
+                    : f === 'AWAITING_VERIFICATION' ? 'Por Verificar'
+                    : f === 'CONFIRMED' ? 'Confirmados'
+                    : 'Pendientes'}
                 </button>
               ))}
               <div className="ml-auto flex items-center border-l border-gray-200 pl-4">
@@ -518,6 +524,7 @@ const AdminDashboard: React.FC = () => {
                   setActiveChatId={setActiveChatId}
                   setActiveChatBooking={setActiveChatBooking}
                   tier={currentTier}
+                  onVerifyRequest={setSelectedBookingForVerification}
                 />
                 
               </motion.div>
@@ -587,6 +594,20 @@ const AdminDashboard: React.FC = () => {
           }}
         />
       )}
+
+      <GuestRequestVerificationDrawer
+        booking={selectedBookingForVerification}
+        isOpen={!!selectedBookingForVerification}
+        onClose={() => setSelectedBookingForVerification(null)}
+        onOpenChat={(booking) => {
+          setActiveChatId(booking.id);
+          setActiveChatBooking(booking);
+        }}
+        onApproveSuccess={() => setSelectedBookingForVerification(null)}
+        onRejectSuccess={() => setSelectedBookingForVerification(null)}
+        allBookings={bookings}
+        tier={currentTier}
+      />
 
       <DeleteConfirmationModal
         isOpen={!!listingToDelete}

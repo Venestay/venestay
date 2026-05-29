@@ -203,17 +203,21 @@ service cloud.firestore {
           // Action: Modify Booking Details (Dates, Guests)
           (existing().status == 'PENDING_PAYMENT' && incoming().status == 'PENDING_PAYMENT' &&
            incoming().diff(existing()).affectedKeys().hasOnly(['guests', 'startDate', 'endDate', 'totalAmount', 'updatedAt', 'statusHistory'])) ||
+          // Action: Convert auto-created booking into a request (PENDING_PAYMENT → PENDING_APPROVAL)
+          // Triggered when a guest submits the request form and the booking was pre-created by ensureBooking
+          (existing().status == 'PENDING_PAYMENT' && incoming().status == 'PENDING_APPROVAL' &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'guestMessage', 'bookingMode', 'expiresAt', 'updatedAt', 'statusHistory'])) ||
           // Action: Submit Payment info
           (incoming().status == 'AWAITING_VERIFICATION' && 
            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'proofUrl', 'paymentReference', 'paymentSubmittedAt', 'updatedAt', 'statusHistory'])) ||
           // Action: Cancel
           (incoming().status == 'CANCELLED' &&
-           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']))
+            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']))
         )) ||
         // Owner Actions
         (request.auth.uid == resource.data.ownerId && (
           // Action: Confirm/Reject/Approve Request
-          (incoming().status in ['CONFIRMED', 'AWAITING_VERIFICATION', 'REJECTED'] &&
+          (incoming().status in ['CONFIRMED', 'AWAITING_VERIFICATION', 'REJECTED', 'PENDING_PAYMENT'] &&
            incoming().diff(existing()).affectedKeys().hasAny(['status', 'verifiedAt', 'verifiedBy', 'rejectionReason', 'hostResponseNote', 'updatedAt', 'statusHistory']))
         )) ||
         // Lazy Expiry (Guest or Owner can transition a pending approval request to EXPIRED)

@@ -1,6 +1,8 @@
 export * from '@/features/auth/types';
 export * from '@/features/bookings/types';
 export * from '@/features/listings/types';
+export * from './booking-request.types';
+
 
 
 export interface LocalInsight {

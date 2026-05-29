@@ -101,6 +101,7 @@ export const createBookingWithTransaction = async (
 
     const finalBookingData = {
       ...bookingData,
+      guestMessage: initialMessage || '',
       id: docId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -109,7 +110,7 @@ export const createBookingWithTransaction = async (
     transaction.set(newBookingDocRef, finalBookingData);
 
     if (initialMessage && initialMessage.trim().length > 0) {
-      const messagesColRef = collection(db, `bookings/${docId}/messages`);
+      const messagesColRef = collection(db, 'messages');
       const newMessageDocRef = doc(messagesColRef);
       transaction.set(newMessageDocRef, {
         id: newMessageDocRef.id,
