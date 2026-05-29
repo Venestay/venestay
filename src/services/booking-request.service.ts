@@ -140,7 +140,7 @@ export const rejectBookingRequest = async (requestId: string, hostNote: string):
           const end = new Date(booking.endDate);
           const datesToRemove: string[] = [];
           
-          let current = new Date(start);
+          const current = new Date(start);
           while (current <= end) {
             datesToRemove.push(current.toISOString().split('T')[0]);
             current.setDate(current.getDate() + 1);

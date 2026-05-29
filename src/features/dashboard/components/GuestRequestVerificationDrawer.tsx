@@ -125,8 +125,9 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
       toast.success('Solicitud de reserva aprobada con éxito');
       if (onApproveSuccess) onApproveSuccess(booking.id);
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || 'Error al aprobar la reserva.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al aprobar la reserva.';
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -147,8 +148,9 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
       if (onRejectSuccess) onRejectSuccess(booking.id);
       setShowRejectDialog(false);
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || 'Error al rechazar la reserva.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al rechazar la reserva.';
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
