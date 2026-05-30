@@ -48,11 +48,10 @@ const HostGuide: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const handleStartFlow = () => {
-    if (user) {
-      navigate('/admin/mis-propiedades');
-    } else {
-      setIsAuthModalOpen(true);
-    }
+    window.open(
+      'https://wa.me/584248680233?text=Me%20gustar%C3%ADa%20ingresar%20mi%20propiedad%20a%20Venestay%20y%20ser%20parte%20de%20los%20propietarios%20Fundadores.',
+      '_blank'
+    );
   };
 
   return (
@@ -84,19 +83,17 @@ const HostGuide: React.FC = () => {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-brand-navy mb-8 text-5xl leading-none font-black tracking-tighter md:text-8xl">
-            TU PROPIEDAD, <br /> UNA{' '}
-            <span className="text-brand-500">INVERSIÓN</span> ELITE
+            Convierte consultas en <br />
+            <span className="text-brand-500">reservas</span> confirmadas en Lechería
           </h1>
           <p className="mx-auto mb-12 max-w-3xl text-xl font-medium text-gray-400 md:text-2xl">
-            Únete a la red premium de anfitriones en Venezuela. Gestionamos la
-            seguridad y los pagos para que tú solo te preocupes por la
-            hospitalidad.
+            Recibe huéspedes verificados, pagos adaptados al contexto actual y mayor control sobre tus reservas vacacionales en Lechería.
           </p>
           <button
             onClick={handleStartFlow}
             className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy animate-pulse-slow transform rounded-[32px] px-12 py-6 text-sm font-black tracking-[0.2em] text-white uppercase shadow-2xl transition-all active:scale-95"
           >
-            Comenzar mi Anuncio
+            Quiero registrar mi propiedad en Venestay
           </button>
         </motion.div>
       </section>
@@ -141,28 +138,28 @@ const HostGuide: React.FC = () => {
                 <span>Casos de Éxito</span>
               </div>
               <h2 className="text-brand-navy mb-8 text-4xl leading-tight font-black tracking-tighter md:text-6xl">
-                EL ANUNCIO <br />{' '}
+                MÁS RESERVAS. <br />{' '}
                 <span className="text-brand-500 text-outline-gold">
-                  ASPIRACIONAL
+                  MENOS INCERTIDUMBRE.
                 </span>
               </h2>
               <p className="mb-10 text-lg leading-relaxed font-medium text-gray-500">
-                Aprende qué hace que un anuncio sea irresistible. Títulos
-                descriptivos, fotografía de alto impacto y transparencia en los
-                servicios.
+                <span className="text-brand-navy block font-black mb-2 text-xl">Diseñado para generar confianza antes del check-in</span>
+                La mayoría de los problemas ocurren cuando la reserva no está clara desde el principio.
+                Por eso presentamos tu propiedad de forma profesional, transparente y orientada a generar reservas más confiables.
               </p>
               <ul className="mb-12 space-y-6">
                 {[
-                  'Títulos que evocan emociones',
-                  'Fotos con luz natural',
-                  'Reglas de casa claras',
-                  'Precios competitivos',
+                  'Huéspedes mejor informados',
+                  'Menos cancelaciones de último momento',
+                  'Más confianza durante la reserva',
+                  'Mayor control para el propietario',
                 ].map((item, i) => (
                   <li
                     key={i}
                     className="text-brand-navy flex items-center space-x-3 text-sm font-black tracking-widest uppercase"
                   >
-                    <div className="bg-brand-500 h-2 w-2 rounded-full" />
+                    <span className="text-lg">✔️</span>
                     <span>{item}</span>
                   </li>
                 ))}
