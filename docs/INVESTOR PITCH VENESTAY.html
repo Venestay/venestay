@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VeneStay — Investor Pitch Deck 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --navy:    #0B1120;
+      --navy-2:  #111827;
+      --navy-3:  #1a2540;
+      --gold:    #C5A059;
+      --gold-2:  #e0b96a;
+      --gold-3:  #f5d48c;
+      --white:   #FFFFFF;
+      --grey-1:  #e2e8f0;
+      --grey-2:  #94a3b8;
+      --grey-3:  #334155;
+      --green:   #10b981;
+      --red:     #ef4444;
+      --amber:   #f59e0b;
+      --blue:    #3b82f6;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ─── NAVIGATION ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 3rem;
+      background: rgba(11,17,32,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(197,160,89,0.2);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--gold); letter-spacing: 2px; }
+    .nav-badge { background: rgba(197,160,89,0.15); border: 1px solid var(--gold); color: var(--gold); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--grey-2); font-size: 0.8rem; text-decoration: none; transition: color .2s; }
+    .nav-links a:hover { color: var(--gold); }
+
+    /* ─── SLIDES ─── */
+    section {
+      min-height: 100vh;
+      padding: 8rem 6rem 5rem;
+      position: relative;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+
+    section:nth-child(even) { background: var(--navy-2); }
+
+    /* ─── HERO ─── */
+    #hero {
+      background: radial-gradient(ellipse at 30% 50%, rgba(197,160,89,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.08) 0%, transparent 50%),
+                  var(--navy);
+      text-align: center; align-items: center;
+    }
+    .hero-tag { display: inline-block; background: rgba(197,160,89,0.1); border: 1px solid rgba(197,160,89,0.4); color: var(--gold); font-size: 0.7rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; padding: 0.5rem 1.5rem; border-radius: 50px; margin-bottom: 2rem; }
+    .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(3rem, 8vw, 6rem); font-weight: 900; line-height: 1.05; margin-bottom: 1.5rem; }
+    .hero-title .accent { color: var(--gold); }
+    .hero-subtitle { font-size: 1.2rem; color: var(--grey-2); max-width: 640px; line-height: 1.7; margin-bottom: 3rem; }
+    .hero-stats { display: flex; gap: 4rem; justify-content: center; }
+    .hero-stat { text-align: center; }
+    .hero-stat .num { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 700; color: var(--gold); }
+    .hero-stat .lbl { font-size: 0.75rem; color: var(--grey-2); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.3rem; }
+    .hero-divider { width: 60px; height: 3px; background: var(--gold); margin: 0 auto 1.5rem; border-radius: 2px; }
+
+    /* ─── SECTION HEADERS ─── */
+    .slide-num { font-size: 0.7rem; font-weight: 700; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 1rem; }
+    .slide-title { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.15; margin-bottom: 1rem; }
+    .slide-desc { color: var(--grey-2); font-size: 1rem; line-height: 1.7; max-width: 640px; margin-bottom: 3rem; }
+    .gold-line { width: 50px; height: 3px; background: var(--gold); border-radius: 2px; margin-bottom: 1.5rem; }
+
+    /* ─── CARDS ─── */
+    .card-grid { display: grid; gap: 1.5rem; }
+    .card-grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 1.8rem;
+      transition: transform .2s, border-color .2s;
+    }
+    .card:hover { transform: translateY(-4px); border-color: rgba(197,160,89,0.4); }
+    .card-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .card-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+    .card-text { color: var(--grey-2); font-size: 0.875rem; line-height: 1.6; }
+    .card-gold { border-color: rgba(197,160,89,0.3); background: rgba(197,160,89,0.05); }
+
+    /* ─── METRICS BAR ─── */
+    .metrics-row { display: flex; gap: 1.5rem; margin-bottom: 2rem; }
+    .metric-box {
+      flex: 1; background: rgba(197,160,89,0.08); border: 1px solid rgba(197,160,89,0.2);
+      border-radius: 12px; padding: 1.4rem 1.6rem;
+    }
+    .metric-val { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: var(--gold); }
+    .metric-lbl { color: var(--grey-2); font-size: 0.78rem; margin-top: 0.3rem; }
+
+    /* ─── CHART CONTAINERS ─── */
+    .chart-wrap { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 2rem; }
+    .chart-title { font-weight: 700; font-size: 1rem; margin-bottom: 1.5rem; color: var(--grey-1); }
+    .two-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+    /* ─── ROADMAP ─── */
+    .roadmap { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 3rem; }
+    .roadmap::before { content: ''; position: absolute; left: 1rem; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--gold), rgba(197,160,89,0.1)); }
+    .rm-phase { position: relative; padding-bottom: 2.5rem; }
+    .rm-phase::before {
+      content: attr(data-num);
+      position: absolute; left: -2.5rem; top: 0.1rem;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700;
+      background: var(--gold); color: var(--navy);
+    }
+    .rm-phase.done::before { background: var(--green); color: white; }
+    .rm-phase.wip::before  { background: var(--amber); color: white; }
+    .rm-phase.next::before { background: var(--grey-3); color: var(--grey-1); }
+    .rm-label { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.6rem; }
+    .rm-tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 4px; }
+    .tag-done { background: rgba(16,185,129,0.2); color: var(--green); }
+    .tag-wip  { background: rgba(245,158,11,0.2); color: var(--amber); }
+    .tag-next { background: rgba(148,163,184,0.15); color: var(--grey-2); }
+    .rm-title { font-weight: 700; font-size: 1.05rem; }
+    .rm-date  { color: var(--grey-2); font-size: 0.78rem; margin-left: auto; }
+    .rm-items { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .rm-items li { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.78rem; color: var(--grey-2); }
+    .rm-items li.done-item { border-color: rgba(16,185,129,0.3); color: var(--green); background: rgba(16,185,129,0.05); }
+
+    /* ─── UCP DIAGRAM ─── */
+    .ucp-diagram { display: flex; align-items: center; justify-content: center; gap: 2rem; padding: 2rem; }
+    .ucp-block { text-align: center; }
+    .ucp-circle {
+      width: 130px; height: 130px; border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      font-weight: 800;
+    }
+    .ucp-pct { font-size: 2rem; }
+    .ucp-name { font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8; }
+    .ucp-gold { background: radial-gradient(circle, var(--gold-2), var(--gold)); color: var(--navy); }
+    .ucp-navy { background: radial-gradient(circle, #2a3a60, var(--navy-3)); color: var(--white); border: 2px solid rgba(197,160,89,0.3); }
+    .ucp-arrow { font-size: 2rem; color: var(--gold); opacity: 0.5; }
+
+    /* ─── BRAINSTORM ─── */
+    .brainstorm-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .idea-tag {
+      padding: 0.6rem 1.2rem; border-radius: 50px; font-size: 0.82rem; font-weight: 600;
+      display: flex; align-items: center; gap: 0.5rem; border: 1px solid transparent;
+      transition: transform .15s;
+    }
+    .idea-tag:hover { transform: scale(1.05); }
+    .idea-gold  { background: rgba(197,160,89,0.15); border-color: rgba(197,160,89,0.4); color: var(--gold-2); }
+    .idea-blue  { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3); color: #93c5fd; }
+    .idea-green { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3); color: #6ee7b7; }
+    .idea-pink  { background: rgba(236,72,153,0.12); border-color: rgba(236,72,153,0.3); color: #f9a8d4; }
+    .idea-purple{ background: rgba(139,92,246,0.12); border-color: rgba(139,92,246,0.3); color: #c4b5fd; }
+
+    /* ─── RISK TABLE ─── */
+    .risk-table { width: 100%; border-collapse: collapse; }
+    .risk-table th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--grey-2); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0.7rem 1rem; }
+    .risk-table td { padding: 0.9rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.88rem; }
+    .risk-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
+    .badge-red    { background: rgba(239,68,68,0.2); color: #fca5a5; }
+    .badge-amber  { background: rgba(245,158,11,0.2); color: #fcd34d; }
+    .badge-green  { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+
+    /* ─── PROPERTY CARDS ─── */
+    .prop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .prop-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 1.2rem; }
+    .prop-price { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold); }
+    .prop-name  { font-weight: 600; font-size: 0.88rem; margin: 0.4rem 0 0.2rem; }
+    .prop-zone  { font-size: 0.75rem; color: var(--grey-2); }
+    .prop-type  { font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-top: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; }
+    .type-lux  { background: rgba(197,160,89,0.2); color: var(--gold); }
+    .type-fam  { background: rgba(59,130,246,0.2); color: #93c5fd; }
+    .type-exe  { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+    .type-rel  { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+
+    /* ─── TEAM / STACK ─── */
+    .stack-pill { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.82rem; margin: 0.3rem; }
+    .stack-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ─── CTA FOOTER ─── */
+    #cta {
+      background: radial-gradient(ellipse at center, rgba(197,160,89,0.12) 0%, transparent 70%), var(--navy);
+      text-align: center; align-items: center;
+    }
+    .cta-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; margin-bottom: 1.5rem; }
+    .cta-btn { display: inline-block; background: var(--gold); color: var(--navy); font-weight: 800; font-size: 1rem; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; letter-spacing: 0.5px; transition: transform .2s, box-shadow .2s; }
+    .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(197,160,89,0.3); }
+
+    /* ─── DIVIDER ─── */
+    .section-divider { width: 100%; height: 1px; background: linear-gradient(to right, transparent, rgba(197,160,89,0.3), transparent); margin: 2rem 0; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      section { padding: 7rem 2rem 4rem; }
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .card-grid-3, .two-charts, .prop-grid { grid-template-columns: 1fr; }
+      .card-grid-2 { grid-template-columns: 1fr; }
+      .metrics-row { flex-direction: column; }
+      .hero-stats { flex-direction: column; gap: 1.5rem; }
+      .ucp-diagram { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <div class="nav-logo">VeneStay</div>
+  <div class="nav-links">
+    <a href="#problema">Problema</a>
+    <a href="#modelo">Modelo</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#mercado">Mercado</a>
+    <a href="#tech">Stack</a>
+    <a href="#ideas">Ideas</a>
+    <a href="#cta">Invertir</a>
+  </div>
+  <div class="nav-badge">INVESTOR DECK · 2026</div>
+</nav>
+
+<!-- ────────────────────────────────
+     SLIDE 1 — HERO
+──────────────────────────────── -->
+<section id="hero">
+  <div class="hero-tag">🇻🇪 Lechería, Venezuela · Beta Julio 2026</div>
+  <h1 class="hero-title">La plataforma de alquiler<br/><span class="accent">vacacional premium</span><br/>que Venezuela merecía</h1>
+  <div class="hero-divider"></div>
+  <p class="hero-subtitle">VeneStay conecta a huéspedes de alto valor con propiedades exclusivas en Lechería mediante un sistema de confianza verificado, pagos protegidos P2P y tecnología de primera clase.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="num">v2.3</div>
+      <div class="lbl">Versión actual</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">6+</div>
+      <div class="lbl">Propiedades listas</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">10</div>
+      <div class="lbl">Socios fundadores</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">Jul'26</div>
+      <div class="lbl">Fecha de lanzamiento</div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 2 — EL PROBLEMA
+──────────────────────────────── -->
+<section id="problema">
+  <div class="slide-num">01 — El Problema</div>
+  <h2 class="slide-title">El mercado de alquiler vacacional<br/>en Venezuela está <span style="color:var(--gold)">roto</span></h2>
+  <div class="gold-line"></div>
+  <p class="slide-desc">No existe una plataforma verificada, segura y de calidad premium adaptada al mercado venezolano. Los huéspedes confían en grupos de WhatsApp y anfitriones sin respaldo institucional.</p>
+  <div class="card-grid card-grid-3">
+    <div class="card">
+      <div class="card-icon">😰</div>
+      <div class="card-title">Desconfianza en pagos</div>
+      <div class="card-text">El 35%+ de disputas surgen por cancelaciones mal gestionadas y transferencias sin respaldo formal entre partes.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📱</div>
+      <div class="card-title">Canales informales</div>
+      <div class="card-text">WhatsApp, Instagram y Marketplace dominan el alquiler vacacional venezolano sin ninguna capa de seguridad o verificación.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💸</div>
+      <div class="card-title">Multi-moneda sin protocolo</div>
+      <div class="card-text">USD, USDT, Bs, Zelle, Binance y Pago Móvil conviven sin un sistema que estandarice y proteja las transacciones.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <div class="card-title">Sin presencia premium</div>
+      <div class="card-text">Airbnb y Booking.com operan con fricciones legales y cambiarias. Nadie ocupa el segmento vacacional de lujo local.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Ausencia de calificación</div>
+      <div class="card-text">Los huéspedes no tienen forma de evaluar la reputación real de un anfitrión antes de pagar por una estadía.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏖️</div>
+      <div class="card-title">Lechería: destino sin plataforma</div>
+      <div class="card-text">Uno de los destinos turísticos de mayor crecimiento en LATAM carece de un ecosistema digital de alquiler estructurado.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 3 — LA SOLUCIÓN
+──────────────────────────────── -->
+<section id="solucion">
+  <div class="slide-num">02 — La Solución</div>
+  <h2 class="slide-title">VeneStay: El ecosistema completo<br/>de alquiler <span style="color:var(--gold)">verificado</span></h2>
+  <div class="gold-line"></div>
+  <div class="card-grid card-grid-3" style="margin-bottom:2rem">
+    <div class="card card-gold">
+      <div class="card-icon">🛡️</div>
+      <div class="card-title">Pasaporte VeneStay</div>
+      <div class="card-text">Trust Score dinámico, identidad verificada y historial de reservas. Anfitriones e inquilinos conocen con quién trata.</div>
+    </div>
+    <div class="card card-gold">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">Protocolo UCP 20/80</div>
+      <div class="card-text">El huésped asegura fechas pagando el 20% del monto. El 80% restante se liquida directamente al anfitrión en check-in.</div>
+    </div>
+    <div class="card card-gold">
+      <div class="card-icon">🗺️</div>
+      <div class="card-title">Lechería-first</div>
+      <div class="card-text">Enfoque local ultrapreciso con mapa integrado (Google Maps), filtros por zona y propiedades con coordenadas verificadas.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📅</div>
+      <div class="card-title">Reserva Asíncrona</div>
+      <div class="card-text">Sistema Soft-Block que previene doble booking y permite al anfitrión evaluar solicitudes en su propio tiempo.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Gemini AI (en diseño)</div>
+      <div class="card-text">Análisis de imágenes y contenido para validar la calidad de las publicaciones y detectar anomalías automáticamente.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Dashboard Pro de Anfitrión</div>
+      <div class="card-text">Panel completo de gestión: propiedades, reservas, ingresos y métricas de rendimiento en tiempo real.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 4 — MODELO FINANCIERO
+──────────────────────────────── -->
+<section id="modelo">
+  <div class="slide-num">03 — Modelo de Negocio</div>
+  <h2 class="slide-title">Comisiones inteligentes &<br/>Protocolo <span style="color:var(--gold)">UCP</span></h2>
+  <div class="gold-line"></div>
+
+  <div class="ucp-diagram" style="margin-bottom:2.5rem">
+    <div class="ucp-block">
+      <div class="ucp-circle ucp-gold">
+        <div class="ucp-pct">20%</div>
+        <div class="ucp-name">ANTICIPO</div>
+      </div>
+      <div style="font-size:0.85rem;color:var(--grey-2);max-width:140px;text-align:center">Pagado en plataforma. Protege al anfitrión.</div>
+    </div>
+    <div class="ucp-arrow">→</div>
+    <div class="ucp-block">
+      <div class="ucp-circle ucp-navy">
+        <div class="ucp-pct">80%</div>
+        <div class="ucp-name">SALDO</div>
+      </div>
+      <div style="font-size:0.85rem;color:var(--grey-2);max-width:140px;text-align:center">Directo al anfitrión en check-in.</div>
+    </div>
+    <div class="ucp-arrow">→</div>
+    <div class="ucp-block" style="background:rgba(197,160,89,0.05);border:1px solid rgba(197,160,89,0.2);border-radius:16px;padding:1.5rem;max-width:180px;text-align:center">
+      <div style="font-size:2rem;margin-bottom:0.5rem">💰</div>
+      <div style="font-weight:700;color:var(--gold);font-size:1.1rem">Comisión<br/>VeneStay</div>
+      <div style="color:var(--grey-2);font-size:0.8rem;margin-top:0.5rem">Sobre el 20% del anticipo recaudado en plataforma</div>
+    </div>
+  </div>
+
+  <div class="card-grid card-grid-3" style="margin-bottom:2rem">
+    <div class="card">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--green)">12%</div>
+      <div class="card-title" style="margin-top:0.4rem">Socio Fundador</div>
+      <div class="card-text">Para los primeros 10 anfitriones en incorporarse a la plataforma. Comisión permanente reducida como beneficio vitalicio.</div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--amber)">10%</div>
+      <div class="card-title" style="margin-top:0.4rem">Anfitrión Activo</div>
+      <div class="card-text">Tier estándar para anfitriones con propiedades activas y buen historial en la plataforma.</div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--grey-2)">8%</div>
+      <div class="card-title" style="margin-top:0.4rem">Anfitrión Premium</div>
+      <div class="card-text">Para anfitriones con alta calificación, Trust Score elevado y múltiples propiedades activas.</div>
+    </div>
+  </div>
+
+  <div class="two-charts">
+    <div class="chart-wrap">
+      <div class="chart-title">Proyección de Ingresos por Comisión (USD/mes)</div>
+      <canvas id="revenueChart" height="200"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Políticas de Cancelación — Distribución de Propiedades</div>
+      <canvas id="cancelChart" height="200"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 5 — INVENTARIO
+──────────────────────────────── -->
+<section id="inventario">
+  <div class="slide-num">04 — Inventario Lechería</div>
+  <h2 class="slide-title">6 propiedades listas<br/>para el <span style="color:var(--gold)">lanzamiento</span></h2>
+  <div class="gold-line"></div>
+  <div class="metrics-row" style="margin-bottom:2rem">
+    <div class="metric-box">
+      <div class="metric-val">$95</div>
+      <div class="metric-lbl">Precio mínimo/noche</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val">$320</div>
+      <div class="metric-lbl">Precio máximo/noche</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val">$179</div>
+      <div class="metric-lbl">Precio promedio/noche</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val">10</div>
+      <div class="metric-lbl">Huéspedes máx. (Villa LC-005)</div>
+    </div>
+  </div>
+  <div class="prop-grid">
+    <div class="prop-card">
+      <div class="prop-price">$250<span style="font-size:0.9rem;color:var(--grey-2)">/noche</span></div>
+      <div class="prop-name">Penthouse SkyView El Morro</div>
+      <div class="prop-zone">📍 El Morro · 6 huéspedes · 3 dorm.</div>
+      <span class="prop-type type-lux">Lujo</span>
+    </div>
+    <div class="prop-card">
+      <div class="prop-price">$120<span style="font-size:0.9rem;color:var(--grey-2)">/noche</span></div>
+      <div class="prop-name">Beach Loft Maremares</div>
+      <div class="prop-zone">📍 Complejo Turístico · 2 huéspedes</div>
+      <span class="prop-type type-rel">Relax</span>
+    </div>
+    <div class="prop-card">
+      <div class="prop-price">$180<span style="font-size:0.9rem;color:var(--grey-2)">/noche</span></div>
+      <div class="prop-name">Townhouse Náutico Canal</div>
+      <div class="prop-zone">📍 Canales · 8 huéspedes · 4 dorm.</div>
+      <span class="prop-type type-fam">Familiar</span>
+    </div>
+    <div class="prop-card">
+      <div class="prop-price">$95<span style="font-size:0.9rem;color:var(--grey-2)">/noche</span></div>
+      <div class="prop-name">Suite Vista Playa Mansa</div>
+      <div class="prop-zone">📍 Playa Mansa · 2 huéspedes</div>
+      <span class="prop-type type-exe">Ejecutivo</span>
+    </div>
+    <div class="prop-card">
+      <div class="prop-price">$320<span style="font-size:0.9rem;color:var(--grey-2)">/noche</span></div>
+      <div class="prop-name">Marina Garden Villa</div>
+      <div class="prop-zone">📍 Canales · 10 huéspedes · muelle</div>
+      <span class="prop-type type-lux">Lujo</span>
+    </div>
+    <div class="prop-card">
+      <div class="prop-price">$110<span style="font-size:0.9rem;color:var(--grey-2)">/noche</span></div>
+      <div class="prop-name">Skyline Studio Plaza Mayor</div>
+      <div class="prop-zone">📍 Plaza Mayor · 2 huéspedes</div>
+      <span class="prop-type type-exe">Ejecutivo</span>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 6 — ROADMAP
+──────────────────────────────── -->
+<section id="roadmap">
+  <div class="slide-num">05 — Roadmap</div>
+  <h2 class="slide-title">Del MVP al ecosistema<br/><span style="color:var(--gold)">nacional</span></h2>
+  <div class="gold-line"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start">
+    <div class="roadmap">
+      <div class="rm-phase done" data-num="✓">
+        <div class="rm-label">
+          <span class="rm-tag tag-done">COMPLETADO</span>
+          <span class="rm-title">Fase 1 — Cimientos</span>
+          <span class="rm-date">Abril 2026</span>
+        </div>
+        <ul class="rm-items">
+          <li class="done-item">React 19 + Firebase</li>
+          <li class="done-item">Arquitectura FSD</li>
+          <li class="done-item">Identidad Premium Dark</li>
+          <li class="done-item">Protocolo UCP 20/80</li>
+        </ul>
+      </div>
+
+      <div class="rm-phase done" data-num="✓">
+        <div class="rm-label">
+          <span class="rm-tag tag-done">COMPLETADO</span>
+          <span class="rm-title">Fase 2 — Motor de Confianza</span>
+          <span class="rm-date">Mayo 2026</span>
+        </div>
+        <ul class="rm-items">
+          <li class="done-item">Pasaporte + Trust Score</li>
+          <li class="done-item">Reserva Async + Soft-Block</li>
+          <li class="done-item">Checkout v2.2 optimizado</li>
+          <li class="done-item">Comisiones 12/10/8%</li>
+          <li class="done-item">Dashboard Pro v2.3</li>
+        </ul>
+      </div>
+
+      <div class="rm-phase wip" data-num="▶">
+        <div class="rm-label">
+          <span class="rm-tag tag-wip">EN CURSO</span>
+          <span class="rm-title">Fase 3 — Ecosistema Anfitrión</span>
+          <span class="rm-date">Junio 2026</span>
+        </div>
+        <ul class="rm-items">
+          <li>Guest Verification Dashboard</li>
+          <li>Authenticator v2.0</li>
+          <li>Cloud Functions financieras</li>
+          <li>PWA Mobile</li>
+        </ul>
+      </div>
+
+      <div class="rm-phase next" data-num="4">
+        <div class="rm-label">
+          <span class="rm-tag tag-next">PENDIENTE</span>
+          <span class="rm-title">Fase 4 — Beta Lechería</span>
+          <span class="rm-date">Julio 2026</span>
+        </div>
+        <ul class="rm-items">
+          <li>Onboarding 10 socios</li>
+          <li>Auditoría QA Móvil</li>
+          <li>Whimsy & Nudges</li>
+          <li>Lanzamiento público</li>
+        </ul>
+      </div>
+
+      <div class="rm-phase next" data-num="5">
+        <div class="rm-label">
+          <span class="rm-tag tag-next">VISIÓN</span>
+          <span class="rm-title">Expansión Nacional</span>
+          <span class="rm-date">Ago 2026+</span>
+        </div>
+        <ul class="rm-items">
+          <li>Caracas &amp; Margarita</li>
+          <li>AI Trust Badges</li>
+          <li>Chat IA contextual</li>
+          <li>SEO &amp; Notificaciones Push</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Gantt chart -->
+    <div>
+      <div class="chart-wrap">
+        <div class="chart-title">Progreso de Fases del Proyecto</div>
+        <canvas id="ganttChart" height="280"></canvas>
+      </div>
+      <div class="chart-wrap" style="margin-top:1.5rem">
+        <div class="chart-title">Distribución de Esfuerzo por Capa FSD</div>
+        <canvas id="fsdChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 7 — MERCADO
+──────────────────────────────── -->
+<section id="mercado">
+  <div class="slide-num">06 — Mercado Objetivo</div>
+  <h2 class="slide-title">Una oportunidad de <span style="color:var(--gold)">$47M+</span><br/>sin competidor dominante</h2>
+  <div class="gold-line"></div>
+  <div class="metrics-row">
+    <div class="metric-box">
+      <div class="metric-val">4.2M</div>
+      <div class="metric-lbl">Viajes internos/año en Venezuela</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val">18%</div>
+      <div class="metric-lbl">Crecimiento turismo doméstico 2025</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val">$47M+</div>
+      <div class="metric-lbl">TAM estimado alquiler vacacional premium</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-val">0</div>
+      <div class="metric-lbl">Competidores locales formales</div>
+    </div>
+  </div>
+
+  <div class="two-charts">
+    <div class="chart-wrap">
+      <div class="chart-title">Segmentación del mercado de alquiler vacacional</div>
+      <canvas id="marketChart" height="250"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Perfil del huésped objetivo</div>
+      <canvas id="guestChart" height="250"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 8 — STACK TECNOLÓGICO
+──────────────────────────────── -->
+<section id="tech">
+  <div class="slide-num">07 — Stack Tecnológico</div>
+  <h2 class="slide-title">Arquitectura <span style="color:var(--gold)">state-of-the-art</span><br/>lista para escalar</h2>
+  <div class="gold-line"></div>
+
+  <div class="card-grid card-grid-2" style="margin-bottom:2rem">
+    <div class="card">
+      <div class="card-icon">⚛️</div>
+      <div class="card-title">Frontend</div>
+      <div style="margin-top:0.8rem">
+        <span class="stack-pill"><span class="stack-dot" style="background:#61dafb"></span>React 19</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#3178c6"></span>TypeScript 5</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#646cff"></span>Vite 6</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#38bdf8"></span>Tailwind CSS v4</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#e879f9"></span>Framer Motion</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#f97316"></span>Zod v4</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔥</div>
+      <div class="card-title">Backend & Datos</div>
+      <div style="margin-top:0.8rem">
+        <span class="stack-pill"><span class="stack-dot" style="background:#ffca28"></span>Firebase Auth</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#ff6d00"></span>Firestore SDK v12</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#ff6d00"></span>Firebase Storage</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#ff6d00"></span>Cloud Functions</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Inteligencia Artificial</div>
+      <div style="margin-top:0.8rem">
+        <span class="stack-pill"><span class="stack-dot" style="background:#4285f4"></span>Gemini API</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#34a853"></span>Google Maps API</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#ea4335"></span>Places & Geometry</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <div class="card-title">Deploy & Calidad</div>
+      <div style="margin-top:0.8rem">
+        <span class="stack-pill"><span class="stack-dot" style="background:#000"></span>Vercel</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#8b5cf6"></span>ESLint + tsc strict</span>
+        <span class="stack-pill"><span class="stack-dot" style="background:#10b981"></span>WCAG 2.2 AA</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Estado de Quality Gates del Proyecto</div>
+    <canvas id="qaChart" height="140"></canvas>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 9 — RIESGOS
+──────────────────────────────── -->
+<section id="riesgos">
+  <div class="slide-num">08 — Gestión de Riesgos</div>
+  <h2 class="slide-title">Riesgos identificados &<br/>plan de <span style="color:var(--gold)">mitigación</span></h2>
+  <div class="gold-line"></div>
+
+  <table class="risk-table">
+    <thead>
+      <tr>
+        <th>Riesgo</th>
+        <th>Severidad</th>
+        <th>Estado</th>
+        <th>Mitigación</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Lógica financiera en cliente (CheckoutPage)</td>
+        <td><span class="badge badge-red">Crítico</span></td>
+        <td><span class="badge badge-amber">En plan</span></td>
+        <td>Migrar cálculos a Cloud Functions antes del lanzamiento</td>
+      </tr>
+      <tr>
+        <td>Datos sensibles en localStorage</td>
+        <td><span class="badge badge-red">Crítico</span></td>
+        <td><span class="badge badge-amber">Auditando</span></td>
+        <td>Solo datos de UI no sensibles; KYC exclusivamente en Firestore</td>
+      </tr>
+      <tr>
+        <td>Double-booking por concurrencia Firestore</td>
+        <td><span class="badge badge-amber">Importante</span></td>
+        <td><span class="badge badge-green">Diseñado</span></td>
+        <td>runTransaction() + Soft-Block implementado en booking-service</td>
+      </tr>
+      <tr>
+        <td>Ausencia de tests de integración en pagos</td>
+        <td><span class="badge badge-amber">Importante</span></td>
+        <td><span class="badge badge-amber">En plan</span></td>
+        <td>Suite Vitest + Firebase Emulator Suite (Fase 3)</td>
+      </tr>
+      <tr>
+        <td>QA insuficiente en dispositivos móviles reales</td>
+        <td><span class="badge badge-amber">Importante</span></td>
+        <td><span class="badge badge-amber">Pendiente</span></td>
+        <td>Beta cerrada con 10 socios para validación real en campo</td>
+      </tr>
+      <tr>
+        <td>Costos de Firestore a escala</td>
+        <td><span class="badge badge-green">Estratégico</span></td>
+        <td><span class="badge badge-green">Monitoreado</span></td>
+        <td>Cache + paginación agresiva; plan de migración documentado</td>
+      </tr>
+      <tr>
+        <td>Sin monitoreo de errores en producción</td>
+        <td><span class="badge badge-green">Post-beta</span></td>
+        <td><span class="badge badge-amber">Planificado</span></td>
+        <td>Integración de Sentry en Fase 4 para captura automática</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 10 — LLUVIA DE IDEAS
+──────────────────────────────── -->
+<section id="ideas">
+  <div class="slide-num">09 — Lluvia de Ideas · Expansión</div>
+  <h2 class="slide-title">¿Hacia dónde puede<br/>crecer <span style="color:var(--gold)">VeneStay</span>?</h2>
+  <div class="gold-line"></div>
+  <p class="slide-desc">Ideas estratégicas identificadas durante el proceso de desarrollo, clasificadas por impacto potencial y viabilidad técnica.</p>
+
+  <div style="margin-bottom:1.5rem">
+    <div style="font-size:0.75rem;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">🚀 Producto & Monetización</div>
+    <div class="brainstorm-grid">
+      <span class="idea-tag idea-gold">💰 Programa de referidos para anfitriones</span>
+      <span class="idea-tag idea-gold">🎖️ Certificación "VeneStay Elite Host"</span>
+      <span class="idea-tag idea-gold">📦 Servicios Add-on (tours, transporte, chef)</span>
+      <span class="idea-tag idea-gold">💳 VeneStay Credit (puntos por reserva)</span>
+      <span class="idea-tag idea-gold">🤝 Alianzas con hoteles boutique</span>
+      <span class="idea-tag idea-gold">📈 Dynamic Pricing por temporada</span>
+    </div>
+  </div>
+
+  <div style="margin-bottom:1.5rem">
+    <div style="font-size:0.75rem;font-weight:700;color:#93c5fd;letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">🤖 Inteligencia Artificial</div>
+    <div class="brainstorm-grid">
+      <span class="idea-tag idea-blue">🧠 IA de recomendación de propiedades</span>
+      <span class="idea-tag idea-blue">📸 Validación de fotos por Gemini Vision</span>
+      <span class="idea-tag idea-blue">🔍 Detección de fraude por comportamiento</span>
+      <span class="idea-tag idea-blue">💬 Chatbot de soporte 24/7 contextual</span>
+      <span class="idea-tag idea-blue">📊 Análisis predictivo de demanda</span>
+      <span class="idea-tag idea-blue">🏠 Descripción automática de propiedades</span>
+    </div>
+  </div>
+
+  <div style="margin-bottom:1.5rem">
+    <div style="font-size:0.75rem;font-weight:700;color:#6ee7b7;letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">🌍 Expansión Geográfica</div>
+    <div class="brainstorm-grid">
+      <span class="idea-tag idea-green">🏙️ Caracas: segmento ejecutivo & embajadas</span>
+      <span class="idea-tag idea-green">🏝️ Margarita: turismo internacional</span>
+      <span class="idea-tag idea-green">⛵ Los Roques: lujo extremo</span>
+      <span class="idea-tag idea-green">🌎 Diáspora venezolana en LATAM</span>
+      <span class="idea-tag idea-green">🤝 Modelo franquicia B2B para agencias</span>
+    </div>
+  </div>
+
+  <div style="margin-bottom:1.5rem">
+    <div style="font-size:0.75rem;font-weight:700;color:#f9a8d4;letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">🔐 Trust & Seguridad</div>
+    <div class="brainstorm-grid">
+      <span class="idea-tag idea-pink">🪪 KYC automatizado con cédula/pasaporte</span>
+      <span class="idea-tag idea-pink">🔒 Seguro de alquiler VeneStay</span>
+      <span class="idea-tag idea-pink">📹 Check-in fotográfico del inmueble</span>
+      <span class="idea-tag idea-pink">⚖️ Árbitro digital para disputas</span>
+      <span class="idea-tag idea-pink">🏅 Agentic Trust Badges dinámicos</span>
+    </div>
+  </div>
+
+  <div>
+    <div style="font-size:0.75rem;font-weight:700;color:#c4b5fd;letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">⚡ Tecnología & Operaciones</div>
+    <div class="brainstorm-grid">
+      <span class="idea-tag idea-purple">📱 App nativa iOS/Android (React Native)</span>
+      <span class="idea-tag idea-purple">🔔 Notificaciones Push tiempo real</span>
+      <span class="idea-tag idea-purple">📡 Modo offline-first para redes lentas</span>
+      <span class="idea-tag idea-purple">🌐 Multi-idioma (ES/EN/PT)</span>
+      <span class="idea-tag idea-purple">🔄 Integración Booking.com / Airbnb API</span>
+      <span class="idea-tag idea-purple">📊 Dashboard de métricas para inversores</span>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 11 — ARQUITECTURA
+──────────────────────────────── -->
+<section id="arq">
+  <div class="slide-num">10 — Arquitectura del Sistema</div>
+  <h2 class="slide-title">Feature-Sliced Design<br/><span style="color:var(--gold)">Zero-Trust</span> · Escalable</h2>
+  <div class="gold-line"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">Capas FSD-lite</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <div style="display:flex;align-items:center;gap:0.8rem;padding:0.6rem;border-radius:8px;background:rgba(197,160,89,0.08);border:1px solid rgba(197,160,89,0.2)">
+            <span style="font-size:1rem">📄</span>
+            <div><div style="font-weight:600;font-size:0.85rem">src/pages</div><div style="color:var(--grey-2);font-size:0.75rem">Orquestación de rutas. Sin lógica de datos.</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.8rem;padding:0.6rem;border-radius:8px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2)">
+            <span style="font-size:1rem">⚙️</span>
+            <div><div style="font-weight:600;font-size:0.85rem">src/features</div><div style="color:var(--grey-2);font-size:0.75rem">auth · bookings · dashboard · listings · reviews</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.8rem;padding:0.6rem;border-radius:8px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)">
+            <span style="font-size:1rem">🔌</span>
+            <div><div style="font-weight:600;font-size:0.85rem">src/services</div><div style="color:var(--grey-2);font-size:0.75rem">Abstracción de Firebase. Intercambiable.</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.8rem;padding:0.6rem;border-radius:8px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2)">
+            <span style="font-size:1rem">📐</span>
+            <div><div style="font-weight:600;font-size:0.85rem">src/types</div><div style="color:var(--grey-2);font-size:0.75rem">Contratos TypeScript. Sin lógica, solo tipos.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">Seguridad en 3 Capas</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <div style="padding:0.6rem;border-radius:8px;background:rgba(16,185,129,0.05);border-left:3px solid var(--green)">
+            <div style="font-weight:600;font-size:0.85rem">🛡️ firestore.rules</div>
+            <div style="color:var(--grey-2);font-size:0.75rem">Solo propietario puede escribir su perfil</div>
+          </div>
+          <div style="padding:0.6rem;border-radius:8px;background:rgba(16,185,129,0.05);border-left:3px solid var(--green)">
+            <div style="font-weight:600;font-size:0.85rem">🔐 storage.rules</div>
+            <div style="color:var(--grey-2);font-size:0.75rem">KYC privado bajo /kyc/{"{uid}"}/ · max 5MB</div>
+          </div>
+          <div style="padding:0.6rem;border-radius:8px;background:rgba(16,185,129,0.05);border-left:3px solid var(--green)">
+            <div style="font-weight:600;font-size:0.85rem">✅ Zod Schemas</div>
+            <div style="color:var(--grey-2);font-size:0.75rem">Validación antes de cualquier escritura en DB</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-title">Madurez por Módulo del Sistema</div>
+      <canvas id="radarChart" height="300"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────
+     SLIDE 12 — CTA
+──────────────────────────────── -->
+<section id="cta">
+  <div class="slide-num" style="color:var(--grey-2)">Próximo paso</div>
+  <h2 class="cta-title">El momento de <span style="color:var(--gold)">invertir<br/>en confianza</span> es ahora</h2>
+  <p style="color:var(--grey-2);max-width:540px;line-height:1.7;margin-bottom:2.5rem;font-size:1.05rem">Lechería espera su plataforma de alquiler. Los 10 socios fundadores tienen acceso a las condiciones más ventajosas de comisión. El lanzamiento beta es en Julio 2026.</p>
+  <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap">
+    <a class="cta-btn" href="https://vene-stay.vercel.app" target="_blank">Ver Demo en Vivo →</a>
+    <a class="cta-btn" style="background:transparent;border:1px solid var(--gold);color:var(--gold)" href="mailto:hola@venestay.com">Hablar con el Equipo</a>
+  </div>
+  <div style="margin-top:4rem;padding-top:2rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:3rem;justify-content:center;flex-wrap:wrap">
+    <div style="text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--gold)">vene-stay.vercel.app</div><div style="font-size:0.75rem;color:var(--grey-2)">Demo disponible</div></div>
+    <div style="text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--gold)">Lechería → Nacional</div><div style="font-size:0.75rem;color:var(--grey-2)">Ruta de expansión</div></div>
+    <div style="text-align:center"><div style="font-size:1.3rem;font-weight:700;color:var(--gold)">v2.3.0</div><div style="font-size:0.75rem;color:var(--grey-2)">Versión actual del producto</div></div>
+  </div>
+  <div style="margin-top:3rem;font-size:0.72rem;color:var(--grey-3)">Elaborado por División de Ingeniería de IA — Antigravity · Mayo 2026 · Uso confidencial para inversores</div>
+</section>
+
+<!-- ─── CHART SCRIPTS ─── -->
+<script>
+  // Colores base
+  const gold   = '#C5A059';
+  const gold2  = '#e0b96a';
+  const navy   = '#111827';
+  const green  = '#10b981';
+  const amber  = '#f59e0b';
+  const blue   = '#3b82f6';
+  const purple = '#8b5cf6';
+  const grey   = '#334155';
+  const white  = '#e2e8f0';
+
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+  Chart.defaults.font.family = 'Inter';
+
+  // ─── Revenue Projection ───
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Ago', 'Sep', 'Oct', 'Nov', 'Dic', 'Ene 27'],
+      datasets: [
+        {
+          label: 'Ingresos proyectados (USD)',
+          data: [820, 1540, 2800, 4100, 5600, 7200],
+          backgroundColor: `rgba(197,160,89,0.7)`,
+          borderColor: gold,
+          borderWidth: 1,
+          borderRadius: 6,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => '$'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ─── Cancellation Policy Pie ───
+  new Chart(document.getElementById('cancelChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Flexible (48h)', 'Moderada (7d)', 'Estricta (30d)'],
+      datasets: [{
+        data: [33, 50, 17],
+        backgroundColor: [green, gold, amber],
+        borderColor: navy,
+        borderWidth: 3,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } } }
+    }
+  });
+
+  // ─── Gantt / Progress ───
+  new Chart(document.getElementById('ganttChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Fase 1 — Cimientos', 'Fase 2 — Confianza', 'Fase 3 — Ecosistema', 'Fase 4 — Beta', 'Expansión'],
+      datasets: [{
+        label: 'Progreso (%)',
+        data: [100, 100, 45, 5, 0],
+        backgroundColor: [green, green, amber, grey, grey],
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { max: 100, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ─── FSD Layer Distribution ───
+  new Chart(document.getElementById('fsdChart'), {
+    type: 'pie',
+    data: {
+      labels: ['features/', 'services/', 'components/', 'types/', 'pages/', 'hooks/'],
+      datasets: [{
+        data: [42, 18, 15, 10, 8, 7],
+        backgroundColor: [gold, blue, green, purple, amber, '#f43f5e'],
+        borderColor: navy,
+        borderWidth: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true } } }
+    }
+  });
+
+  // ─── Market Segmentation ───
+  new Chart(document.getElementById('marketChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Premium / Lujo', 'Ejecutivo', 'Familiar', 'Relax/Budget'],
+      datasets: [{
+        data: [30, 28, 25, 17],
+        backgroundColor: [gold, blue, green, amber],
+        borderColor: navy,
+        borderWidth: 3,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '60%',
+      plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true } } }
+    }
+  });
+
+  // ─── Guest Profile ───
+  new Chart(document.getElementById('guestChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Ejecutivo', 'Familia', 'Pareja', 'Nómada', 'Corporativo'],
+      datasets: [{
+        label: 'Frecuencia estimada (%)',
+        data: [32, 25, 22, 13, 8],
+        backgroundColor: [gold, blue, green, purple, amber],
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ─── QA Gates ───
+  new Chart(document.getElementById('qaChart'), {
+    type: 'bar',
+    data: {
+      labels: ['TypeScript strict', 'ESLint (0 errors)', 'WCAG 2.2 AA', 'Zod Validation', 'Firestore Rules', 'Storage Rules'],
+      datasets: [{
+        label: 'Estado del Gate',
+        data: [100, 100, 90, 95, 100, 100],
+        backgroundColor: [green, green, amber, green, green, green],
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { max: 100, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ─── Radar — Module Maturity ───
+  new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: ['Auth', 'Bookings', 'Checkout', 'Dashboard', 'Listings', 'Reviews', 'Services', 'Security'],
+      datasets: [{
+        label: 'Madurez del módulo (%)',
+        data: [75, 90, 95, 95, 88, 80, 85, 90],
+        backgroundColor: 'rgba(197,160,89,0.15)',
+        borderColor: gold,
+        borderWidth: 2,
+        pointBackgroundColor: gold,
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { stepSize: 25, color: '#64748b', backdropColor: 'transparent' },
+          grid: { color: 'rgba(255,255,255,0.06)' },
+          pointLabels: { font: { size: 11 }, color: '#94a3b8' },
+          angleLines: { color: 'rgba(255,255,255,0.06)' },
+        }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+</script>
+</body>
+</html>

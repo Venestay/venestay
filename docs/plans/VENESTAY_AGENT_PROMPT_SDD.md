@@ -328,6 +328,13 @@ IF iteraciones_módulo >= 3 AND estado == FALLO:
                Se han agotado los 3 intentos automáticos permitidos."
 ```
 
+### Paso 5 — Regla de Post-Mortem y Anti-Rushing (Anti-Skipping)
+Si se reporta un fallo de visualización, una regresión crítica, o si el usuario rechaza los cambios realizados:
+1.  **Parada Inmediata:** El agente DEBE detenerse de inmediato y revertir las modificaciones inestables. Queda prohibido escribir código apresurado para "parchar" el error al instante.
+2.  **Análisis de Post-Mortem Obligatorio:** El agente debe formular un reporte técnico detallado explicando la causa raíz del error sintáctico o lógico y su impacto.
+3.  **Prohibición de Salto de Planificación:** El agente tiene estrictamente prohibido omitir el paso de Planificación (Nodo 2). Se debe re-elaborar y actualizar el plan de implementación, presentarlo al usuario para su aprobación y esperar luz verde explícita antes de tocar cualquier archivo de código.
+4.  **Aprendizaje Activo:** El agente debe estructurar la lección aprendida en el post-mortem para evitar cometer el mismo error en el futuro (ej. envolturas de etiquetas JSX incompatibles con Vite/React 19).
+
 ---
 
 ## BLOQUE 5 — SKILLS MAPPING POR ROL

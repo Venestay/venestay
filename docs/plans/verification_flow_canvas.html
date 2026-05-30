@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeneStay - Canvas de Flujo de Verificación (Sprint S03)</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    :root {
+      --color-navy: #0B1120;
+      --color-navy-light: #1E293B;
+      --color-gold: #C5A059;
+      --color-gold-hover: #D6B26A;
+      --color-gold-light: rgba(197, 160, 89, 0.1);
+      --color-white: #FFFFFF;
+      --color-text-muted: #94A3B8;
+      --color-bg: #030712;
+      --color-border: rgba(197, 160, 89, 0.2);
+      
+      --color-success: #10B981;
+      --color-error: #EF4444;
+      --color-warning: #F59E0B;
+      --color-info: #3B82F6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-white);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3, h4, h5 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+    }
+
+    /* HEADER BANNER */
+    header {
+      background: radial-gradient(circle at top, rgba(197, 160, 89, 0.15) 0%, rgba(11, 17, 32, 0) 70%), var(--color-navy);
+      border-bottom: 1px solid var(--color-border);
+      padding: 2.5rem 2rem;
+      position: relative;
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .badge-sprint {
+      background-color: var(--color-gold-light);
+      border: 1px solid var(--color-gold);
+      color: var(--color-gold);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-block;
+      margin-bottom: 0.5rem;
+    }
+
+    .header-title h1 {
+      font-size: 2.25rem;
+      color: var(--color-white);
+      letter-spacing: -0.02em;
+    }
+
+    .header-title p {
+      color: var(--color-text-muted);
+      margin-top: 0.25rem;
+      font-size: 0.95rem;
+    }
+
+    .header-meta {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .meta-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      text-align: right;
+    }
+
+    .meta-box span {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+
+    .meta-box strong {
+      font-size: 0.9rem;
+      color: var(--color-gold);
+    }
+
+    /* MAIN CONTAINER */
+    main {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1100px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* CANVAS BOARD */
+    .canvas-section {
+      background: linear-gradient(135deg, rgba(11, 17, 32, 0.8) 0%, rgba(3, 7, 18, 0.9) 100%);
+      border: 1px solid var(--color-border);
+      border-radius: 24px;
+      padding: 2rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 1rem;
+    }
+
+    .section-title i {
+      color: var(--color-gold);
+    }
+
+    /* FLOW MAP GRID */
+    .flow-map {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+      position: relative;
+      margin-top: 1rem;
+    }
+
+    .flow-map::before {
+      content: '';
+      position: absolute;
+      left: 36px;
+      top: 24px;
+      bottom: 24px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--color-gold) 0%, rgba(197, 160, 89, 0.2) 70%, rgba(197, 160, 89, 0.05) 100%);
+      z-index: 1;
+    }
+
+    /* FLOW STEP NODE */
+    .flow-node {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      gap: 1.25rem;
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .node-icon-wrapper {
+      width: 74px;
+      height: 74px;
+      border-radius: 20px;
+      background: var(--color-navy);
+      border: 2px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+
+    .flow-node:hover .node-icon-wrapper,
+    .flow-node.active .node-icon-wrapper {
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+      box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+      transform: scale(1.05);
+    }
+
+    .node-content {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 18px;
+      padding: 1.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .flow-node:hover .node-content,
+    .flow-node.active .node-content {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(197, 160, 89, 0.3);
+      transform: translateX(8px);
+    }
+
+    .node-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .node-step-label {
+      font-size: 0.75rem;
+      color: var(--color-gold);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .actor-tag {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .actor-guest { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .actor-host { background: rgba(197, 160, 89, 0.15); color: var(--color-gold); border: 1px solid rgba(197, 160, 89, 0.2); }
+    .actor-system { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.2); }
+
+    .node-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--color-white);
+      margin-bottom: 0.25rem;
+    }
+
+    .node-desc {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+    }
+
+    /* STATE BADGES IN NODES */
+    .status-pill-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      font-family: monospace;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--color-text-muted);
+    }
+
+    .status-pill.active-state {
+      border-color: var(--color-gold);
+      color: var(--color-white);
+      background: var(--color-gold-light);
+    }
+
+    /* INTERACTIVE DETAILS PANEL */
+    .detail-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .glass-card {
+      background: linear-gradient(135deg, rgba(11, 17, 32, 0.85) 0%, rgba(3, 7, 18, 0.95) 100%);
+      border: 1px solid var(--color-border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .glass-card-title {
+      font-size: 1.1rem;
+      color: var(--color-white);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .glass-card-title i {
+      color: var(--color-gold);
+    }
+
+    /* SIMULATOR STYLES */
+    .sim-state-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 1.25rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+    }
+
+    .sim-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      width: 100%;
+      background: var(--color-navy);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--color-white);
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--color-gold);
+      background: var(--color-gold-light);
+      color: var(--color-gold);
+      transform: translateY(-2px);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-reset {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: #F87171;
+    }
+
+    .btn-reset:hover {
+      background: rgba(239, 68, 68, 0.2) !important;
+      color: #EF4444 !important;
+      border-color: #EF4444 !important;
+    }
+
+    /* INFO STATS */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .info-item {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .info-item-label {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+    }
+
+    .info-item-value {
+      font-size: 0.9rem;
+      color: var(--color-white);
+    }
+
+    .info-item-value code {
+      font-family: monospace;
+      background: rgba(0,0,0,0.4);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      color: #34D399;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 2rem;
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* STATE SPECIFIC STYLES FOR SIMULATOR */
+    .state-pending_host { border-left: 4px solid var(--color-warning); color: var(--color-warning); background: rgba(245, 158, 11, 0.05); }
+    .state-pending_payment { border-left: 4px solid var(--color-info); color: var(--color-info); background: rgba(59, 130, 246, 0.05); }
+    .state-awaiting_verification { border-left: 4px solid var(--color-gold); color: var(--color-gold); background: rgba(197, 160, 89, 0.05); }
+    .state-confirmed { border-left: 4px solid var(--color-success); color: var(--color-success); background: rgba(16, 185, 129, 0.05); }
+    .state-rejected { border-left: 4px solid var(--color-error); color: var(--color-error); background: rgba(239, 68, 68, 0.05); }
+    .state-expired { border-left: 4px solid #6B7280; color: #9CA3AF; background: rgba(107, 114, 128, 0.05); }
+
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-container">
+      <div class="header-title">
+        <span class="badge-sprint">Sprint S03 — Reserva Asíncrona</span>
+        <h1>Lienzo de Flujo de Verificación</h1>
+        <p>Modelo interactivo de la máquina de estados del dashboard y pasaporte VeneStay.</p>
+      </div>
+      <div class="header-meta">
+        <div class="meta-box">
+          <span>Versión del Plan</span>
+          <strong>v2.3.0 Beta Lechería</strong>
+        </div>
+        <div class="meta-box">
+          <span>Control Operativo</span>
+          <strong>SDD Compliant (PM/QA)</strong>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main>
+    
+    <!-- CANVAS FLUX MAP -->
+    <section class="canvas-section">
+      <h2 class="section-title">
+        <i data-lucide="git-commit"></i> Map de Estados y Transiciones
+      </h2>
+      
+      <div class="flow-map">
+        
+        <!-- STEP 1 -->
+        <div class="flow-node active" id="node-step1" onclick="selectNode(1)">
+          <div class="node-icon-wrapper">
+            <i data-lucide="key-round" style="width: 28px; height: 28px;"></i>
+          </div>
+          <div class="node-content">
+            <div class="node-meta">
+              <span class="node-step-label">Paso 1</span>
+              <span class="actor-tag actor-guest">Huésped (Solicitud)</span>
+            </div>
+            <h3 class="node-title">Solicitud de Reserva y Soft-Block</h3>
+            <p class="node-desc">El huésped solicita reservar un alojamiento en modo manual (<code>bookingMode === 'request'</code>). Se bloquean preventivamente las fechas.</p>
+            <div class="status-pill-row">
+              <span class="status-pill active-state">pending_host</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="flow-node" id="node-step2" onclick="selectNode(2)">
+          <div class="node-icon-wrapper">
+            <i data-lucide="eye" style="width: 28px; height: 28px;"></i>
+          </div>
+          <div class="node-content">
+            <div class="node-meta">
+              <span class="node-step-label">Paso 2</span>
+              <span class="actor-tag actor-host">Anfitrión (Evaluación)</span>
+            </div>
+            <h3 class="node-title">Drawer de Verificación y Decisión</h3>
+            <p class="node-desc">El anfitrión abre el drawer, analiza el Pasaporte VeneStay (Trust Score, KYC), revisa solapamientos y aprueba o rechaza la solicitud.</p>
+            <div class="status-pill-row">
+              <span class="status-pill">pending_payment</span>
+              <span class="status-pill">awaiting_verification</span>
+              <span class="status-pill text-error">rejected</span>
+              <span class="status-pill">expired</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="flow-node" id="node-step3" onclick="selectNode(3)">
+          <div class="node-icon-wrapper">
+            <i data-lucide="credit-card" style="width: 28px; height: 28px;"></i>
+          </div>
+          <div class="node-content">
+            <div class="node-meta">
+              <span class="node-step-label">Paso 3</span>
+              <span class="actor-tag actor-guest">Huésped (Pago)</span>
+            </div>
+            <h3 class="node-title">Carga de Comprobante</h3>
+            <p class="node-desc">Si se aprobó sin comprobante inicial, el huésped transfiere el 20% (Anticipo UCP 20/80) en VES o USDT y sube el capture antes de 24h.</p>
+            <div class="status-pill-row">
+              <span class="status-pill">awaiting_verification</span>
+              <span class="status-pill text-error">expired</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="flow-node" id="node-step4" onclick="selectNode(4)">
+          <div class="node-icon-wrapper">
+            <i data-lucide="shield-check" style="width: 28px; height: 28px;"></i>
+          </div>
+          <div class="node-content">
+            <div class="node-meta">
+              <span class="node-step-label">Paso 4</span>
+              <span class="actor-tag actor-system">Administrador (Conciliación)</span>
+            </div>
+            <h3 class="node-title">Garantía Verificada e Inmutabilidad</h3>
+            <p class="node-desc">El administrador/sistema valida el pago. El estado finaliza en confirmado. Las fechas se bloquean de forma definitiva.</p>
+            <div class="status-pill-row">
+              <span class="status-pill text-success">confirmed</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RIGHT DETAIL PANEL & STATE SIMULATOR -->
+    <div class="detail-panel">
+      
+      <!-- SIMULATOR INTERACTIVO -->
+      <div class="glass-card">
+        <h3 class="glass-card-title">
+          <i data-lucide="play-circle"></i> Simulador de Flujo en Vivo
+        </h3>
+        
+        <div class="sim-state-indicator state-pending_host" id="sim-indicator">
+          Estado: pending_host
+        </div>
+        
+        <div class="sim-buttons">
+          <button class="btn" id="btn-approve-no-proof" onclick="simTrigger('approve_no_proof')">
+            <i data-lucide="check-circle-2"></i> Aprobar sin Comprobante (Host)
+          </button>
+          <button class="btn" id="btn-approve-with-proof" onclick="simTrigger('approve_with_proof')">
+            <i data-lucide="file-check"></i> Aprobar con Comprobante (Host)
+          </button>
+          <button class="btn" id="btn-upload-proof" onclick="simTrigger('upload_proof')" disabled>
+            <i data-lucide="upload-cloud"></i> Huésped sube pago (Guest)
+          </button>
+          <button class="btn" id="btn-verify-admin" onclick="simTrigger('verify_admin')" disabled>
+            <i data-lucide="shield-check"></i> Administrador valida pago (Admin)
+          </button>
+          <button class="btn" id="btn-reject" onclick="simTrigger('reject')">
+            <i data-lucide="x-circle"></i> Rechazar con motivo (Host)
+          </button>
+          <button class="btn" id="btn-expire" onclick="simTrigger('expire')">
+            <i data-lucide="clock"></i> Expirar por tiempo (24h)
+          </button>
+          <button class="btn btn-reset" onclick="simReset()">
+            <i data-lucide="refresh-cw"></i> Reiniciar Simulación
+          </button>
+        </div>
+      </div>
+
+      <!-- DETALLE EXPLICATIVO DEL NODO -->
+      <div class="glass-card">
+        <h3 class="glass-card-title" id="detail-title">
+          <i data-lucide="info"></i> Detalles del Paso 1
+        </h3>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-item-label">Reglas de Negocio en Firestore</div>
+            <div class="info-item-value" id="detail-firestore">
+              Se escribe un documento en la colección <code>bookingRequests</code> con estado inicial <code>pending_host</code>. El ID del request bloquea preventivamente las fechas en el listing (Soft-Block).
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <div class="info-item-label">Vista del Huésped</div>
+            <div class="info-item-value" id="detail-guest-ui">
+              "Solicitud enviada". Visualiza un cronómetro de 24 horas restantes. El botón de pago está inhabilitado hasta que el anfitrión autorice.
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-item-label">Vista del Anfitrión (Dashboard)</div>
+            <div class="info-item-value" id="detail-host-ui">
+              Visualiza la tarjeta con el botón "Verificar solicitud". Al hacer clic, se abre el Drawer Lateral de verificación del perfil.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>VeneStay Marketplace P2P · Diseñado con calidad de ingeniería por División de Ingeniería de IA — Antigravity</p>
+    <p style="margin-top: 0.5rem; font-size: 0.75rem;">© 2026 VeneStay Inc. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Data for Nodes
+    const nodeDetails = {
+      1: {
+        title: "Detalles del Paso 1: Solicitud",
+        firestore: "Se crea el documento en la colección <code>bookingRequests</code> con estado <code>pending_host</code>. Se ejecuta la lógica de Soft-Block en el listing para evitar solapamientos durante 24h.",
+        guest: "Visualiza la solicitud en espera. El contador inicia en 24:00:00. No se le permite pagar hasta la aprobación.",
+        host: "Visualiza la solicitud entrante en su lista con la opción <strong>'Verificar solicitud'</strong> para evaluar el perfil del Huésped."
+      },
+      2: {
+        title: "Detalles del Paso 2: Evaluación",
+        firestore: "La Cloud Function <code>approveBookingRequest</code> valida que el actor es el dueño legítimo de la propiedad. Si hay comprobante inicial, escala a <code>awaiting_verification</code>, de lo contrario a <code>pending_payment</code>.",
+        guest: "Es notificado en tiempo real (gracias al listener reactivo en la base de datos). Si se le aprobó sin pago previo, se le activa el botón para adjuntar transferencia.",
+        host: "Analiza el <strong>Pasaporte de Confianza (Trust Score)</strong> y decide. Si rechaza, debe justificar obligatoriamente con una nota de mínimo 10 caracteres."
+      },
+      3: {
+        title: "Detalles del Paso 3: Carga de Pago",
+        firestore: "Las reglas de seguridad de Firestore (<code>firestore.rules</code>) permiten únicamente al huésped actualizar los campos <code>paymentProofUrl</code> y <code>paymentReference</code> en este estado específico.",
+        guest: "Registra su transferencia o pago en USDT/VES. Al subir, el estado transiciona automáticamente a <code>awaiting_verification</code>.",
+        host: "Su panel muestra que el pago de la reserva se encuentra actualmente en proceso de conciliación bancaria/blockchain."
+      },
+      4: {
+        title: "Detalles del Paso 4: Conciliación",
+        firestore: "Una transacción atómica de administrador o Cloud Function valida la acreditación. El estado cambia a <code>confirmed</code> de forma inmutable. El soft-block del listing se convierte en bloqueo de calendario permanente.",
+        guest: "¡Éxito! Su reserva está completamente confirmada. Recibe el voucher de estadía y el pase digital con código QR para el check-in.",
+        host: "Visualiza la reserva en verde como <strong>Confirmada</strong>. Se calcula su ganancia final restando la comisión conforme al protocolo UCP 20/80."
+      }
+    };
+
+    // Current interactive state inside the simulator
+    let currentState = 'pending_host';
+
+    function selectNode(stepNumber) {
+      // Remove active class from all nodes
+      document.querySelectorAll('.flow-node').forEach(node => node.classList.remove('active'));
+      // Add active class to selected
+      document.getElementById(`node-step${stepNumber}`).classList.add('active');
+
+      // Update text in detail box
+      const details = nodeDetails[stepNumber];
+      document.getElementById('detail-title').innerHTML = `<i data-lucide="info"></i> ${details.title}`;
+      document.getElementById('detail-firestore').innerHTML = details.firestore;
+      document.getElementById('detail-guest-ui').innerHTML = details.guest;
+      document.getElementById('detail-host-ui').innerHTML = details.host;
+      
+      lucide.createIcons();
+    }
+
+    function updateSimulatorUI() {
+      const indicator = document.getElementById('sim-indicator');
+      indicator.className = `sim-state-indicator state-${currentState}`;
+      indicator.innerText = `Estado: ${currentState}`;
+
+      // Reset disabled states for all simulator buttons
+      const btnApproveNoProof = document.getElementById('btn-approve-no-proof');
+      const btnApproveWithProof = document.getElementById('btn-approve-with-proof');
+      const btnUploadProof = document.getElementById('btn-upload-proof');
+      const btnVerifyAdmin = document.getElementById('btn-verify-admin');
+      const btnReject = document.getElementById('btn-reject');
+      const btnExpire = document.getElementById('btn-expire');
+
+      // Default disable all
+      btnApproveNoProof.disabled = true;
+      btnApproveWithProof.disabled = true;
+      btnUploadProof.disabled = true;
+      btnVerifyAdmin.disabled = true;
+      btnReject.disabled = true;
+      btnExpire.disabled = true;
+
+      // Adjust availability of options according to business rules
+      if (currentState === 'pending_host') {
+        btnApproveNoProof.disabled = false;
+        btnApproveWithProof.disabled = false;
+        btnReject.disabled = false;
+        btnExpire.disabled = false;
+        selectNode(1);
+      } else if (currentState === 'pending_payment') {
+        btnUploadProof.disabled = false;
+        btnExpire.disabled = false;
+        selectNode(3);
+      } else if (currentState === 'awaiting_verification') {
+        btnVerifyAdmin.disabled = false;
+        selectNode(4);
+      } else if (currentState === 'confirmed') {
+        selectNode(4);
+      } else if (currentState === 'rejected') {
+        selectNode(2);
+      } else if (currentState === 'expired') {
+        selectNode(3);
+      }
+    }
+
+    function simTrigger(action) {
+      if (action === 'approve_no_proof' && currentState === 'pending_host') {
+        currentState = 'pending_payment';
+      } else if (action === 'approve_with_proof' && currentState === 'pending_host') {
+        currentState = 'awaiting_verification';
+      } else if (action === 'upload_proof' && currentState === 'pending_payment') {
+        currentState = 'awaiting_verification';
+      } else if (action === 'verify_admin' && currentState === 'awaiting_verification') {
+        currentState = 'confirmed';
+      } else if (action === 'reject' && currentState === 'pending_host') {
+        currentState = 'rejected';
+      } else if (action === 'expire' && (currentState === 'pending_host' || currentState === 'pending_payment')) {
+        currentState = 'expired';
+      }
+      updateSimulatorUI();
+    }
+
+    function simReset() {
+      currentState = 'pending_host';
+      updateSimulatorUI();
+    }
+
+    // Run first UI state initialization
+    updateSimulatorUI();
+  </script>
+</body>
+</html>

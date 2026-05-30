@@ -1,0 +1,54 @@
+# PROMPT MAESTRO: Evolución del Formulario de Propiedades (VeneStay)
+
+## 🎯 Contexto y Misión del Agente
+Actúa como un **Senior Frontend Engineer** asignado al Squad 2 ("Growth & Listings") de VeneStay. Tu misión es ejecutar la actualización del flujo de creación de propiedades (Listing Form) para alcanzar los estándares de plataformas como Airbnb y Booking. 
+Debes trabajar bajo la metodología de "Feature-Sliced Design (FSD-lite)" y asegurar un código robusto para el mercado de lujo en Lechería.
+
+## 🛠️ Stack Tecnológico Estricto
+- React 19 + TypeScript v5.x (Estricto, sin `any`).
+- Tailwind CSS (Paleta: Navy `#0B1120`, Gold `#C5A059`).
+- Zod (Validación de esquemas).
+- Framer Motion (Micro-animaciones premium) + Lucide React (Iconos).
+- Persistencia en `localStorage`.
+
+---
+
+## 🏃‍♂️ Ejecución por Sprints
+Debes ejecutar el desarrollo secuencialmente. No pases al siguiente Sprint sin haber asegurado los Criterios de Aceptación (DoD) del anterior.
+
+### 📦 Sprint 1: Cimientos de Datos (Seguridad y Tipado)
+**Objetivo:** Actualizar el contrato de datos y las validaciones.
+1. Localiza/crea el archivo `src/types.ts` y actualiza la interfaz `Listing`.
+2. Añade el objeto `houseRules` (`allowPets`, `allowSmoking`, `allowParties`, `allowChildren`, `additionalRules`).
+3. Añade los campos: `checkInTime`, `checkOutTime`, `requiresDeposit`, `depositAmount`, `cleaningFee`, `cancellationPolicy` ('flexible' | 'moderate' | 'strict').
+4. Refactoriza el esquema de Zod (`listingSchema`) agregando validaciones condicionales estrictas (ej. Si `requiresDeposit` es true, `depositAmount` debe ser un número mayor a 0).
+
+### 🎨 Sprint 2: Control de Estancia (Step 1 - General)
+**Objetivo:** Desarrollar los componentes visuales de las reglas de la casa y horarios.
+1. Crea un nuevo componente atómico `HouseRulesSelector.tsx`.
+2. Impleméntalo como una cuadrícula de micro-cards interactivas usando iconos de `lucide-react` y animaciones de estado activo con `framer-motion`.
+3. Integra selectores de tiempo (Time Pickers) para el Check-in/Check-out estilizados con el tema Navy/Gold.
+4. Incorpora el componente al flujo del "Paso 1" del wizard actual sin saturar la vista principal.
+
+### 💰 Sprint 3: Blindaje Financiero (Step 4 - Precios y Políticas)
+**Objetivo:** Añadir capas de seguridad financiera para el anfitrión.
+1. Crea el componente `PricePolicySection.tsx`.
+2. Implementa un Toggle/Switch premium para activar el "Depósito de Seguridad". Al activarlo, debe desplegarse el input para `depositAmount` con una transición suave.
+3. Añade inputs numéricos para "Gastos de Limpieza" (`cleaningFee`).
+4. Diseña tres tarjetas informativas (Cards) para seleccionar la "Política de Cancelación" (Flexible, Moderada, Estricta), explicando brevemente las condiciones de cada una.
+5. Integra esto en el "Paso 4" del wizard actual.
+
+### 💾 Sprint 4: Persistencia y Flujo de Cierre
+**Objetivo:** Sincronización del estado y prevención de pérdida de datos.
+1. Asegura que el sistema "Draft Sync" guarde todos los nuevos campos (Reglas, Políticas, Depósitos) en el `localStorage` en tiempo real (sin lag).
+2. Si el usuario recarga la página, el formulario debe hidratarse con los datos del borrador sin perder el progreso.
+3. Actualiza la vista de "Resumen de Publicación" (Summary) para que el anfitrión vea un desglose financiero claro (Precio base + Limpieza + Depósito) antes de pulsar "Publicar".
+
+---
+
+## 🛑 Criterios de Aceptación Obligatorios (Quality Gates)
+Antes de dar por finalizado el desarrollo, el Agente debe verificar:
+- [ ] `tsc --noEmit` se ejecuta sin emitir un solo error.
+- [ ] Zod bloquea correctamente el envío del formulario si hay datos inconsistentes (ej. marcaste depósito pero no pusiste monto).
+- [ ] Se utilizó el patrón de componentes atómicos extraídos para no saturar el archivo principal `ListingForm.tsx`.
+- [ ] La interfaz cumple con la estética de lujo (bordes, márgenes, paleta de colores) y es 100% responsiva para dispositivos móviles.
