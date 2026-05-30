@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { format, differenceInDays, isWithinInterval, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -26,6 +26,7 @@ import {
   Sparkles,
   Info,
   PlusCircle,
+  QrCode,
 } from 'lucide-react';
 import {
   Listing,
@@ -52,19 +53,19 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { cn, safeFormat, calculatePaymentBreakdown, parseLocalDate } from '@/lib/utils';
 import Chat from '@/components/Chat';
+import { calculateTrustScore } from '@/services/user-service';
 import * as bookingService from '@/services/booking-service';
 import Skeleton from '@/components/ui/Skeleton';
 import AuthModal from '@/features/auth/components/AuthModal';
 import KYCRequiredModal from '@/features/auth/components/KYCRequiredModal';
 import Calendar from '@/features/bookings/components/Calendar';
+import MyTrips from '@/features/bookings/components/MyTrips';
 import PaymentBanner from '@/features/bookings/components/checkout/PaymentBanner';
-import { checkProfileCompletion } from '@/lib/user-utils';
-import { calculateTrustScore } from '@/services/user-service';
-import { useLocation } from 'react-router-dom';
 import { calculateCancellationDeadline } from '@/features/bookings/hooks/useCancellationDeadline';
 import { CANCELLATION_POLICIES } from '@/features/listings/utils/cancellationPolicies';
 import { CancellationPolicyType } from '@/features/listings/types';
 import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
+import { Calendar as CalendarIcon } from 'lucide-react';
 
 const CheckoutPage: React.FC = () => {
   const { bookingId: urlBookingId } = useParams<{ bookingId: string }>();
@@ -84,6 +85,7 @@ const CheckoutPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isMyTripsOpen, setIsMyTripsOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -577,14 +579,57 @@ const CheckoutPage: React.FC = () => {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (!selectedFile.type.startsWith('image/')) {
-        setError('Por favor sube una imagen válida (JPG, PNG).');
-        return;
-      }
-      setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile));
+      processAndSetFile(selectedFile);
     }
   };
+
+  const processAndSetFile = async (selectedFile: File) => {
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Por favor sube una imagen válida (JPG, PNG).');
+      return;
+    }
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const imageCompression = (await import('browser-image-compression')).default;
+      const options = {
+        maxSizeMB: 0.75,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+        initialQuality: 0.8,
+      };
+      const compressed = await imageCompression(selectedFile, options);
+      setFile(compressed);
+      setPreviewUrl(URL.createObjectURL(compressed));
+    } catch (err) {
+      console.warn('Error comprimiendo comprobante client-side, usando archivo original:', err);
+      setFile(selectedFile);
+      setPreviewUrl(URL.createObjectURL(selectedFile));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleGlobalPaste = (event: ClipboardEvent) => {
+      if (isRequestPhase) return;
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const fileBlob = items[i].getAsFile();
+          if (fileBlob) {
+            processAndSetFile(fileBlob);
+            break;
+          }
+        }
+      }
+    };
+
+    document.addEventListener('paste', handleGlobalPaste);
+    return () => document.removeEventListener('paste', handleGlobalPaste);
+  }, [isRequestPhase]);
 
   /**
    * Persiste el borrador de reserva en localStorage (TTL 4h) para que el
@@ -742,15 +787,8 @@ const CheckoutPage: React.FC = () => {
         return;
       }
 
-      // 4. Compress Image (solo si se provee file)
-      const imageCompression = (await import('browser-image-compression')).default;
-      const options = {
-        maxSizeMB: 0.6,
-        maxWidthOrHeight: 1600,
-        useWebWorker: true,
-        initialQuality: 0.75,
-      };
-      const compressedFile = await imageCompression(file!, options);
+      // 4. Use already compressed file (or original fallback)
+      const compressedFile = file!;
 
       // 5. Upload to Storage
       const fileName = `${Date.now()}_receipt.jpg`;
@@ -997,10 +1035,17 @@ const CheckoutPage: React.FC = () => {
                   : 'Hemos enviado tu comprobante al anfitrión. Recibirás una notificación una vez que sea validado (usualmente en 2-4 horas).'}
               </p>
               <div className="flex flex-col justify-center items-center gap-4 pt-4 sm:flex-row">
+                <button
+                  onClick={() => setIsMyTripsOpen(true)}
+                  className="bg-brand-500 hover:bg-brand-400 text-brand-navy rounded-2xl px-10 py-4 text-xs font-black tracking-widest uppercase transition-all shadow-lg shadow-brand-500/10 flex items-center gap-2"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  Ver Mis Reservas
+                </button>
                 {listing?.bookingMode === 'request' && (
                   <button
                     onClick={() => setIsChatOpen(true)}
-                    className="bg-brand-500 hover:bg-brand-400 text-brand-navy rounded-2xl px-10 py-4 text-xs font-black tracking-widest uppercase transition-all shadow-lg shadow-brand-500/10 flex items-center gap-2"
+                    className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy rounded-2xl px-10 py-4 text-xs font-black tracking-widest text-white uppercase transition-all flex items-center gap-2"
                   >
                     <MessageSquare className="h-4 w-4" />
                     Chatear con Anfitrión
@@ -1008,7 +1053,12 @@ const CheckoutPage: React.FC = () => {
                 )}
                 <button
                   onClick={() => navigate('/')}
-                  className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy rounded-2xl px-10 py-4 text-xs font-black tracking-widest text-white uppercase transition-all"
+                  className={cn(
+                    "text-xs font-black tracking-widest uppercase transition-all px-10 py-4 rounded-2xl",
+                    listing?.bookingMode === 'request'
+                      ? "text-gray-500 hover:text-brand-navy"
+                      : "bg-brand-navy hover:bg-brand-500 hover:text-brand-navy text-white"
+                  )}
                 >
                   Explorar más estancias
                 </button>
@@ -1629,6 +1679,31 @@ const CheckoutPage: React.FC = () => {
                                 </div>
                               )}
 
+                              {selectedMethod.type === 'PagoMovil' && rates && (
+                                <div className="md:col-span-2 flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/[0.02] p-6 text-center space-y-4">
+                                  <div className="flex items-center gap-2">
+                                    <QrCode className="h-5 w-5 text-brand-500" />
+                                    <h4 className="text-[10px] font-black tracking-widest uppercase text-brand-500">
+                                      QR Dinámico de Pago Rápido
+                                    </h4>
+                                  </div>
+                                  <div className="bg-white p-4 rounded-3xl inline-block shadow-inner">
+                                    <img
+                                      src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
+                                        `pago_movil:tel=${selectedMethod.data.phoneNumber}&rif=${selectedMethod.data.idNumber}&banco=${selectedMethod.data.bankName || ''}&monto=${(calculatePaymentBreakdown(booking.totalAmount).depositAmount * rates.bcv).toFixed(2)}&concepto=Reserva-${booking.id || 'Draft'}`
+                                      )}`}
+                                      alt="QR Dinámico de Pago Rápido"
+                                      width={140}
+                                      height={140}
+                                      className="rounded-xl shadow-sm"
+                                    />
+                                  </div>
+                                  <p className="text-[9px] font-semibold text-slate-400 max-w-xs leading-relaxed">
+                                    Escanea este código desde la aplicación de tu banco para realizar la transferencia móvil con los datos y monto total pre-llenados de forma segura.
+                                  </p>
+                                </div>
+                              )}
+
                               {selectedMethod.data.idNumber && (
                                 <div className="space-y-1">
                                   <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
@@ -1776,9 +1851,9 @@ const CheckoutPage: React.FC = () => {
                                 <Upload className="text-brand-navy/20 group-hover:text-brand-500 h-8 w-8" />
                               </div>
                               <p className="text-center text-xs leading-tight font-black tracking-widest text-gray-400 uppercase">
-                                Arrastra o toca para
+                                Arrastra, toca o presiona
                                 <br />
-                                subir captura
+                                <span className="text-brand-500 font-extrabold">Ctrl + V</span> para pegar
                               </p>
                             </>
                           )}
@@ -2057,6 +2132,7 @@ const CheckoutPage: React.FC = () => {
                   bookingId={booking?.id || ''}
                   senderId={user?.uid || 'guest'}
                   senderName={user?.displayName || 'Huésped'}
+                  recipientId={listing?.hostId}
                   isFloating={false}
                   onAuthRequired={() => setShowAuthModal(true)}
                 />
@@ -2119,6 +2195,7 @@ const CheckoutPage: React.FC = () => {
                   bookingId={booking?.id || ''}
                   senderId={user?.uid || 'guest'}
                   senderName={user?.displayName || 'Huésped'}
+                  recipientId={listing?.hostId}
                   isFloating={false}
                   onAuthRequired={() => setShowAuthModal(true)}
                 />
@@ -2149,6 +2226,11 @@ const CheckoutPage: React.FC = () => {
         onClose={() => setShowKYCModal(false)}
         kycStatus={profileData?.kycStatus}
         onGoToPassport={handleGoToPassport}
+      />
+
+      <MyTrips
+        isOpen={isMyTripsOpen}
+        onClose={() => setIsMyTripsOpen(false)}
       />
     </div>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { Building2, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useChatNotifications } from '@/features/bookings/hooks/useChatNotifications';
 
 export type DashboardTab = 'bookings' | 'listings' | 'profile';
 
@@ -19,6 +20,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   isHost,
 }) => {
   const navigate = useNavigate();
+  const { unreadCount } = useChatNotifications();
 
   return (
     <div className="bg-brand-navy flex shrink-0 flex-col justify-between gap-6 border-b border-gray-100 p-8 md:flex-row md:items-center">
@@ -49,13 +51,18 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <button
             onClick={() => setActiveTab('bookings')}
             className={cn(
-              'rounded-xl px-6 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all',
+              'relative rounded-xl px-6 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all',
               activeTab === 'bookings'
                 ? 'bg-brand-500 text-brand-navy shadow-lg'
                 : 'text-white/60 hover:text-white'
             )}
           >
             {isAdmin ? 'Reservas Globales' : 'Reservas Entrantes'}
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-brand-navy">
+                {unreadCount}
+              </span>
+            )}
           </button>
         )}
         {(isAdmin || isHost) && (

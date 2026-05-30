@@ -34,6 +34,7 @@ interface ChatProps {
   bookingId: string;
   senderId: string;
   senderName: string;
+  recipientId?: string;
   isFloating?: boolean;
   onAuthRequired?: () => void;
 }
@@ -42,6 +43,7 @@ const Chat: React.FC<ChatProps> = ({
   bookingId,
   senderId,
   senderName,
+  recipientId,
   isFloating,
   onAuthRequired,
 }) => {
@@ -134,6 +136,10 @@ const Chat: React.FC<ChatProps> = ({
         status: 'sent',
         createdAt: serverTimestamp(),
       };
+      
+      if (recipientId) {
+        payload.recipientId = recipientId;
+      }
 
       if (type === 'text') {
         payload.text = newMessage.trim();

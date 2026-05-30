@@ -90,10 +90,15 @@ service firebase.storage {
       );
     }
 
+    function isValidReceipt() {
+      return request.resource.size <= 800 * 1024
+             && request.resource.contentType.matches('image/.*');
+    }
+
     match /bookings/{bookingId}/payments/{fileName} {
       // Lectura: Habilitada para cualquier usuario autenticado en la plataforma
       allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated() && isValidImage();
+      allow create, update: if isAuthenticated() && isValidReceipt();
       allow delete: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
         (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 

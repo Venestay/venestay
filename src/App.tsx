@@ -12,6 +12,7 @@ import { Toaster } from 'sonner';
 import { useBookingManager } from '@/features/bookings/hooks/use-booking-manager';
 import { useDatabaseSeeder } from '@/lib/hooks/use-database-seeder';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { ChatNotificationProvider } from '@/features/bookings/hooks/useChatNotifications';
 
 // 🚀 CODE SPLITTING: Lazy Load de componentes pesados
 const AdminDashboard = lazy(
@@ -48,6 +49,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <BrowserRouter>
+        <ChatNotificationProvider>
         <ScrollToTop />
       <Suspense
         fallback={
@@ -105,6 +107,7 @@ const App: React.FC = () => {
         </Routes>
       </Suspense>
       <Toaster position="top-right" richColors />
+      </ChatNotificationProvider>
     </BrowserRouter>
     </ErrorBoundary>
   );
