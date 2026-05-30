@@ -238,7 +238,12 @@ service cloud.firestore {
                isAdmin();
       }
 
-      allow list: if isSignedIn() && canAccessBooking(resource.data.bookingId);
+      // Allow listing if queried by explicit bookingId (where rule is evaluated via canAccessBooking)
+      // or if queried by recipientId for notifications.
+      allow list: if isSignedIn() && (
+        resource.data.recipientId == request.auth.uid || 
+        (resource.data.bookingId != null && canAccessBooking(resource.data.bookingId))
+      );
       allow get: if isSignedIn() && canAccessBooking(resource.data.bookingId);
       allow create: if isSignedIn() && isValidMessage(incoming()) && canAccessBooking(incoming().bookingId);
       allow update: if isSignedIn() && (

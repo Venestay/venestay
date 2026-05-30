@@ -16,6 +16,7 @@ import { Booking, BookingStatus } from '@/types';
 import { calculateCommission, getCommissionTier, CommissionTier } from '@/lib/commission';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { PromptDialog } from '@/components/ui/PromptDialog';
+import { useChatNotifications } from '@/features/bookings/hooks/useChatNotifications';
 
 const CountdownTimer: React.FC<{ expiresAt?: string }> = ({ expiresAt }) => {
   const [timeLeft, setTimeLeft] = useState('');
@@ -73,6 +74,7 @@ const BookingList: React.FC<BookingListProps> = ({
 }) => {
   const [bookingToReject, setBookingToReject] = useState<Booking | null>(null);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
+  const { unreadPerBooking } = useChatNotifications();
 
   const getSafeDate = (dateVal: Date | string | { seconds: number } | null | undefined | unknown): Date | null => {
     if (!dateVal) return null;
@@ -197,9 +199,20 @@ const BookingList: React.FC<BookingListProps> = ({
                   setActiveChatId(booking.id);
                   setActiveChatBooking(booking);
                 }}
-                className="hover:text-brand-navy rounded-xl border border-gray-200 bg-white p-2 text-gray-400 transition-all hover:shadow-md"
+                className={cn(
+                  "relative flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all hover:shadow-lg active:scale-95",
+                  unreadPerBooking[booking.id] > 0
+                    ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100 shadow-sm shadow-red-100"
+                    : "bg-white border-gray-200 text-gray-400 hover:text-brand-navy hover:border-gray-300"
+                )}
               >
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-5 w-5 shrink-0" />
+                <span>Chat</span>
+                {unreadPerBooking[booking.id] > 0 && (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm animate-pulse">
+                    {unreadPerBooking[booking.id]}
+                  </span>
+                )}
               </button>
               <span className="shrink-0 text-[10px] font-black text-gray-300 uppercase">
                 REF: {booking.id.slice(0, 8)}

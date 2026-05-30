@@ -12,6 +12,7 @@ interface FloatingChatProps {
   senderId: string;
   senderName: string;
   recipientName: string;
+  recipientId?: string;
 }
 
 const FloatingChat: React.FC<FloatingChatProps> = ({
@@ -22,6 +23,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({
   senderId,
   senderName,
   recipientName,
+  recipientId,
 }) => {
   return (
     <AnimatePresence>
@@ -91,6 +93,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({
               bookingId={bookingId}
               senderId={senderId}
               senderName={senderName}
+              recipientId={recipientId}
               isFloating={true}
             />
           </div>

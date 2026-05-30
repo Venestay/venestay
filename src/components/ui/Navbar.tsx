@@ -3,10 +3,11 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { City } from '@/types';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
+import { useChatNotifications } from '@/features/bookings/hooks/useChatNotifications';
 import AuthModal from '@/features/auth/components/AuthModal';
 import CalendarComponent from '@/features/bookings/components/Calendar';
 import MyTrips from '@/features/bookings/components/MyTrips';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   Search,
   Menu,
@@ -60,7 +61,9 @@ const Navbar: React.FC<NavbarProps> = ({
   logoOnly = false,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut, isAdmin, profileData } = useAuth();
+  const { unreadCount } = useChatNotifications();
   const [isMyTripsOpen, setIsMyTripsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -298,11 +301,16 @@ const Navbar: React.FC<NavbarProps> = ({
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 rounded-full border border-gray-300 bg-white p-2 transition hover:shadow-md"
+                  className="group relative flex cursor-pointer items-center space-x-2 rounded-full border border-gray-200 bg-white p-2 shadow-sm transition-all duration-300 hover:shadow-md"
                 >
                   <div className="pl-1">
                     <Menu className="h-5 w-5 text-gray-600" />
                   </div>
+                  {unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                      {unreadCount}
+                    </div>
+                  )}
                   {user ? (
                     <div className="border-brand-500 h-8 w-8 overflow-hidden rounded-full border-2 shadow-sm transition-transform active:scale-90">
                       {profileData?.photoURL || user.photoURL ? (
@@ -381,10 +389,17 @@ const Navbar: React.FC<NavbarProps> = ({
                                 setIsMyTripsOpen(true);
                                 setIsUserMenuOpen(false);
                               }}
-                              className="flex w-full items-center space-x-3 px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
+                              className="flex w-full items-center justify-between px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
                             >
-                              <Calendar className="text-brand-navy/70 h-4 w-4" />
-                              <span>Mis Viajes</span>
+                              <div className="flex items-center space-x-3">
+                                <Calendar className="text-brand-navy/70 h-4 w-4" />
+                                <span>Mis Viajes</span>
+                              </div>
+                              {unreadCount > 0 && (
+                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                  {unreadCount}
+                                </span>
+                              )}
                             </button>
                             <button
                               onClick={() => {

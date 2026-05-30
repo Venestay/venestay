@@ -662,6 +662,7 @@ const AdminDashboard: React.FC = () => {
           senderId={user?.uid || 'admin'}
           senderName={user?.displayName || 'Admin'}
           recipientName={activeChatBooking.guestName || 'Huésped'}
+          recipientId={activeChatBooking.guestId}
           onClose={() => {
             setActiveChatId(null);
             setActiveChatBooking(null);
