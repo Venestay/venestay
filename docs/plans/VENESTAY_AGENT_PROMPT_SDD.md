@@ -155,6 +155,8 @@ src/hooks/          → Hooks reutilizables sin dependencia de features específ
 | ListingDetail | `src/features/listings/components/ListingDetail.tsx` | Vista del huésped: galería, panel sticky, contacto seguro |
 | booking-service | `src/services/booking-service.ts` | Transacciones atómicas y bloqueo de fechas |
 | user-service | `src/services/user-service.ts` | CRUD Firestore y cálculo del Trust Score |
+| Pipeline de Validación | `scripts/run-validation.js` | Script principal para la ejecución de los 10 Gates de QA y compilación |
+| Gestión de Incidencias | `docs/ai_harness/known-issues.md` | Registro centralizado de problemas conocidos para triaje de PM y QA |
 
 ### Reglas de seguridad activas
 
@@ -389,6 +391,8 @@ Si se reporta un fallo de visualización, una regresión crítica, o si el usuar
 | Concurrencia | Prueba de double-booking | Dos reservas simultáneas sobre mismo listing → solo una confirmada |
 | Regresión | Verificación de memoria | Confirmar que la corrección no rompe módulos previamente aprobados |
 | Documentación | Actualización de MEMORY.md | Registrar resultado (OK o FALLO) con descripción en historial del QA Gate |
+| QA Automatizado | Script centralizado de calidad | `npm run validate` (G1-G10 en orden y generación de reporte PM) |
+| Gestión de Incidencias | Known Issues y Auditorías de Soporte | Consulta activa de `docs/ai_harness/known-issues.md` y planes bajo `docs/plans/` y `docs/audits/` |
 
 ### Agentes asignados por nodo (mapeo operativo)
 
@@ -400,7 +404,7 @@ Al activar cada nodo del pipeline, el agente adopta el rol y carga los skills de
 | 2 — Planner | Senior Project Manager | `.agents/temp_agency_agents/project-management/project-manager-senior.md` | — | — | `typescript-advanced-types`, `zod` |
 | 3 — Técnico Frontend | Frontend Developer | `.agents/temp_agency_agents/engineering/engineering-frontend-developer.md` | — | — | `react-best-practices`, `tailwind-css-patterns`, `composition-patterns`, `frontend-design`, `accessibility` |
 | 3 — Técnico Backend | Backend Architect | `.agents/temp_agency_agents/engineering/engineering-backend-architect.md` | — | — | `nodejs-best-practices`, `zod` |
-| 4 — QA Gate | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md` | — | — | `accessibility` |
+| 4 — QA Gate | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md` | — | — | `accessibility`, `venestay-validation` |
 
 #### Detalle de sub-skills del Nodo 1
 
