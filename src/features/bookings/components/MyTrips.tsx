@@ -34,6 +34,7 @@ import Chat from '@/components/Chat';
 import FloatingChat from '@/components/FloatingChat';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { cleanupExpiredBookings } from '@/services/booking-service';
 
 interface MyTripsProps {
   isOpen: boolean;
@@ -96,6 +97,9 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     }
 
     setLoading(true);
+
+    // Run expiration cleanup locally in the background
+    cleanupExpiredBookings();
 
     // Use onSnapshot for real-time updates - this solves any latency/sync issues
     const q = query(
@@ -172,6 +176,24 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           label: 'Pago Pendiente',
           icon: <Clock className="h-3 w-3" />,
           color: 'text-amber-500 bg-amber-50 border-amber-100',
+        };
+      case 'PENDING_APPROVAL':
+        return {
+          label: 'Esperando Aprobación',
+          icon: <Clock className="h-3 w-3 animate-pulse" />,
+          color: 'text-[#b08f23] bg-brand-gold/[0.05] border-brand-gold/20',
+        };
+      case 'EXPIRED':
+        return {
+          label: 'Solicitud Expirada',
+          icon: <X className="h-3 w-3" />,
+          color: 'text-slate-400 bg-slate-50 border-slate-200',
+        };
+      case 'CANCELLED_BY_GUEST':
+        return {
+          label: 'Cancelada por Huésped',
+          icon: <X className="h-3 w-3" />,
+          color: 'text-slate-400 bg-slate-50 border-slate-200',
         };
       case 'AWAITING_VERIFICATION':
         return {
@@ -303,6 +325,39 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                       </h4>
 
                       <>
+                        {booking.status === 'PENDING_APPROVAL' && (
+                          <div className="bg-brand-gold/[0.05] border-brand-gold/10 mt-4 rounded-2xl border p-4 space-y-2 select-none">
+                            <label className="text-[#b08f23] block text-[8px] font-black tracking-[0.2em] uppercase">
+                              🕐 SOLICITUD ENVIADA — ESPERANDO AL ANFITRIÓN
+                            </label>
+                            <p className="text-slate-600 text-[10px] leading-relaxed font-bold">
+                              El anfitrión tiene hasta 24 horas para responder a tu solicitud. Se ha realizado un soft-block temporal de las fechas.
+                            </p>
+                          </div>
+                        )}
+
+                        {booking.status === 'EXPIRED' && (
+                          <div className="bg-slate-50 border-slate-200 mt-4 rounded-2xl border p-4 space-y-2 select-none">
+                            <label className="text-slate-400 block text-[8px] font-black tracking-[0.2em] uppercase">
+                              ⏰ SOLICITUD VENCIDA
+                            </label>
+                            <p className="text-slate-500 text-[10px] leading-relaxed font-bold">
+                              El anfitrión no respondió a tiempo en las 24 horas reglamentarias. Las fechas han quedado liberadas y no se ha realizado ningún cobro.
+                            </p>
+                          </div>
+                        )}
+
+                        {booking.status === 'REJECTED' && booking.rejectionReason && (
+                          <div className="bg-red-50 border-red-100 mt-4 rounded-2xl border p-4 space-y-2 select-none">
+                            <label className="text-red-500 block text-[8px] font-black tracking-[0.2em] uppercase">
+                              ✕ SOLICITUD RECHAZADA
+                            </label>
+                            <p className="text-red-700 text-[10px] leading-relaxed font-bold">
+                              Nota del anfitrión: "{booking.rejectionReason}"
+                            </p>
+                          </div>
+                        )}
+
                         {booking.status === 'PENDING_PAYMENT' &&
                           booking.paymentInstructions && (
                             <div className="bg-brand-500/5 border-brand-500/10 mt-4 rounded-2xl border p-4">

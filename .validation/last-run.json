@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "sprint": "unknown",
+    "trigger": "manual",
+    "timestamp": "2026-05-31T21:22:37.529Z",
+    "projectRoot": "C:\\VeneStay"
+  },
+  "gates": {
+    "G5": {
+      "id": "G5",
+      "label": "Firestore rules audit",
+      "status": "PASS",
+      "errors": [],
+      "duration": 2656,
+      "rawOutput": "\u001b[36m\u001b[1mi  emulators:\u001b[22m\u001b[39m Shutting down emulators.\r\n\r\n\u001b[1m\u001b[31mError:\u001b[39m\u001b[22m Could not spawn `java -version`. Please make sure Java is installed and on your system PATH.\r\n\"EMULATOR_OFFLINE\"\r\n"
+    },
+    "G6": {
+      "id": "G6",
+      "label": "Storage rules audit",
+      "status": "PASS",
+      "errors": [],
+      "duration": 2580,
+      "rawOutput": "\u001b[36m\u001b[1mi  emulators:\u001b[22m\u001b[39m Shutting down emulators.\r\n\r\n\u001b[1m\u001b[31mError:\u001b[39m\u001b[22m Could not spawn `java -version`. Please make sure Java is installed and on your system PATH.\r\n\"EMULATOR_OFFLINE\"\r\n"
+    }
+  },
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "blocked": 0,
+    "skipped": 0,
+    "total": 2
+  }
+}
