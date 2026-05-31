@@ -141,6 +141,101 @@ export const createBookingWithTransaction = async (
   return docId;
 };
 
+export const requestBookingDirectly = async (
+  payload: any
+): Promise<{ bookingId: string }> => {
+  const docId = await runTransaction(db, async (transaction) => {
+    const listingId = payload.listingId;
+
+    // Verify availability
+    const bookingsQuery = query(
+      collection(db, 'bookings'),
+      where('listingId', '==', listingId),
+      where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_APPROVAL', 'PENDING_PAYMENT'])
+    );
+    const querySnapshot = await getDocs(bookingsQuery);
+    
+    const requestedStart = parseISO(payload.startDate).getTime();
+    const requestedEnd = parseISO(payload.endDate).getTime();
+
+    for (const d of querySnapshot.docs) {
+      const data = d.data();
+      const existingStart = parseISO(data.startDate).getTime();
+      const existingEnd = parseISO(data.endDate).getTime();
+
+      const overlaps = (requestedStart < existingEnd && requestedEnd > existingStart);
+      if (overlaps) {
+        throw new Error('Lo sentimos, las fechas solicitadas ya se encuentran reservadas.');
+      }
+    }
+
+    const bookingsColRef = collection(db, 'bookings');
+    const newBookingDocRef = doc(bookingsColRef);
+    const docId = newBookingDocRef.id;
+
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    const finalBookingData = {
+      id: docId,
+      listingId: payload.listingId,
+      listingTitle: payload.listingTitle,
+      guestId: payload.guestId,
+      guestName: payload.guestName,
+      ownerId: payload.hostId,
+      startDate: payload.startDate,
+      endDate: payload.endDate,
+      totalAmount: payload.totalAmount,
+      agreedPercentage: 20,
+      status: 'PENDING_APPROVAL' as BookingStatus,
+      guests: payload.guestsCount,
+      bookingMode: 'request' as 'request' | 'instant',
+      guestMessage: payload.guestMessage,
+      expiresAt,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    transaction.set(newBookingDocRef, finalBookingData);
+
+    return docId;
+  });
+
+  // Post-commit: save system system_booking_request and guest message
+  try {
+    const messagesColRef = collection(db, 'messages');
+
+    // 1. Initial System message
+    const systemMsgDocRef = doc(messagesColRef);
+    await setDoc(systemMsgDocRef, {
+      id: systemMsgDocRef.id,
+      bookingId: docId,
+      senderId: 'system',
+      senderName: 'Sistema VeneStay',
+      text: `Nueva solicitud de reserva creada para ${payload.listingTitle}. Pendiente de aprobación del anfitrión.`,
+      type: 'text',
+      status: 'sent',
+      createdAt: new Date().toISOString(),
+    });
+
+    // 2. Guest introduction message
+    const guestMsgDocRef = doc(messagesColRef);
+    await setDoc(guestMsgDocRef, {
+      id: guestMsgDocRef.id,
+      bookingId: docId,
+      senderId: payload.guestId,
+      senderName: payload.guestName,
+      text: payload.guestMessage,
+      type: 'text',
+      status: 'sent',
+      createdAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error writing messages post-commit for direct booking request:', error);
+  }
+
+  return { bookingId: docId };
+};
+
 export const cleanupExpiredBookings = async (): Promise<void> => {
   try {
     const q = query(

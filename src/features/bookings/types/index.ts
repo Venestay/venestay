@@ -9,7 +9,23 @@ export type BookingStatus =
   | 'REJECTED'
   | 'CANCELLED'
   | 'PENDING_APPROVAL'
-  | 'EXPIRED';
+  | 'EXPIRED'
+  | 'CANCELLED_BY_GUEST';
+
+export interface DirectBookingRequestPayload {
+  listingId: string;
+  listingTitle: string;
+  startDate: string;            // ISO 8601
+  endDate: string;              // ISO 8601
+  guestMessage: string;         // mínimo 20 caracteres
+  guestId: string;
+  guestName: string;
+  hostId: string;
+  guestsCount: number;
+  anticipoAmount: number;       // calculado en Cloud Function / simulador
+  totalAmount: number;          // calculado en Cloud Function / simulador
+  paymentMethod: 'ves' | 'usdt';
+}
 
 export interface Booking {
   id: string;

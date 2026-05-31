@@ -59,14 +59,14 @@ service cloud.firestore {
     }
 
     function isValidBooking(data) {
-      return data.keys().hasAll(['listingId', 'listingTitle', 'guestId', 'guestName', 'ownerId', 'startDate', 'endDate', 'totalAmount', 'agreedPercentage', 'status', 'paymentInstructions', 'guests', 'statusHistory']) &&
+      return data.keys().hasAll(['listingId', 'listingTitle', 'guestId', 'guestName', 'ownerId', 'startDate', 'endDate', 'totalAmount', 'agreedPercentage', 'status', 'guests']) &&
              data.guestId == request.auth.uid && // Identity Integrity
              data.listingId is string && data.listingId.size() <= 128 &&
              data.listingTitle is string && data.listingTitle.size() <= 200 &&
-             data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED', 'PENDING_APPROVAL', 'EXPIRED'] &&
+             data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED', 'PENDING_APPROVAL', 'EXPIRED', 'CANCELLED_BY_GUEST'] &&
              data.totalAmount is number &&
              data.guests is number &&
-             data.statusHistory is list && data.statusHistory.size() <= 20;
+             (!data.keys().contains('statusHistory') || (data.statusHistory is list && data.statusHistory.size() <= 20));
     }
 
     function isValidMessage(data) {
@@ -211,7 +211,7 @@ service cloud.firestore {
           (incoming().status == 'AWAITING_VERIFICATION' &&
            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'proofUrl', 'paymentReference', 'paymentSubmittedAt', 'updatedAt', 'statusHistory', 'financials'])) ||
           // Action: Cancel
-          (incoming().status == 'CANCELLED' &&
+          (incoming().status in ['CANCELLED', 'CANCELLED_BY_GUEST'] &&
             incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']))
         )) ||
         // Owner Actions
