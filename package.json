@@ -10,10 +10,10 @@
     "lint": "eslint . && tsc --noEmit",
     "format": "prettier --write .",
     "sdd-verify": "node scripts/verify-sdd.js",
-    "validate": "node scripts/run-validation.cjs",
-    "validate:json": "node scripts/run-validation.cjs --json",
-    "validate:pre-demo": "node scripts/run-validation.cjs --trigger pre-demo",
-    "validate:sprint-close": "node scripts/run-validation.cjs --trigger sprint-close"
+    "validate": "node scripts/run-validation.js",
+    "validate:json": "node scripts/run-validation.js --json",
+    "validate:pre-demo": "node scripts/run-validation.js --trigger pre-demo",
+    "validate:sprint-close": "node scripts/run-validation.js --trigger sprint-close"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
