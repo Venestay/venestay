@@ -11,6 +11,12 @@
       "sourceType": "autoskills-registry",
       "computedHash": "c124390cc3441844903ada94cb5820b23d922f2d0ad34e01e029e410197c8a32"
     },
+    "firebase": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase/SKILL.md",
+      "computedHash": "819f14081aceca8989f3389a95e3f6e1501a529efc444179852714db7c84e4a7"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "autoskills-registry",
