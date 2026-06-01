@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { es } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import * as bookingService from '@/services/booking-service';
+import { DirectRequestForm } from './DirectRequestForm';
 import * as authService from '@/services/auth-service';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
 import {
@@ -109,6 +110,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isMobileRequestOpen, setIsMobileRequestOpen] = useState(false);
   const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
   const [guests, setGuests] = useState(2);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -284,6 +286,11 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
 
   const handleBooking = () => {
     try {
+      if ((currentListing?.bookingMode as string) === 'request') {
+        setIsMobileRequestOpen(true);
+        return;
+      }
+
       if (!startDate || !endDate) {
         setBookingError('Por favor selecciona las fechas de tu estancia');
         setIsCalendarOpen(true);
@@ -1412,7 +1419,16 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
               </div>
 
               {/* Desktop Booking Panel — Variantes Expanded / Collapsed */}
-              <AnimatePresence mode="wait" initial={false}>
+              {(currentListing.bookingMode as string) === 'request' ? (
+                <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-[460px] pr-2">
+                  <DirectRequestForm
+                    listing={currentListing}
+                    user={user}
+                    onSuccess={(bookingId) => navigate('/mis-viajes')}
+                  />
+                </div>
+              ) : (
+                <AnimatePresence mode="wait" initial={false}>
                 {isPanelExpanded ? (
                   // VARIANTE EXPANDED (panel sticky actual)
                   <motion.div
@@ -1656,7 +1672,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
 
                       {/* 6. CTA PRINCIPAL */}
                       <div className="space-y-3.5">
-                        {currentListing.bookingMode === 'request' ? (
+                        {(currentListing.bookingMode as string) === 'request' ? (
                           <button
                             id="reserve-button-desktop"
                             className="animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] uppercase shadow-[0_10px_30px_rgba(197,160,89,0.18)] hover:shadow-[0_15px_35px_rgba(197,160,89,0.28)] transition-all duration-500 hover:scale-[1.01] cursor-pointer"
@@ -1678,7 +1694,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                           </button>
                         )}
                         <p className="text-center text-[10.5px] text-slate-500 font-semibold tracking-normal select-none">
-                          {currentListing.bookingMode === 'request'
+                          {(currentListing.bookingMode as string) === 'request'
                             ? 'El anfitrión tiene 24h para confirmar. No se realiza ningún cargo hasta su aprobación.'
                             : 'No se realizará ningún cargo adicional.'}
                         </p>
@@ -1786,7 +1802,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       <div className="h-8 w-px bg-slate-100" />
 
                       {/* CTA compacto */}
-                      {currentListing.bookingMode === 'request' ? (
+                      {(currentListing.bookingMode as string) === 'request' ? (
                         <button
                           onClick={handleBooking}
                           className="animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy rounded-[14px] px-5 py-2.5 text-[10px] font-black tracking-[0.2em] uppercase shadow-[0_4px_12px_rgba(197,160,89,0.15)] hover:shadow-[0_6px_16px_rgba(197,160,89,0.25)] transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
@@ -1815,6 +1831,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   </motion.div>
                 )}
               </AnimatePresence>
+              )}
             </div>
           </div>
         </div>
@@ -1853,16 +1870,56 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
           onClick={handleBooking}
           className={cn(
             "flex h-[60px] min-w-[160px] items-center justify-center rounded-2xl px-10 py-5 text-xs font-black tracking-[0.1em] uppercase shadow-xl transition-all active:scale-95",
-            currentListing.bookingMode === 'request'
+            (currentListing.bookingMode as string) === 'request'
               ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
               : "bg-brand-500 text-brand-navy shadow-brand-500/20"
           )}
         >
           {startDate && endDate 
-            ? (currentListing.bookingMode === 'request' ? 'Solicitar Reserva' : 'Asegurar Estadía')
+            ? ((currentListing.bookingMode as string) === 'request' ? 'Solicitar Reserva' : 'Asegurar Estadía')
             : 'Disponibilidad'}
         </button>
       </div>
+
+      <AnimatePresence>
+        {isMobileRequestOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-brand-navy/60 fixed inset-0 z-[100] flex items-end justify-center p-4 backdrop-blur-md lg:hidden"
+            onClick={() => setIsMobileRequestOpen(false)}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-sm overflow-y-auto max-h-[85vh] rounded-[32px] bg-white text-left"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileRequestOpen(false)}
+                  className="absolute right-4 top-4 z-[110] flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 active:scale-90 font-bold"
+                  aria-label="Cerrar solicitud"
+                >
+                  ✕
+                </button>
+                <DirectRequestForm
+                  listing={currentListing}
+                  user={user}
+                  onSuccess={(bookingId) => {
+                    setIsMobileRequestOpen(false);
+                    navigate('/mis-viajes');
+                  }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {isGalleryOpen && (
