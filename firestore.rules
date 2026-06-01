@@ -66,7 +66,7 @@ service cloud.firestore {
              data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED', 'PENDING_APPROVAL', 'EXPIRED', 'CANCELLED_BY_GUEST'] &&
              (data.totalAmount is int || data.totalAmount is float) &&
              data.guests is int &&
-             (!data.keys().contains('statusHistory') || (data.statusHistory is list && data.statusHistory.size() <= 20));
+             (!('statusHistory' in data.keys()) || (data.statusHistory is list && data.statusHistory.size() <= 20));
     }
 
     function isValidMessage(data) {
