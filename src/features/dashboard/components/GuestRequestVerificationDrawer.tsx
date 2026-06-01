@@ -22,7 +22,8 @@ import { cn } from '@/lib/utils';
 import { Booking, BookingStatus } from '@/types';
 import { calculateCommission, CommissionTier } from '@/lib/commission';
 import { useGuestProfile } from '../hooks/useGuestProfile';
-import { approveBookingRequest, rejectBookingRequest } from '@/services/booking-request.service';
+import { useListingPaymentMethods } from '@/features/listings/hooks/useListingPaymentMethods';
+import { approveBookingRequestWithDetails, rejectBookingRequest } from '@/services/booking-request.service';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -57,8 +58,12 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
   const [rejectionError, setRejectionError] = useState('');
   const [timeLeft, setTimeLeft] = useState('');
   const [timeWarning, setTimeWarning] = useState(false);
+  
+  const [hostNote, setHostNote] = useState('');
+  const [selectedPaymentDataIdx, setSelectedPaymentDataIdx] = useState<number>(0);
 
-  // Subscribe to guest profile reactively
+  // Hooks
+  const { paymentMethods: listingPaymentMethods } = useListingPaymentMethods(booking?.listingId);
   const { guestProfile, trustScore, isLoading: isProfileLoading } = useGuestProfile(booking?.guestId);
 
   // Expiration countdown effect
@@ -118,10 +123,15 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
   // UCP Calculations
   const commission = calculateCommission(booking.totalAmount, tier);
 
-  const handleApprove = async () => {
+  const handleApproveWithDetails = async () => {
     try {
       setIsSubmitting(true);
-      await approveBookingRequest(booking.id, 'Aprobada por el anfitrión.');
+      const selectedPayment = listingPaymentMethods[selectedPaymentDataIdx];
+      const paymentInstructions = selectedPayment 
+        ? `${selectedPayment.label} - ${selectedPayment.type}\nDetalles adicionales provistos por el anfitrión en su perfil.`
+        : 'Pago Móvil (o método predeterminado).';
+        
+      await approveBookingRequestWithDetails(booking.id, hostNote, paymentInstructions, booking.ownerId);
       toast.success('Solicitud de reserva aprobada con éxito');
       if (onApproveSuccess) onApproveSuccess(booking.id);
       onClose();
@@ -449,6 +459,39 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
                   </div>
                 </div>
               </div>
+              {/* Respuesta y Datos de Pago al Inquilino (Paso 2) */}
+              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 space-y-4">
+                <label className="text-brand-navy block text-[9px] font-black tracking-widest uppercase">
+                  Respuesta y Datos de Pago al Inquilino (Paso 2)
+                </label>
+                
+                <textarea
+                  value={hostNote}
+                  onChange={(e) => setHostNote(e.target.value)}
+                  placeholder="Ej: ¡Hola! Con gusto te recibimos en Lechería. Adjunto mis datos para completar la garantía..."
+                  className="w-full h-20 rounded-2xl border border-gray-200 bg-white p-3 text-xs outline-none focus:ring-1 focus:ring-brand-gold"
+                />
+
+                <div className="space-y-2">
+                  <label className="text-[8px] font-black tracking-widest text-gray-400 uppercase">
+                    Seleccionar Cuenta de Pago de la Propiedad
+                  </label>
+                  <select 
+                    value={selectedPaymentDataIdx}
+                    onChange={(e) => setSelectedPaymentDataIdx(Number(e.target.value))}
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 text-xs font-bold focus:ring-1 focus:ring-brand-gold outline-none"
+                  >
+                    {listingPaymentMethods.map((method, idx) => (
+                      <option key={idx} value={idx}>
+                        {method.label} ({method.type})
+                      </option>
+                    ))}
+                    {listingPaymentMethods.length === 0 && (
+                      <option value="-1">Sin métodos registrados (Usar predeterminado)</option>
+                    )}
+                  </select>
+                </div>
+              </div>
             </div>
 
             {/* Actions Bar Footer */}
@@ -463,13 +506,13 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
               </button>
 
               <button
-                disabled={isSubmitting}
-                onClick={handleApprove}
+                disabled={isSubmitting || !hostNote.trim()}
+                onClick={handleApproveWithDetails}
                 className="bg-emerald-500 hover:bg-emerald-600 text-white flex-grow flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-50"
-                aria-label={`Aprobar solicitud de Carlos M.`}
+                aria-label={`Aprobar solicitud de reserva`}
               >
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                Aprobar Solicitud
+                Aprobar y Enviar Datos
               </button>
 
               <button

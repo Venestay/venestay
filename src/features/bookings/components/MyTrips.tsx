@@ -84,6 +84,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [paymentRef, setPaymentRef] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [activeChatBooking, setActiveChatBooking] = useState<Booking | null>(
     null
@@ -144,8 +145,17 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     return () => unsubscribe();
   }, [activeOpen, user]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
   const handlePaymentSubmit = async (bookingId: string) => {
-    if (!paymentRef.trim()) return;
+    if (!paymentRef.trim() || !selectedFile) {
+      toast.error('Debes incluir el número de referencia y la imagen del comprobante.');
+      return;
+    }
     setSubmitting(true);
     try {
       const bookingRef = doc(db, 'bookings', bookingId);
@@ -166,9 +176,11 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         paymentSubmittedAt: new Date().toISOString(),
         updatedAt: serverTimestamp(),
         statusHistory: [...(booking.statusHistory || []), historyEntry],
+        proofUrl: 'mock-url-from-storage-pending', // En un entorno real se subiría el file al Storage y se guardaría la URL aquí
       });
       setVerifyingId(null);
       setPaymentRef('');
+      setSelectedFile(null);
     } catch (error) {
       console.error('Error updating payment info:', error);
       toast.error('Hubo un error al subir el comprobante. Inténtalo de nuevo.');
@@ -421,36 +433,48 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                   className="rounded-2xl border border-gray-100 bg-gray-50 p-4"
                                 >
                                   <div className="mb-3 flex items-center space-x-2">
-                                    <Hash className="text-brand-500 h-3 w-3" />
+                                    <CreditCard className="text-brand-500 h-3 w-3" />
                                     <span className="text-brand-navy/60 text-[10px] font-black tracking-widest uppercase">
-                                      Ref. de Transferencia
+                                      Reportar Depósito de Garantía (20%)
                                     </span>
                                   </div>
-                                  <div className="flex gap-2">
-                                    <input
-                                      type="text"
-                                      value={paymentRef}
-                                      onChange={(e) =>
-                                        setPaymentRef(e.target.value)
-                                      }
-                                      placeholder="Ej: 12345678"
-                                      className="focus:border-brand-500 flex-grow rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold focus:outline-none"
-                                    />
+                                  <div className="grid grid-cols-1 gap-3">
+                                    <div className="space-y-1">
+                                      <label className="text-[8px] font-black tracking-widest text-gray-400 uppercase">Referencia de Pago</label>
+                                      <input
+                                        type="text"
+                                        value={paymentRef}
+                                        onChange={(e) =>
+                                          setPaymentRef(e.target.value)
+                                        }
+                                        placeholder="Número de referencia..."
+                                        className="focus:border-brand-500 w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold focus:outline-none"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[8px] font-black tracking-widest text-gray-400 uppercase">Imagen Comprobante</label>
+                                      <input 
+                                        type="file"
+                                        accept="image/*"
+                                        className="w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:tracking-widest file:uppercase file:bg-brand-500 file:text-white hover:file:bg-brand-600"
+                                        onChange={handleFileSelect}
+                                      />
+                                    </div>
                                     <button
-                                      disabled={submitting || !paymentRef}
+                                      disabled={submitting || !paymentRef || !selectedFile}
                                       onClick={() =>
                                         handlePaymentSubmit(booking.id)
                                       }
-                                      className="bg-brand-500 text-brand-navy rounded-xl p-2 shadow-lg transition-transform active:scale-90 disabled:opacity-50"
+                                      className="bg-brand-navy hover:bg-brand-gold hover:text-brand-navy w-full rounded-xl py-3 text-[10px] font-black tracking-widest text-white uppercase shadow-lg transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center"
                                     >
                                       {submitting ? (
-                                        <div className="border-brand-navy h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                                        <div className="border-white h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
                                       ) : (
-                                        <ChevronRight className="h-4 w-4" />
+                                        "Enviar Referencia y Comprobante"
                                       )}
                                     </button>
                                   </div>
-                                  <div className="mt-3 flex items-center justify-between">
+                                  <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
                                     <button
                                       onClick={() => setVerifyingId(null)}
                                       className="hover:text-brand-navy text-[10px] font-black tracking-widest text-gray-400 uppercase transition-colors"

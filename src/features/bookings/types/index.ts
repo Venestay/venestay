@@ -53,6 +53,7 @@ export interface Booking {
   bookingMode?: 'instant' | 'request';
   guestMessage?: string;
   hostResponseNote?: string;
+  paymentExpiresAt?: string;
   expiresAt?: string;
   createdAt: string | Date | FieldValue;
   updatedAt: string | Date | FieldValue;
