@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AlertCircle, Trash2, ShieldCheck, Loader2, LayoutGrid } from 'lucide-react';
+import { AlertCircle, Trash2, ShieldCheck, Loader2, LayoutGrid, Pencil, Check } from 'lucide-react';
 import { ENVIRONMENTS } from '../../constants/dashboard.constants';
 import { useListingForm } from '../ListingFormContext';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const StepGallery: React.FC = () => {
   const { editingListing, setEditingListing, validation, isUploading, handleImageUpload, removeImage } = useListingForm();
@@ -11,11 +12,23 @@ const StepGallery: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const targetEnvRef = useRef<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [photoToMakePrimary, setPhotoToMakePrimary] = useState<string | null>(null);
   const stepContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     stepContainerRef.current?.focus();
   }, []);
+
+  // Handle escape key to close primary photo confirm modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && photoToMakePrimary) {
+        setPhotoToMakePrimary(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [photoToMakePrimary]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -159,39 +172,102 @@ const StepGallery: React.FC = () => {
                     : 'border-dashed border-gray-100 bg-white hover:border-brand-500 hover:bg-gray-50'
                   }`}
               >
-                {photo ? (
-                  <>
-                    <img src={photo} alt={`Foto de ${env.label}`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:transform-none" />
-                    <div className="absolute inset-0 bg-brand-navy/60 opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center backdrop-blur-[2px] motion-reduce:transition-none">
+                {(() => {
+                  const isPrimary = editingListing.images[0] === photo;
+                  return photo ? (
+                    <>
+                      <img src={photo} alt={`Foto de ${env.label}`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:transform-none" />
+                      
+                      {/* Badge Foto Principal (Check interactivo) */}
                       <button
                         type="button"
-                        aria-label={`Eliminar foto de ${env.label}`}
+                        aria-label={isPrimary ? "Foto principal actual" : "Establecer como foto principal"}
                         onClick={(e) => {
                           e.stopPropagation();
-                          const newEnvPhotos = { ...editingListing.environmentPhotos };
-                          delete newEnvPhotos[env.id];
-                          setEditingListing(prev => prev ? { ...prev, environmentPhotos: newEnvPhotos } : null);
+                          if (!isPrimary) {
+                            setPhotoToMakePrimary(photo);
+                          }
                         }}
-                        className="bg-red-500/90 hover:bg-red-500 flex items-center justify-center rounded-2xl text-white shadow-xl transform transition-transform active:scale-95 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white motion-reduce:transition-none motion-reduce:transform-none"
+                        className={cn(
+                          "absolute top-3 left-3 rounded-xl px-3 py-1.5 shadow-lg border backdrop-blur-md transform transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer z-10 duration-300",
+                          isPrimary
+                            ? "bg-emerald-500 text-white border-emerald-400/50 shadow-emerald-500/20 scale-100"
+                            : "bg-brand-navy/80 text-gray-400 hover:text-white border-white/10 shadow-brand-navy/30 opacity-0 group-hover:opacity-100"
+                        )}
                       >
-                        <Trash2 className="h-5 w-5" />
+                        <div className={cn(
+                          "p-0.5 rounded-full flex items-center justify-center",
+                          isPrimary ? "bg-white/20" : "bg-white/5 border border-gray-400"
+                        )}>
+                          {isPrimary ? (
+                            <Check className="h-2 w-2 text-white" />
+                          ) : (
+                            <div className="h-2 w-2" />
+                          )}
+                        </div>
+                        <span className="text-[8px] font-black uppercase tracking-widest">
+                          {isPrimary ? "Principal" : "Hacer Principal"}
+                        </span>
                       </button>
-                    </div>
-                    <div className="absolute top-3 right-3 bg-brand-500 text-brand-navy rounded-xl px-3 py-1.5 shadow-lg shadow-brand-500/30 flex items-center gap-1.5 border border-brand-400/50 backdrop-blur-md transform transition-transform group-hover:scale-110 motion-reduce:transition-none motion-reduce:transform-none">
-                      <div className="bg-brand-navy/10 p-0.5 rounded-full" aria-hidden="true">
-                        <ShieldCheck className="h-2.5 w-2.5" />
+
+                      <div className="absolute inset-0 bg-brand-navy/60 opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center gap-4 backdrop-blur-[2px] motion-reduce:transition-none">
+                        {/* Botón de Editar (Lápiz) */}
+                        <button
+                          type="button"
+                          aria-label={`Editar foto de ${env.label}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!isUploading) {
+                              targetEnvRef.current = env.id;
+                              fileInputRef.current?.click();
+                            }
+                          }}
+                          className="bg-brand-500/90 hover:bg-brand-500 flex items-center justify-center rounded-2xl text-brand-navy shadow-xl transform transition-transform active:scale-95 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white motion-reduce:transition-none motion-reduce:transform-none"
+                        >
+                          <Pencil className="h-5 w-5" />
+                        </button>
+
+                        {/* Botón de Eliminar (Papelera) */}
+                        <button
+                          type="button"
+                          aria-label={`Eliminar foto de ${env.label}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newEnvPhotos = { ...editingListing.environmentPhotos };
+                            const removedUrl = newEnvPhotos[env.id];
+                            delete newEnvPhotos[env.id];
+
+                            // Limpiar también del array de imágenes generales
+                            let newImages = editingListing.images.filter((img) => img !== removedUrl);
+
+                            // Asegurar que si hay otra habitación principal se reordene
+                            const primaryPhoto = newEnvPhotos.habitacion_principal;
+                            if (primaryPhoto) {
+                              newImages = [primaryPhoto, ...newImages.filter((img) => img !== primaryPhoto)];
+                            }
+
+                            setEditingListing(prev => prev ? { ...prev, environmentPhotos: newEnvPhotos, images: newImages } : null);
+                          }}
+                          className="bg-red-500/90 hover:bg-red-500 flex items-center justify-center rounded-2xl text-white shadow-xl transform transition-transform active:scale-95 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white motion-reduce:transition-none motion-reduce:transform-none"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
                       </div>
-                      <span className="text-[8px] font-black uppercase tracking-widest">Verificado</span>
+                      <div className="absolute top-3 right-3 bg-brand-500 text-brand-navy rounded-xl px-3 py-1.5 shadow-lg shadow-brand-500/30 flex items-center gap-1.5 border border-brand-400/50 backdrop-blur-md transform transition-transform group-hover:scale-110 motion-reduce:transition-none motion-reduce:transform-none">
+                        <div className="bg-brand-navy/10 p-0.5 rounded-full" aria-hidden="true">
+                          <ShieldCheck className="h-2.5 w-2.5" />
+                        </div>
+                        <span className="text-[8px] font-black uppercase tracking-widest">Verificado</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 p-4 text-center">
+                      <div className="bg-gray-50 p-3 rounded-xl transition-transform group-hover:scale-110 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true">
+                        <env.icon className="h-5 w-5 text-brand-navy/30" />
+                      </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center gap-2 p-4 text-center">
-                    <div className="bg-gray-50 p-3 rounded-xl transition-transform group-hover:scale-110 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true">
-                      <env.icon className="h-5 w-5 text-brand-navy/30" />
-                    </div>
-                    <span className="text-brand-navy/60 text-[9px] font-black uppercase tracking-widest">{env.label}</span>
-                  </div>
-                )}
+                  );
+                })()}
                 {isUploading && !photo && (
                   <div className="absolute inset-0 bg-white/80 flex items-center justify-center" aria-live="polite">
                     <Loader2 className="h-5 w-5 animate-spin text-brand-500 motion-reduce:animate-none" />
@@ -258,21 +334,137 @@ const StepGallery: React.FC = () => {
 
       {editingListing.images.length > 0 && (
         <div className="grid grid-cols-3 gap-4 sm:grid-cols-4" role="list" aria-label="Fotos adicionales">
-          {editingListing.images.map((img, idx) => (
-            <div key={idx} className="group relative aspect-square overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm">
-              <img src={img} alt={`Foto adicional ${idx + 1}`} className="h-full w-full object-cover" />
-              <button 
-                type="button" 
-                aria-label={`Eliminar foto adicional ${idx + 1}`}
-                onClick={() => removeImage(idx)} 
-                className="absolute top-2 right-2 flex items-center justify-center rounded-lg bg-red-500/90 text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:bg-red-600 min-h-[44px] min-w-[44px] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white motion-reduce:transition-none"
-              >
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
-              </button>
-            </div>
-          ))}
+          {editingListing.images.map((img, idx) => {
+            const isPrimary = idx === 0;
+            return (
+              <div key={idx} className="group relative aspect-square overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm">
+                <img src={img} alt={`Foto adicional ${idx + 1}`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                
+                {/* Badge Foto Principal para Fotos Adicionales */}
+                <button
+                  type="button"
+                  aria-label={isPrimary ? "Foto principal actual" : "Establecer como foto principal"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isPrimary) {
+                      setPhotoToMakePrimary(img);
+                    }
+                  }}
+                  className={cn(
+                    "absolute top-2 left-2 rounded-xl px-2 py-1 shadow-lg border backdrop-blur-md transform transition-all active:scale-95 flex items-center gap-1 cursor-pointer z-10 duration-300 text-[7px]",
+                    isPrimary
+                      ? "bg-emerald-500 text-white border-emerald-400/50 shadow-emerald-500/20 scale-100"
+                      : "bg-brand-navy/80 text-gray-400 hover:text-white border-white/10 shadow-brand-navy/30 opacity-0 group-hover:opacity-100"
+                  )}
+                >
+                  <div className={cn(
+                    "p-0.5 rounded-full flex items-center justify-center",
+                    isPrimary ? "bg-white/20" : "bg-white/5 border border-gray-400"
+                  )}>
+                    {isPrimary ? (
+                      <Check className="h-1.5 w-1.5 text-white" />
+                    ) : (
+                      <div className="h-1.5 w-1.5" />
+                    )}
+                  </div>
+                  <span className="font-black uppercase tracking-widest">
+                    {isPrimary ? "Principal" : "Hacer Principal"}
+                  </span>
+                </button>
+
+                <button 
+                  type="button" 
+                  aria-label={`Eliminar foto adicional ${idx + 1}`}
+                  onClick={() => removeImage(idx)} 
+                  className="absolute top-2 right-2 flex items-center justify-center rounded-lg bg-red-500/90 text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:bg-red-600 min-h-[36px] min-w-[36px] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white motion-reduce:transition-none"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
+
+      {/* Modal de Confirmación Premium para establecer Foto Principal */}
+      <AnimatePresence>
+        {photoToMakePrimary && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center bg-brand-navy/70 p-4 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white p-8 rounded-[32px] shadow-2xl border border-gray-100 max-w-md w-full space-y-6 overflow-hidden relative"
+              role="dialog"
+              aria-modal="true"
+            >
+              {/* Gold Top Accent Line */}
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-500 to-amber-500" />
+
+              <div className="text-center space-y-4">
+                <div className="mx-auto w-14 h-14 bg-emerald-50 text-emerald-500 flex items-center justify-center rounded-2xl mb-2">
+                  <ShieldCheck className="h-7 w-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-brand-navy">¿Establecer como foto principal?</h3>
+                  <p className="text-xs text-gray-400 mt-2 font-medium leading-relaxed">
+                    Esta imagen será la portada visible de tu propiedad. Se mostrará en el Home de VeneStay y al inicio de la lista de fotos en tu ficha pública.
+                  </p>
+                </div>
+              </div>
+
+              {/* Vista previa en miniatura redonda/elegante de la foto a seleccionar */}
+              <div className="flex justify-center">
+                <div className="w-48 aspect-video rounded-2xl overflow-hidden border-2 border-brand-500/20 shadow-md">
+                  <img src={photoToMakePrimary} alt="Vista previa de foto principal" className="w-full h-full object-cover" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const selectedPhoto = photoToMakePrimary;
+                    setPhotoToMakePrimary(null);
+
+                    // Reordenar reactivamente colocando la foto elegida en images[0]
+                    const nextImages = [selectedPhoto, ...editingListing.images.filter(img => img !== selectedPhoto)];
+                    
+                    setEditingListing(prev => prev ? { ...prev, images: nextImages } : null);
+
+                    // Si es un listing ya existente en Firestore (no borrador), persistir los cambios atómicamente
+                    if (!editingListing.id.startsWith('listing-')) {
+                      try {
+                        const { doc, updateDoc } = await import('firebase/firestore');
+                        const { db } = await import('@/lib/firebase');
+                        await updateDoc(doc(db, 'listings', editingListing.id), {
+                          images: nextImages,
+                          updatedAt: new Date().toISOString()
+                        });
+                        toast.success("Foto principal actualizada y guardada con éxito.");
+                      } catch {
+                        toast.error("Error al persistir la foto principal en la base de datos.");
+                      }
+                    } else {
+                      toast.success("Foto principal seleccionada en tu borrador.");
+                    }
+                  }}
+                  className="w-full py-4 bg-brand-navy hover:bg-brand-500 hover:text-brand-navy text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-xl transition-all active:scale-95 duration-300"
+                >
+                  Sí, establecer como principal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPhotoToMakePrimary(null)}
+                  className="w-full py-4 bg-gray-50 text-gray-500 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

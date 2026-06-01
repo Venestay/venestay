@@ -164,6 +164,11 @@ const AdminDashboard: React.FC = () => {
     }
   }, []);
 
+  const reorderImagesWithPrimary = useCallback((images: string[], _envPhotos?: Record<string, string>): string[] => {
+    // Retornamos el array libre de duplicados y valores nulos sin alterar el orden del usuario
+    return Array.from(new Set(images.filter(Boolean)));
+  }, []);
+
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement> | { files: FileList }, environmentId?: string) => {
     const listingId = editingListing?.id;
     if (!listingId || !user) return;
@@ -200,22 +205,65 @@ const AdminDashboard: React.FC = () => {
 
             setEditingListing((prev) => {
               if (!prev || prev.id !== listingId) return prev;
-              const next = { ...prev, images: [...prev.images, downloadURL] };
-              if (environmentId) {
-                next.environmentPhotos = { ...(prev.environmentPhotos || {}), [environmentId]: downloadURL };
+              
+              const oldPhotoUrl = prev.environmentPhotos?.[environmentId || ''];
+              
+              let nextImages = [...prev.images];
+              if (oldPhotoUrl && nextImages.includes(oldPhotoUrl)) {
+                // Reemplazar en el mismo índice exacto
+                const idx = nextImages.indexOf(oldPhotoUrl);
+                nextImages[idx] = downloadURL;
+              } else {
+                if (!nextImages.includes(downloadURL)) {
+                  nextImages.push(downloadURL);
+                }
               }
-              return next;
+
+              const newEnvPhotos = { ...(prev.environmentPhotos || {}) };
+              if (environmentId) {
+                newEnvPhotos[environmentId] = downloadURL;
+              }
+
+              nextImages = reorderImagesWithPrimary(nextImages, newEnvPhotos);
+
+              return {
+                ...prev,
+                images: nextImages,
+                environmentPhotos: newEnvPhotos
+              };
             });
 
             if (!listingId.startsWith('listing-')) {
-              const updates: Record<string, string | ReturnType<typeof arrayUnion>> = {
-                images: arrayUnion(downloadURL),
-                updatedAt: new Date().toISOString(),
-              };
-              if (environmentId) {
-                updates[`environmentPhotos.${environmentId}`] = downloadURL;
+              // Obtener listado actual para calcular los arrays limpios y actualizados para Firestore
+              const currentListing = listings.find(l => l.id === listingId);
+              if (currentListing) {
+                const oldPhotoUrl = currentListing.environmentPhotos?.[environmentId || ''];
+                let nextImages = [...currentListing.images];
+                if (oldPhotoUrl && nextImages.includes(oldPhotoUrl)) {
+                  // Reemplazar en el mismo índice exacto
+                  const idx = nextImages.indexOf(oldPhotoUrl);
+                  nextImages[idx] = downloadURL;
+                } else {
+                  if (!nextImages.includes(downloadURL)) {
+                    nextImages.push(downloadURL);
+                  }
+                }
+
+                const newEnvPhotos = { ...(currentListing.environmentPhotos || {}) };
+                if (environmentId) {
+                  newEnvPhotos[environmentId] = downloadURL;
+                }
+
+                nextImages = reorderImagesWithPrimary(nextImages, newEnvPhotos);
+
+                const updates = {
+                  images: nextImages,
+                  environmentPhotos: newEnvPhotos,
+                  updatedAt: new Date().toISOString(),
+                };
+                
+                await updateDoc(doc(db, 'listings', listingId), updates);
               }
-              await updateDoc(doc(db, 'listings', listingId), updates);
             }
 
             if (environmentId) {
@@ -237,14 +285,35 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setIsUploading(false);
     }
-  }, [user?.uid, editingListing?.id]);
+  }, [user?.uid, editingListing?.id, listings, reorderImagesWithPrimary]);
 
   const removeImage = (index: number) => {
     setEditingListing((prev) => {
       if (!prev) return null;
       const newImages = [...prev.images];
+      const removedUrl = newImages[index];
       newImages.splice(index, 1);
-      return { ...prev, images: newImages };
+
+      // Limpiar también del mapeo de ambientes si la foto estaba asignada
+      const newEnvPhotos = { ...(prev.environmentPhotos || {}) };
+      let envPhotosChanged = false;
+      if (prev.environmentPhotos) {
+        Object.entries(prev.environmentPhotos).forEach(([key, val]) => {
+          if (val === removedUrl) {
+            delete newEnvPhotos[key];
+            envPhotosChanged = true;
+          }
+        });
+      }
+
+      // Reordenar las imágenes restantes
+      const nextImages = reorderImagesWithPrimary(newImages, envPhotosChanged ? newEnvPhotos : prev.environmentPhotos);
+
+      return {
+        ...prev,
+        images: nextImages,
+        environmentPhotos: envPhotosChanged ? newEnvPhotos : prev.environmentPhotos
+      };
     });
   };
 
@@ -278,8 +347,13 @@ const AdminDashboard: React.FC = () => {
     try {
       const { id, ...data } = listing;
       const isNew = id.startsWith('listing-');
+      
+      // Asegurar que las imágenes estén ordenadas correctamente con Habitación Principal en el índice 0
+      const finalImages = reorderImagesWithPrimary(data.images, data.environmentPhotos);
+
       const payload: Partial<Listing> & { isPublishedFromDashboard: boolean } = { 
         ...data, 
+        images: finalImages,
         updatedAt: new Date().toISOString(),
         isPublishedFromDashboard: true 
       };
