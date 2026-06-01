@@ -37,8 +37,8 @@ import { useNavigate } from 'react-router-dom';
 import { cleanupExpiredBookings } from '@/services/booking-service';
 
 interface MyTripsProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
@@ -90,8 +90,18 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   );
   const navigate = useNavigate();
 
+  const activeOpen = isOpen !== undefined ? isOpen : true;
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigate('/');
+    }
+  };
+
   useEffect(() => {
-    if (!isOpen || !user) {
+    if (!activeOpen || !user) {
       setBookings([]);
       return;
     }
@@ -132,7 +142,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     );
 
     return () => unsubscribe();
-  }, [isOpen, user]);
+  }, [activeOpen, user]);
 
   const handlePaymentSubmit = async (bookingId: string) => {
     if (!paymentRef.trim()) return;
@@ -167,7 +177,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!isOpen) return null;
+  if (!activeOpen) return null;
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
@@ -242,7 +252,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="rounded-2xl bg-white/10 p-3 text-white transition-all duration-300 hover:rotate-90 hover:bg-white/20"
           >
             <X className="h-6 w-6" />
@@ -271,7 +281,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                 tu próxima estancia en Venezuela.
               </p>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy mt-8 rounded-2xl px-8 py-4 text-[10px] font-black tracking-widest text-white uppercase shadow-xl transition-all"
               >
                 Explorar Propiedades
