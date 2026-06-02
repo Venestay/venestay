@@ -7,6 +7,7 @@ import {
 import { db } from '@/lib/firebase';
 import { Booking, BookingStatus } from '@/types';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { PaymentMethod } from '@/features/auth/types';
 
 /**
  * Service to manage Booking Request approvals and rejections.
@@ -41,15 +42,16 @@ export const approveBookingRequestWithDetails = async (
   requestId: string, 
   hostNote: string,
   paymentInstructions: string,
-  hostId: string
+  hostId: string,
+  selectedPayment?: PaymentMethod
 ): Promise<void> => {
   if (USE_CLOUD_FUNCTIONS) {
     const functions = getFunctions();
-    const approveFn = httpsCallable<{ requestId: string; hostNote: string; paymentInstructions: string; hostId: string }, void>(
+    const approveFn = httpsCallable<{ requestId: string; hostNote: string; paymentInstructions: string; hostId: string; selectedPayment?: PaymentMethod }, void>(
       functions, 
       'approveBookingRequestWithDetails'
     );
-    await approveFn({ requestId, hostNote, paymentInstructions, hostId });
+    await approveFn({ requestId, hostNote, paymentInstructions, hostId, selectedPayment });
     return;
   }
 
@@ -111,6 +113,7 @@ export const approveBookingRequestWithDetails = async (
       paymentExpiresAt: paymentExpiresAt,
       updatedAt: serverTimestamp(),
       statusHistory: [...(booking.statusHistory || []), historyEntry],
+      ...(selectedPayment ? { hostSelectedPaymentMethod: selectedPayment } : {}),
     });
 
     // Reject all conflicting bookings
@@ -177,8 +180,28 @@ export const rejectBookingRequest = async (requestId: string, hostNote: string):
 
     const booking = bookingSnap.data() as Booking;
 
-    if (booking.status !== 'PENDING_APPROVAL') {
+    const allowedStatuses: BookingStatus[] = [
+      'PENDING_APPROVAL',
+      'CONFIRMED',
+      'AWAITING_VERIFICATION',
+      'PENDING_PAYMENT'
+    ];
+
+    if (!allowedStatuses.includes(booking.status)) {
       throw new Error(`No se puede rechazar una solicitud en estado: ${booking.status}`);
+    }
+
+    // Perform all reads first: get the listing details before any updates
+    let blockedDates: string[] = [];
+    let listingRef: any = null;
+    let listingSnap: any = null;
+
+    if (booking.listingId) {
+      listingRef = doc(db, 'listings', booking.listingId);
+      listingSnap = await transaction.get(listingRef);
+      if (listingSnap.exists()) {
+        blockedDates = listingSnap.data().blockedDates || [];
+      }
     }
 
     const nowStr = new Date().toISOString();
@@ -190,7 +213,7 @@ export const rejectBookingRequest = async (requestId: string, hostNote: string):
       note: hostNote,
     };
 
-    // Update status to REJECTED
+    // Write 1: Update status to REJECTED on the booking
     transaction.update(bookingRef, {
       status: 'REJECTED',
       rejectionReason: hostNote,
@@ -199,36 +222,23 @@ export const rejectBookingRequest = async (requestId: string, hostNote: string):
       statusHistory: [...(booking.statusHistory || []), historyEntry],
     });
 
-    // Release soft-blocked dates in the listing if listingId exists
-    if (booking.listingId) {
-      const listingRef = doc(db, 'listings', booking.listingId);
-      const listingSnap = await transaction.get(listingRef);
-      if (listingSnap.exists()) {
-        const listingData = listingSnap.data();
-        let blockedDates: string[] = listingData.blockedDates || [];
-
-        // If the listing blocks dates for this booking, we filter them out.
-        // Usually, soft-blocked dates are calculated or stored in an array.
-        // We ensure we remove the dates corresponding to this booking request.
-        if (booking.startDate && booking.endDate) {
-          // Simplistic date filtering if dates are stored as ISO string array
-          const start = new Date(booking.startDate);
-          const end = new Date(booking.endDate);
-          const datesToRemove: string[] = [];
-          
-          const current = new Date(start);
-          while (current <= end) {
-            datesToRemove.push(current.toISOString().split('T')[0]);
-            current.setDate(current.getDate() + 1);
-          }
-
-          blockedDates = blockedDates.filter(d => !datesToRemove.includes(d));
-          transaction.update(listingRef, {
-            blockedDates,
-            updatedAt: serverTimestamp(),
-          });
-        }
+    // Write 2: Release soft-blocked dates in the listing if applicable
+    if (listingSnap && listingSnap.exists() && booking.startDate && booking.endDate) {
+      const start = new Date(booking.startDate);
+      const end = new Date(booking.endDate);
+      const datesToRemove: string[] = [];
+      
+      const current = new Date(start);
+      while (current <= end) {
+        datesToRemove.push(current.toISOString().split('T')[0]);
+        current.setDate(current.getDate() + 1);
       }
+
+      const updatedBlockedDates = blockedDates.filter(d => !datesToRemove.includes(d));
+      transaction.update(listingRef, {
+        blockedDates: updatedBlockedDates,
+        updatedAt: serverTimestamp(),
+      });
     }
   });
 };

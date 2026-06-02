@@ -17,6 +17,7 @@ import { useAuth } from '@/features/auth/hooks/AuthContext';
 import { Booking } from '@/types';
 import {
   X,
+  ArrowLeft,
   Clock,
   CheckCircle2,
   AlertCircle,
@@ -31,7 +32,6 @@ import {
   Upload,
   ChevronDown,
   ChevronUp,
-  Image as ImageIcon,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -144,6 +144,21 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
         setBookings(sortedData);
         setLoading(false);
+        
+        // Auto-select or update chat booking dynamically
+        if (sortedData.length > 0) {
+          const currentSelected = sortedData.find(b => b.id === activeChatId);
+          // If no chat selected, or current selection is terminal, select the first active booking
+          if (!activeChatId || !currentSelected || ['CANCELLED', 'REJECTED', 'EXPIRED', 'CANCELLED_BY_GUEST'].includes(currentSelected.status)) {
+            const active = sortedData.find(b => !['CANCELLED', 'REJECTED', 'EXPIRED', 'CANCELLED_BY_GUEST'].includes(b.status));
+            const first = active || sortedData[0];
+            setActiveChatId(first.id);
+            setActiveChatBooking(first);
+          } else {
+            // Keep current selection updated with fresh database data
+            setActiveChatBooking(currentSelected);
+          }
+        }
       },
       (error) => {
         console.error('Error listening to bookings:', error);
@@ -152,7 +167,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     );
 
     return () => unsubscribe();
-  }, [activeOpen, user]);
+  }, [activeOpen, user, activeChatId]);
 
 
   const { activeBookings, pastBookings } = useMemo(() => {
@@ -285,8 +300,8 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           amount: booking.totalAmount * 0.20, // 20% seña UCP
           reference: paymentRef,
           proofUrl,
-          method: 'P2P',
-          methodLabel: 'Pago Móvil / Transferencia',
+          method: booking.hostSelectedPaymentMethod?.type || 'P2P',
+          methodLabel: booking.hostSelectedPaymentMethod?.label || 'Pago Móvil / Transferencia',
           status: 'PENDING',
           createdAt: serverTimestamp(),
         };
@@ -349,11 +364,16 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           color: 'text-emerald-500 bg-emerald-50 border-emerald-100',
         };
       case 'REJECTED':
+        return {
+          label: 'Solicitud Rechazada',
+          icon: <X className="h-3 w-3" />,
+          color: 'text-red-600 bg-red-50 border-red-100',
+        };
       case 'CANCELLED':
         return {
           label: 'Cancelada',
           icon: <AlertCircle className="h-3 w-3" />,
-          color: 'text-red-500 bg-red-50 border-red-100',
+          color: 'text-slate-500 bg-slate-50 border-slate-200',
         };
       default:
         return {
@@ -365,8 +385,8 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="bg-brand-navy/60 animate-fade-in fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto p-4 backdrop-blur-md">
-      <div className="animate-slide-up relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+    <div className="min-h-screen bg-gray-50/50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100">
         {/* Header */}
         <div className="bg-brand-navy flex shrink-0 items-center justify-between border-b border-gray-100 p-8">
           <div className="flex items-center space-x-4">
@@ -384,14 +404,17 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           </div>
           <button
             onClick={handleClose}
-            className="rounded-2xl bg-white/10 p-3 text-white transition-all duration-300 hover:rotate-90 hover:bg-white/20"
+            className="rounded-2xl bg-white/10 px-4 py-2.5 text-white transition-all duration-300 hover:bg-white/20 flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
           >
-            <X className="h-6 w-6" />
+            <ArrowLeft className="h-4 w-4" />
+            Volver
           </button>
         </div>
 
-        {/* Content */}
-        <div className="no-scrollbar flex-grow overflow-y-auto p-8">
+        {/* Content & Chat Split */}
+        <div className="flex flex-row overflow-hidden flex-grow">
+          {/* Left Column: Bookings */}
+          <div className="no-scrollbar flex-1 overflow-y-auto p-8">
           {loading ? (
             <div className="flex flex-col items-center justify-center space-y-4 py-20">
               <div className="border-brand-500 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" />
@@ -452,15 +475,6 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => {
-                                  setActiveChatId(booking.id);
-                                  setActiveChatBooking(booking);
-                                }}
-                                className="hover:text-brand-navy relative rounded-xl border border-gray-100 bg-white p-2.5 text-gray-400 transition-all hover:shadow-md"
-                              >
-                                <MessageSquare className="h-4 w-4" />
-                              </button>
                               <span className="text-[10px] font-black tracking-tighter text-gray-300 uppercase">
                                 REF: {booking.id.slice(0, 8)}
                               </span>
@@ -506,14 +520,59 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                             )}
 
                             {booking.status === 'PENDING_PAYMENT' &&
-                              booking.paymentInstructions && (
-                                <div className="bg-brand-500/5 border-brand-500/10 mt-4 rounded-2xl border p-4">
-                                  <label className="text-brand-500 mb-2 block text-[8px] font-black tracking-[0.2em] uppercase">
-                                    Instrucciones de Pago
-                                  </label>
-                                  <p className="text-brand-navy text-[10px] leading-relaxed font-bold whitespace-pre-line">
-                                    {booking.paymentInstructions}
-                                  </p>
+                              (booking.hostSelectedPaymentMethod || booking.paymentInstructions) && (
+                                <div className="bg-brand-500/5 border-brand-500/10 mt-4 rounded-2xl border p-4 space-y-3">
+                                  {booking.hostSelectedPaymentMethod ? (
+                                    <>
+                                      <label className="text-brand-500 block text-[8px] font-black tracking-[0.2em] uppercase">
+                                        Método de Pago Seleccionado por el Anfitrión
+                                      </label>
+                                      <div className="bg-white rounded-xl border border-gray-100 p-3 space-y-2">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-xs font-black text-brand-navy uppercase">
+                                            {booking.hostSelectedPaymentMethod.label} ({booking.hostSelectedPaymentMethod.type})
+                                          </span>
+                                          <span className="rounded-full bg-emerald-100/50 border border-emerald-200 px-2 py-0.5 text-[8px] font-black tracking-wider text-emerald-600 uppercase flex items-center gap-1">
+                                            ✔ Verificado
+                                          </span>
+                                        </div>
+                                        {booking.hostSelectedPaymentMethod.data && (
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-semibold text-gray-500 border-t border-gray-50 pt-2">
+                                            {booking.hostSelectedPaymentMethod.data.bankName && (
+                                              <div><span className="font-bold text-gray-400">Banco:</span> {booking.hostSelectedPaymentMethod.data.bankName}</div>
+                                            )}
+                                            {booking.hostSelectedPaymentMethod.data.accountHolder && (
+                                              <div><span className="font-bold text-gray-400">Titular:</span> {booking.hostSelectedPaymentMethod.data.accountHolder}</div>
+                                            )}
+                                            {booking.hostSelectedPaymentMethod.data.phoneNumber && (
+                                              <div><span className="font-bold text-gray-400">Celular:</span> {booking.hostSelectedPaymentMethod.data.phoneNumber}</div>
+                                            )}
+                                            {booking.hostSelectedPaymentMethod.data.idNumber && (
+                                              <div><span className="font-bold text-gray-400">RIF/V:</span> {booking.hostSelectedPaymentMethod.data.idNumber}</div>
+                                            )}
+                                            {booking.hostSelectedPaymentMethod.data.email && (
+                                              <div><span className="font-bold text-gray-400">Correo:</span> {booking.hostSelectedPaymentMethod.data.email}</div>
+                                            )}
+                                            {booking.hostSelectedPaymentMethod.data.binanceId && (
+                                              <div><span className="font-bold text-gray-400">Binance Pay ID:</span> {booking.hostSelectedPaymentMethod.data.binanceId}</div>
+                                            )}
+                                            {booking.hostSelectedPaymentMethod.data.otherDetails && (
+                                              <div><span className="font-bold text-gray-400">Detalles:</span> {booking.hostSelectedPaymentMethod.data.otherDetails}</div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <label className="text-brand-500 mb-2 block text-[8px] font-black tracking-[0.2em] uppercase">
+                                        Instrucciones de Pago
+                                      </label>
+                                      <p className="text-brand-navy text-[10px] leading-relaxed font-bold whitespace-pre-line">
+                                        {booking.paymentInstructions}
+                                      </p>
+                                    </>
+                                  )}
                                 </div>
                               )}
                           </>
@@ -540,11 +599,29 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                   Ref: {booking.paymentReference}
                                 </div>
                               )}
-                            <div className="text-brand-navy mt-4 flex items-center border-t border-dashed border-gray-100 py-4 text-xl font-black">
-                              <span className="mr-2 text-[10px] text-gray-400 uppercase">
-                                Total Reserva
-                              </span>
-                              ${booking.totalAmount}
+                            <div className="text-brand-navy mt-4 border-t border-dashed border-gray-100 pt-4">
+                              <div className="flex items-center justify-between text-xl font-black">
+                                <span className="text-[10px] text-gray-400 uppercase">
+                                  Total Reserva
+                                </span>
+                                <span>${booking.totalAmount}</span>
+                              </div>
+                              <div className="mt-2 rounded-2xl border border-brand-500/10 bg-brand-500/[0.02] p-3.5 space-y-1.5">
+                                <div className="flex justify-between text-[10px] font-black text-brand-navy">
+                                  <span className="uppercase text-brand-500">🔒 Garantía de Reserva (20%)</span>
+                                  <span>${(booking.totalAmount * 0.20).toFixed(2)}</span>
+                                </div>
+                                <p className="text-[9px] font-bold text-gray-400 leading-normal">
+                                  Abono inmediato para asegurar tu fecha.
+                                </p>
+                                <div className="border-t border-dashed border-gray-100 my-1.5 pt-1.5 flex justify-between text-[10px] font-black text-brand-navy">
+                                  <span className="uppercase">🔑 Saldo en Check-In (80%)</span>
+                                  <span>${(booking.totalAmount * 0.80).toFixed(2)}</span>
+                                </div>
+                                <p className="text-[9px] font-bold text-gray-400 leading-normal">
+                                  A pagar directamente en el alojamiento al llegar.
+                                </p>
+                              </div>
                             </div>
                           </div>
 
@@ -742,15 +819,6 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                     <span>{statusInfo.label}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={() => {
-                                        setActiveChatId(booking.id);
-                                        setActiveChatBooking(booking);
-                                      }}
-                                      className="hover:text-brand-navy rounded-lg border border-gray-100 bg-white p-1.5 text-gray-400 transition-all"
-                                    >
-                                      <MessageSquare className="h-3.5 w-3.5" />
-                                    </button>
                                     <span className="text-[9px] font-bold text-gray-300">
                                       {booking.id.slice(0, 8)}
                                     </span>
@@ -771,6 +839,13 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                   </p>
                                 </div>
 
+                                {booking.status === 'REJECTED' && (booking.rejectionReason || booking.hostResponseNote) && (
+                                  <div className="bg-red-50/50 border border-red-100 rounded-xl p-3 text-[10px] text-red-700 font-bold leading-normal select-none">
+                                    <span className="block text-[8px] font-black text-red-500 tracking-wider uppercase mb-0.5">Motivo del Rechazo:</span>
+                                    "{booking.rejectionReason || booking.hostResponseNote}"
+                                  </div>
+                                )}
+
                                 <div className="flex items-center justify-between pt-2 border-t border-dashed border-gray-100 text-xs font-bold text-gray-500">
                                   <span>Total</span>
                                   <span className="text-brand-navy font-black">${booking.totalAmount}</span>
@@ -788,20 +863,51 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        <FloatingChat
-          isOpen={!!activeChatId}
-          onClose={() => {
-            setActiveChatId(null);
-            setActiveChatBooking(null);
-          }}
-          bookingId={activeChatId}
-          listingTitle={activeChatBooking?.listingTitle || ''}
-          senderId={user?.uid || ''}
-          senderName={user?.displayName || 'Huésped'}
-          recipientName="Soporte VeneStay"
-          recipientId={activeChatBooking?.ownerId}
-        />
+        {/* Right Column: Embedded Chat */}
+        {verifyingId && activeChatId === verifyingId && activeChatBooking && (
+          <div className="hidden md:flex flex-col w-[400px] lg:w-[450px] shrink-0 border-l border-gray-100 bg-gray-50/50">
+            <div className="flex flex-col h-full bg-white rounded-tl-3xl shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.1)] overflow-hidden">
+              <div className="bg-brand-navy p-4 text-white shrink-0 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <MessageSquare className="h-5 w-5 text-brand-gold" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black tracking-tight leading-tight">Soporte y Anfitrión</h3>
+                  <p className="text-[10px] text-brand-500 tracking-wider font-bold uppercase">Ref: {activeChatBooking.id.slice(0, 8)}</p>
+                </div>
+              </div>
+              <div className="flex-grow overflow-hidden relative chat-embedded-container">
+                <Chat
+                  bookingId={activeChatId}
+                  senderId={user?.uid || ''}
+                  senderName={user?.displayName || 'Huésped'}
+                  recipientId={activeChatBooking.ownerId}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Mobile Floating Chat */}
+      <div className="md:hidden">
+        {verifyingId && activeChatId === verifyingId && (
+          <FloatingChat
+            isOpen={!!activeChatId}
+            onClose={() => {
+              setActiveChatId(null);
+              setActiveChatBooking(null);
+            }}
+            bookingId={activeChatId}
+            listingTitle={activeChatBooking?.listingTitle || ''}
+            senderId={user?.uid || ''}
+            senderName={user?.displayName || 'Huésped'}
+            recipientName="Soporte VeneStay"
+            recipientId={activeChatBooking?.ownerId}
+          />
+        )}
+      </div>
+    </div>
     </div>
   );
 };
