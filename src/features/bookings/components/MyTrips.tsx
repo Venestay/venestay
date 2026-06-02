@@ -41,10 +41,11 @@ import Chat from '@/components/Chat';
 import FloatingChat from '@/components/FloatingChat';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { cleanupExpiredBookings } from '@/services/booking-service';
 
 interface MyTripsProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
@@ -99,13 +100,26 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   );
   const navigate = useNavigate();
 
+  const activeOpen = isOpen !== undefined ? isOpen : true;
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigate('/');
+    }
+  };
+
   useEffect(() => {
-    if (!isOpen || !user) {
+    if (!activeOpen || !user) {
       setBookings([]);
       return;
     }
 
     setLoading(true);
+
+    // Run expiration cleanup locally in the background
+    cleanupExpiredBookings();
 
     // Use onSnapshot for real-time updates - this solves any latency/sync issues
     const q = query(
@@ -138,7 +152,13 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     );
 
     return () => unsubscribe();
-  }, [isOpen, user]);
+  }, [activeOpen, user]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
 
   const { activeBookings, pastBookings } = useMemo(() => {
     const active: Booking[] = [];
@@ -218,8 +238,8 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   }, [isOpen, verifyingId]);
 
   const handlePaymentSubmit = async (bookingId: string) => {
-    if (!paymentRef.trim()) {
-      toast.error('Por favor escribe la referencia del pago.');
+    if (!paymentRef.trim() || !file) {
+      toast.error('Debes incluir el número de referencia y la imagen del comprobante.');
       return;
     }
     setSubmitting(true);
@@ -260,6 +280,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         paymentSubmittedAt: new Date().toISOString(),
         updatedAt: serverTimestamp(),
         statusHistory: [...(booking.statusHistory || []), historyEntry],
+        proofUrl: 'mock-url-from-storage-pending', // En un entorno real se subiría el file al Storage y se guardaría la URL aquí
       });
 
       // Registrar transacción en subcolección para UCP
@@ -292,7 +313,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!isOpen) return null;
+  if (!activeOpen) return null;
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
@@ -301,6 +322,24 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           label: 'Pago Pendiente',
           icon: <Clock className="h-3 w-3" />,
           color: 'text-amber-500 bg-amber-50 border-amber-100',
+        };
+      case 'PENDING_APPROVAL':
+        return {
+          label: 'Esperando Aprobación',
+          icon: <Clock className="h-3 w-3 animate-pulse" />,
+          color: 'text-[#b08f23] bg-brand-gold/[0.05] border-brand-gold/20',
+        };
+      case 'EXPIRED':
+        return {
+          label: 'Solicitud Expirada',
+          icon: <X className="h-3 w-3" />,
+          color: 'text-slate-400 bg-slate-50 border-slate-200',
+        };
+      case 'CANCELLED_BY_GUEST':
+        return {
+          label: 'Cancelada por Huésped',
+          icon: <X className="h-3 w-3" />,
+          color: 'text-slate-400 bg-slate-50 border-slate-200',
         };
       case 'AWAITING_VERIFICATION':
         return {
@@ -349,7 +388,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="rounded-2xl bg-white/10 p-3 text-white transition-all duration-300 hover:rotate-90 hover:bg-white/20"
           >
             <X className="h-6 w-6" />
@@ -378,7 +417,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                 tu próxima estancia en Venezuela.
               </p>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy mt-8 rounded-2xl px-8 py-4 text-[10px] font-black tracking-widest text-white uppercase shadow-xl transition-all"
               >
                 Explorar Propiedades
@@ -437,17 +476,52 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                             {booking.listingTitle}
                           </h4>
 
-                          {booking.status === 'PENDING_PAYMENT' &&
-                            booking.paymentInstructions && (
-                              <div className="bg-brand-500/5 border-brand-500/10 mt-4 rounded-2xl border p-4">
-                                <label className="text-brand-500 mb-2 block text-[8px] font-black tracking-[0.2em] uppercase">
-                                  Instrucciones de Pago
+                          <>
+                            {booking.status === 'PENDING_APPROVAL' && (
+                              <div className="bg-brand-gold/[0.05] border-brand-gold/10 mt-4 rounded-2xl border p-4 space-y-2 select-none">
+                                <label className="text-[#b08f23] block text-[8px] font-black tracking-[0.2em] uppercase">
+                                  🕐 SOLICITUD ENVIADA — ESPERANDO AL ANFITRIÓN
                                 </label>
-                                <p className="text-brand-navy text-[10px] leading-relaxed font-bold whitespace-pre-line">
-                                  {booking.paymentInstructions}
+                                <p className="text-slate-600 text-[10px] leading-relaxed font-bold">
+                                  El anfitrión tiene hasta 24 horas para responder a tu solicitud. Se ha realizado un soft-block temporal de las fechas.
                                 </p>
                               </div>
                             )}
+
+                            {booking.status === 'EXPIRED' && (
+                              <div className="bg-slate-50 border-slate-200 mt-4 rounded-2xl border p-4 space-y-2 select-none">
+                                <label className="text-slate-400 block text-[8px] font-black tracking-[0.2em] uppercase">
+                                  ⏰ SOLICITUD VENCIDA
+                                </label>
+                                <p className="text-slate-500 text-[10px] leading-relaxed font-bold">
+                                  El anfitrión no respondió a tiempo en las 24 horas reglamentarias. Las fechas han quedado liberadas y no se ha realizado ningún cobro.
+                                </p>
+                              </div>
+                            )}
+
+                            {booking.status === 'REJECTED' && booking.rejectionReason && (
+                              <div className="bg-red-50 border-red-100 mt-4 rounded-2xl border p-4 space-y-2 select-none">
+                                <label className="text-red-500 block text-[8px] font-black tracking-[0.2em] uppercase">
+                                  ✕ SOLICITUD RECHAZADA
+                                </label>
+                                <p className="text-red-700 text-[10px] leading-relaxed font-bold">
+                                  Nota del anfitrión: "{booking.rejectionReason}"
+                                </p>
+                              </div>
+                            )}
+
+                            {booking.status === 'PENDING_PAYMENT' &&
+                              booking.paymentInstructions && (
+                                <div className="bg-brand-500/5 border-brand-500/10 mt-4 rounded-2xl border p-4">
+                                  <label className="text-brand-500 mb-2 block text-[8px] font-black tracking-[0.2em] uppercase">
+                                    Instrucciones de Pago
+                                  </label>
+                                  <p className="text-brand-navy text-[10px] leading-relaxed font-bold whitespace-pre-line">
+                                    {booking.paymentInstructions}
+                                  </p>
+                                </div>
+                              )}
+                          </>
 
                           <div className="mt-6 space-y-4">
                             <div className="flex items-center text-sm font-bold text-gray-500">
@@ -469,6 +543,8 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                 <div className="text-brand-500 bg-brand-500/5 border-brand-500/10 mt-2 flex items-center rounded-xl border p-2 px-3 text-[10px] font-black tracking-widest uppercase">
                                   <Hash className="mr-2 h-3 w-3" />
                                   Ref: {booking.paymentReference}
+                                </div>
+                              )}
                                 </div>
                               )}
                             <div className="text-brand-navy mt-4 flex items-center border-t border-dashed border-gray-100 py-4 text-xl font-black">

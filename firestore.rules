@@ -64,15 +64,15 @@ service cloud.firestore {
              data.listingId is string && data.listingId.size() <= 128 &&
              data.listingTitle is string && data.listingTitle.size() <= 200 &&
              data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED', 'PENDING_APPROVAL', 'EXPIRED', 'CANCELLED_BY_GUEST'] &&
-             data.totalAmount is number &&
-             data.guests is number &&
-             (!data.keys().contains('statusHistory') || (data.statusHistory is list && data.statusHistory.size() <= 20));
+             (data.totalAmount is int || data.totalAmount is float) &&
+             data.guests is int &&
+             (!('statusHistory' in data.keys()) || (data.statusHistory is list && data.statusHistory.size() <= 20));
     }
 
     function isValidMessage(data) {
       return data.keys().hasAll(['bookingId', 'senderId', 'senderName', 'type', 'status', 'createdAt']) &&
              (data.keys().hasAny(['text', 'imageUrl'])) &&
-             data.senderId == request.auth.uid &&
+             (data.senderId == request.auth.uid || data.senderId == 'system') &&
              data.bookingId is string &&
              data.type in ['text', 'image'] &&
              data.status in ['sent', 'read'];
@@ -82,7 +82,7 @@ service cloud.firestore {
       return data.keys().hasAll(['transactionId', 'amounts', 'reference', 'proofUrl', 'method', 'methodLabel', 'status', 'createdAt', 'currency', 'intent', 'metadata']) &&
              data.transactionId is string &&
              data.amounts is map &&
-             data.amounts.total is number &&
+             (data.amounts.total is int || data.amounts.total is float) &&
              data.reference is string && data.reference.size() <= 100 &&
              data.proofUrl is string && data.proofUrl.size() <= 1000 &&
              data.method is string &&
@@ -100,7 +100,7 @@ service cloud.firestore {
     function isValidReview(data) {
       return data.keys().hasAll(['listingId', 'guestId', 'guestName', 'rating', 'comment', 'createdAt', 'reviewSessionId']) &&
              data.guestId == request.auth.uid &&
-             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             (data.rating is int || data.rating is float) && data.rating >= 1 && data.rating <= 5 &&
              data.comment is string && data.comment.size() <= 2000;
     }
 
@@ -172,7 +172,7 @@ service cloud.firestore {
 
       // Public Availability Check (Crucial fix for ListingDetail)
       // Enforce the query uses a where filter on status to avoid leaking all bookings
-      allow list: if resource.data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED'];
+      allow list: if resource.data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'PENDING_APPROVAL'];
 
       allow get: if isSignedIn() && (
         request.auth.uid == resource.data.guestId || 

@@ -78,15 +78,30 @@ service firebase.storage {
     // =========================================================================
     // 2. DIRECTORIO DE COMPROBANTES DE PAGO
     // =========================================================================
-    // Se aplican a 'receipts' y a 'bookings/{bookingId}/payments' (rutas app)
+    // Se aplican a 'receipts', 'payment-proofs' y a 'bookings/{bookingId}/payments'
     match /receipts/{bookingId}/{fileName} {
-      // Lectura: Habilitada para cualquier usuario autenticado en la plataforma
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+        isAdmin()
+      );
       allow create, update: if isAuthenticated() && isValidImage();
       allow delete: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        isAdmin()
+      );
+    }
+
+    match /payment-proofs/{bookingId}/{fileName} {
+      allow read: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create, update: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        isAdmin()
       );
     }
 
@@ -96,13 +111,16 @@ service firebase.storage {
     }
 
     match /bookings/{bookingId}/payments/{fileName} {
-      // Lectura: Habilitada para cualquier usuario autenticado en la plataforma
-      allow read: if isAuthenticated();
+      // Lectura: Restringida a huésped, anfitrión o admin
+      allow read: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+        isAdmin()
+      );
       allow create, update: if isAuthenticated() && isValidReceipt();
       allow delete: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        isAdmin()
       );
     }
 

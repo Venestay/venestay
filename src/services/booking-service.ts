@@ -141,19 +141,10 @@ export const createBookingWithTransaction = async (
   return docId;
 };
 
+import { DirectBookingRequestPayload } from '@/features/bookings/types';
+
 export const requestBookingDirectly = async (
-  payload: {
-    listingId: string;
-    listingTitle: string;
-    guestId: string;
-    guestName: string;
-    hostId: string;
-    startDate: string;
-    endDate: string;
-    totalAmount: number;
-    guestsCount: number;
-    guestMessage: string;
-  }
+  payload: DirectBookingRequestPayload
 ): Promise<{ bookingId: string }> => {
   const docId = await runTransaction(db, async (transaction) => {
     const listingId = payload.listingId;

@@ -18,24 +18,44 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 // Read switch configuration from environment
 const USE_CLOUD_FUNCTIONS = import.meta.env.VITE_USE_CLOUD_FUNCTIONS === 'true';
 
+import { query, where, getDocs, setDoc, DocumentReference, DocumentData } from 'firebase/firestore';
+
 /**
- * Approves a booking request.
- * Transitions status:
- * - From PENDING_APPROVAL to AWAITING_VERIFICATION (if paymentProofUrl/reference exists)
- * - From PENDING_APPROVAL to PENDING_PAYMENT (if no proof exists)
+ * Verifica si dos rangos de fechas se solapan.
  */
-export const approveBookingRequest = async (requestId: string, hostNote?: string): Promise<void> => {
+const checkDatesOverlap = (start1: string, end1: string, start2: string, end2: string) => {
+  const s1 = new Date(start1).getTime();
+  const e1 = new Date(end1).getTime();
+  const s2 = new Date(start2).getTime();
+  const e2 = new Date(end2).getTime();
+  return Math.max(s1, s2) <= Math.min(e1, e2);
+};
+
+/**
+ * Approves a booking request with payment details and prevents race conditions.
+ * Transitions status:
+ * - From PENDING_APPROVAL to PENDING_PAYMENT
+ * - Auto-rejects overlapping requests.
+ */
+export const approveBookingRequestWithDetails = async (
+  requestId: string, 
+  hostNote: string,
+  paymentInstructions: string,
+  hostId: string
+): Promise<void> => {
   if (USE_CLOUD_FUNCTIONS) {
     const functions = getFunctions();
-    const approveFn = httpsCallable<{ requestId: string; hostNote?: string }, void>(
+    const approveFn = httpsCallable<{ requestId: string; hostNote: string; paymentInstructions: string; hostId: string }, void>(
       functions, 
-      'approveBookingRequest'
+      'approveBookingRequestWithDetails'
     );
-    await approveFn({ requestId, hostNote });
+    await approveFn({ requestId, hostNote, paymentInstructions, hostId });
     return;
   }
 
-  // Local simulation fallback: run transaction client-side
+  // Pre-fetch all PENDING_APPROVAL bookings to check for collisions
+  const bookingsCol = collection(db, 'bookings');
+  
   await runTransaction(db, async (transaction) => {
     const bookingRef = doc(db, 'bookings', requestId);
     const bookingSnap = await transaction.get(bookingRef);
@@ -50,27 +70,83 @@ export const approveBookingRequest = async (requestId: string, hostNote?: string
       throw new Error(`No se puede aprobar una solicitud en estado: ${booking.status}`);
     }
 
-    // Determine next status based on proof of payment existence
-    const nextStatus: BookingStatus = (booking.proofUrl || booking.paymentReference)
-      ? 'AWAITING_VERIFICATION'
-      : 'PENDING_PAYMENT';
+    // Identify collisions: overlapping dates for the same listing
+    const collisionsQuery = query(
+      bookingsCol,
+      where('listingId', '==', booking.listingId),
+      where('status', '==', 'PENDING_APPROVAL')
+    );
+    const collisionsSnap = await getDocs(collisionsQuery);
+    
+    const conflictingDocs: { ref: DocumentReference<DocumentData, DocumentData>; data: Booking }[] = [];
+    collisionsSnap.forEach(docSnap => {
+      if (docSnap.id !== requestId) {
+        const otherBooking = docSnap.data() as Booking;
+        if (checkDatesOverlap(booking.startDate, booking.endDate, otherBooking.startDate, otherBooking.endDate)) {
+          conflictingDocs.push({ ref: docSnap.ref, data: otherBooking });
+        }
+      }
+    });
 
+    const nextStatus: BookingStatus = 'PENDING_PAYMENT';
     const nowStr = new Date().toISOString();
+    
+    // Set payment TTL to 24 hours from now
+    const expiresAtDate = new Date();
+    expiresAtDate.setHours(expiresAtDate.getHours() + 24);
+    const paymentExpiresAt = expiresAtDate.toISOString();
+
     const historyEntry = {
       status: nextStatus,
       timestamp: nowStr,
-      actorId: booking.ownerId || 'host',
+      actorId: hostId,
       actorName: 'Anfitrión',
-      note: hostNote || 'Solicitud de reserva aprobada por el anfitrión.',
+      note: hostNote,
     };
 
     transaction.update(bookingRef, {
       status: nextStatus,
-      hostResponseNote: hostNote || '',
+      hostResponseNote: hostNote,
+      paymentInstructions: paymentInstructions,
+      paymentExpiresAt: paymentExpiresAt,
       updatedAt: serverTimestamp(),
       statusHistory: [...(booking.statusHistory || []), historyEntry],
     });
+
+    // Reject all conflicting bookings
+    for (const conflict of conflictingDocs) {
+      transaction.update(conflict.ref, {
+        status: 'REJECTED',
+        rejectionReason: 'Las fechas fueron reservadas por otra persona simultáneamente.',
+        updatedAt: serverTimestamp(),
+        statusHistory: [...(conflict.data.statusHistory || []), {
+          status: 'REJECTED',
+          timestamp: nowStr,
+          actorId: 'system',
+          actorName: 'Sistema VeneStay',
+          note: 'Auto-rechazado por colisión de fechas.',
+        }],
+      });
+    }
   });
+
+  // 2. Inyectar de forma atómica en el Chat (Simulación de Trigger Backend si no hay Cloud Functions)
+  try {
+    const messagesColRef = collection(db, 'messages');
+    const msgDocRef = doc(messagesColRef);
+    await setDoc(msgDocRef, {
+      id: msgDocRef.id,
+      bookingId: requestId,
+      senderId: 'system',
+      senderName: 'Sistema VeneStay',
+      text: `📢 SOLICITUD APROBADA POR EL ANFITRIÓN\n\nMensaje:\n"${hostNote}"\n\nMétodo de Pago Habilitado:\n${paymentInstructions}\n\nPor favor, ingresa a 'Mis Viajes' para subir tu comprobante de pago antes de 24 horas.`,
+      type: 'text',
+      status: 'sent',
+      createdAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('Error inyectando chat post-aprobación:', err);
+  }
 };
 
 /**

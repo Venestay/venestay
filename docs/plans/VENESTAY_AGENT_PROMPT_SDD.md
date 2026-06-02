@@ -403,8 +403,8 @@ Al activar cada nodo del pipeline, el agente adopta el rol y carga los skills de
 | 1 — Project Manager | Product Manager (Alex) | `.agents/temp_agency_agents/product/product-manager.md` | Sprint Prioritizer | Activar cuando hay ≥2 tareas en competencia dentro del mismo sprint → aplicar scoring RICE para ordenar prioridad | — |
 | 2 — Planner | Senior Project Manager | `.agents/temp_agency_agents/project-management/project-manager-senior.md` | — | — | `typescript-advanced-types`, `zod` |
 | 3 — Técnico Frontend | Frontend Developer | `.agents/temp_agency_agents/engineering/engineering-frontend-developer.md` | — | — | `react-best-practices`, `tailwind-css-patterns`, `composition-patterns`, `frontend-design`, `accessibility` |
-| 3 — Técnico Backend | Backend Architect | `.agents/temp_agency_agents/engineering/engineering-backend-architect.md` | — | — | `nodejs-best-practices`, `zod` |
-| 4 — QA Gate | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md` | — | — | `accessibility`, `venestay-validation` |
+| 3 — Técnico Backend | Backend Architect | `.agents/temp_agency_agents/engineering/engineering-backend-architect.md` | — | — | `nodejs-best-practices`, `zod`, `firebase` |
+| 4 — QA Gate | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md` | — | — | `accessibility`, `venestay-validation`, `firebase` |
 
 #### Detalle de sub-skills del Nodo 1
 

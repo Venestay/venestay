@@ -1,25 +1,29 @@
 # MEMORY_HOT — VeneStay Agent
-_Sprint: S04 — Flujo Conversacional "Request to Book" (RE-IMPLEMENTACIÓN) · Actualizado: 2026-05-31_
+_Sprint: S04 — Flujo Conversacional "Request to Book" (RTB) · Actualizado: 2026-06-01_
 
 ## Estado ahora
-SPRINT    : S04 (A-B-C) — Re-implementación desde cero (Código previo borrado/revertido)
-QA_GATE   : PENDIENTE
+SPRINT    : S04 (A-B-C) — Flujo Corto RTB (Mitigaciones de Seguridad Implementadas)
+QA_GATE   : OK (tsc y lints en verde)
 BLOQUEANTE: ninguno
 
-## Módulos a re-implementar (Sprint S04 completo)
+## Módulos del Sprint S04
 | Módulo | Archivo Objetivo | Estado | Iteraciones QA |
 |:---|:---|:---|:---|
-| Tipos y Contratos RTB | src/features/bookings/types/index.ts | REVERTIDO | 0/3 |
-| Formulario Inline de Reserva | src/features/listings/components/DirectRequestForm.tsx | PENDIENTE | 0/3 |
-| Integración y Bifurcación en Ficha | src/features/listings/components/ListingDetail.tsx | REVERTIDO | 0/3 |
-| Tarjeta de Estado (Espera/Expiración/Rechazo) | src/features/bookings/components/BookingPendingApprovalCard.tsx | PENDIENTE | 0/3 |
-| Reglas de Seguridad y Validación | firestore.rules | REVERTIDO | 0/3 |
-| Dashboard Galería (Reordenamiento, Lápiz y Selección de Portada) | src/features/dashboard/components/form-steps/StepGallery.tsx | COMPLETADO | 1/3 |
+| Tipos y Contratos RTB | src/features/bookings/types/index.ts | COMPLETADO | 0/3 |
+| Formulario Inline de Reserva | src/features/listings/components/DirectRequestForm.tsx | COMPLETADO (Trust Gate) | 0/3 |
+| Integración y Bifurcación en Ficha | src/features/listings/components/ListingDetail.tsx | COMPLETADO | 0/3 |
+| Tarjeta de Estado & Mis Viajes | src/features/bookings/components/MyTrips.tsx | COMPLETADO (Comprobantes Obligatorios) | 0/3 |
+| Panel de Verificación | src/features/dashboard/components/GuestRequestVerificationDrawer.tsx | COMPLETADO (UI Paso 2 Unificada) | 0/3 |
+| Cloud Functions (Seguridad) | functions/src/index.ts | COMPLETADO | 0/3 |
+| Reglas de Storage | storage.rules | COMPLETADO | 0/3 |
 
-## Próxima acción requerida (¡CRÍTICO PARA EL AGENTE!)
-1. **Leer Obligatoriamente el Post-Mortem:** El agente entrante DEBE leer y analizar exhaustivamente [docs/ai_harness/handoff_diagnostic_report.md](file:///c:/VeneStay/docs/ai_harness/handoff_diagnostic_report.md) antes de escribir una sola línea de código.
-2. **Evitar los Errores del Pasado:**
-   * **Error de Permisos en Commit:** El backend de Firebase denegará escrituras de transacciones complejas en el cliente si hay discrepancias de identidad (`guestId` vs `request.auth.uid`) o si se intentan escribir mensajes de remitente `system` sin los privilegios correctos en `firestore.rules`.
-   * **Violación de List Query:** La consulta de disponibilidad en el cliente debe alinearse perfectamente con las cláusulas `allow list` de Firestore Rules (incluyendo el estado `PENDING_APPROVAL`).
-   * **Tipos Numéricos en Reglas:** Nunca uses `is number` en `firestore.rules`; causa un rechazo silencioso. Usa siempre `(is int || is float)` o `is int`.
-3. **Seguir el Plan:** Estudiar y reconstruir el flujo siguiendo la especificación en [docs/plans/implementation_plan_rtb_v2.md](file:///c:/VeneStay/docs/plans/implementation_plan_rtb_v2.md).
+## Próxima acción requerida (Handoff Context)
+1. **Despliegue de Backend:** El agente entrante debe inicializar Firebase Functions e instalar las dependencias en `/functions` (`npm install`), y posteriormente desplegar las funciones (`firebase deploy --only functions`).
+2. **Ejecutar Pruebas Funcionales (E2E):** Realizar pruebas manuales del flujo Request to Book (RTB) acortado (4 pasos).
+3. **Puntos Clave Finalizados en la Sesión Anterior:**
+   * **Mitigación "Soft-Block Zombie":** Creado el Cron Job que cancela reservas si pasa el `paymentExpiresAt` (24 horas).
+   * **Prevención de Colisión:** Lógica transaccional añadida en `approveBookingRequestWithDetails` para rechazar colisiones al aprobar.
+   * **Inyección de Chat Segura:** Trigger `onBookingStateChanged` implementado en Backend para enviar notificaciones de estado en lugar de hacerlo en el cliente.
+   * **Caja de Aprobación Unificada:** El Anfitrión ahora selecciona la cuenta de pago al aprobar, enviando todos los datos en 1 solo paso.
+   * **Trust Gate & Comprobantes:** Los huéspedes necesitan >40% Trust Score para pedir reserva, y el comprobante en imagen es obligatorio.
+4. **Archivos de Resumen Disponibles:** Revisar el artefacto `walkthrough.md` en el historial o carpeta de artefactos de la sesión anterior para entender todas las piezas de código que se modificaron.
