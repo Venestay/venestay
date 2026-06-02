@@ -218,9 +218,9 @@ const CheckoutPage: React.FC = () => {
                   hData.isVerified || false,
                   hData.completedBookings || 0
                 );
-                if (hData.paymentMethods && hData.paymentMethods.length > 0) {
-                  hMethods = hData.paymentMethods;
-                  setHostPaymentMethods(hData.paymentMethods);
+                if (hData.paymentMethods && Array.isArray(hData.paymentMethods)) {
+                  hMethods = hData.paymentMethods as PaymentMethod[];
+                  setHostPaymentMethods(hData.paymentMethods as PaymentMethod[]);
                 }
               }
             } catch (tierError) {
@@ -307,9 +307,9 @@ const CheckoutPage: React.FC = () => {
                     const hostSnap = await getDoc(doc(db, 'users', data.hostId));
                     if (hostSnap.exists()) {
                       const hData = hostSnap.data();
-                      if (hData.paymentMethods && hData.paymentMethods.length > 0) {
-                        hMethods = hData.paymentMethods;
-                        setHostPaymentMethods(hData.paymentMethods);
+                      if (hData && hData.paymentMethods && Array.isArray(hData.paymentMethods)) {
+                        hMethods = hData.paymentMethods as PaymentMethod[];
+                        setHostPaymentMethods(hData.paymentMethods as PaymentMethod[]);
                       }
                     }
                   } catch (hostError) {
@@ -319,15 +319,15 @@ const CheckoutPage: React.FC = () => {
 
                 const listMethods = data.paymentMethods || [];
                 const finalMethods = listMethods.length > 0 ? listMethods : hMethods;
-                const enrichedMethods = finalMethods.map(method => {
+                const enrichedMethods = (finalMethods as PaymentMethod[]).map((method: PaymentMethod) => {
                   if (!method.data?.accountHolder) {
-                    const matchingHostMethod = hMethods.find(hm => hm.type === method.type);
-                    if (matchingHostMethod?.data?.accountHolder) {
+                    const matchingHostMethod = hMethods.find(hm => hm.type === method.type) as PaymentMethod | undefined;
+                    if (matchingHostMethod && matchingHostMethod.data && matchingHostMethod.data.accountHolder) {
                       return {
                         ...method,
                         data: {
                           ...method.data,
-                          accountHolder: matchingHostMethod.data.accountHolder
+                          accountHolder: matchingHostMethod.data.accountHolder as string
                         }
                       };
                     }

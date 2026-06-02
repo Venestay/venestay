@@ -327,7 +327,7 @@ const AdminDashboard: React.FC = () => {
         note: note || '',
       };
 
-      const updateData: Record<string, any> = {
+      const updateData: Record<string, unknown> = {
         status: newStatus,
         updatedAt: new Date().toISOString(),
         statusHistory: [...(booking.statusHistory || []), historyEntry],
