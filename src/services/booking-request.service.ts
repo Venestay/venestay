@@ -19,7 +19,7 @@ import { PaymentMethod } from '@/features/auth/types';
 // Read switch configuration from environment
 const USE_CLOUD_FUNCTIONS = import.meta.env.VITE_USE_CLOUD_FUNCTIONS === 'true';
 
-import { query, where, getDocs, setDoc, DocumentReference, DocumentData } from 'firebase/firestore';
+import { query, where, getDocs, setDoc, DocumentReference, DocumentData, DocumentSnapshot } from 'firebase/firestore';
 
 /**
  * Verifica si dos rangos de fechas se solapan.
@@ -193,8 +193,8 @@ export const rejectBookingRequest = async (requestId: string, hostNote: string):
 
     // Perform all reads first: get the listing details before any updates
     let blockedDates: string[] = [];
-    let listingRef: any = null;
-    let listingSnap: any = null;
+    let listingRef: DocumentReference<DocumentData, DocumentData> | null = null;
+    let listingSnap: DocumentSnapshot<DocumentData, DocumentData> | null = null;
 
     if (booking.listingId) {
       listingRef = doc(db, 'listings', booking.listingId);

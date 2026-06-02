@@ -1,5 +1,6 @@
 import { CommissionBreakdown } from '@/lib/commission';
 import { FieldValue } from 'firebase/firestore';
+import { PaymentMethod } from '@/features/auth/types';
 
 export type BookingStatus =
   | 'NEGOTIATING'
@@ -55,6 +56,7 @@ export interface Booking {
   hostResponseNote?: string;
   paymentExpiresAt?: string;
   expiresAt?: string;
+  hostSelectedPaymentMethod?: PaymentMethod;
   createdAt: string | Date | FieldValue;
   updatedAt: string | Date | FieldValue;
   statusHistory?: {
