@@ -154,11 +154,6 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     return () => unsubscribe();
   }, [activeOpen, user]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
 
   const { activeBookings, pastBookings } = useMemo(() => {
     const active: Booking[] = [];
@@ -252,6 +247,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
       // Upload file if exists
       if (file) {
+        // eslint-disable-next-line react-hooks/purity
         const fileName = `${Date.now()}_receipt.jpg`;
         const storageRef = ref(
           storage,
@@ -280,7 +276,6 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         paymentSubmittedAt: new Date().toISOString(),
         updatedAt: serverTimestamp(),
         statusHistory: [...(booking.statusHistory || []), historyEntry],
-        proofUrl: 'mock-url-from-storage-pending', // En un entorno real se subiría el file al Storage y se guardaría la URL aquí
       });
 
       // Registrar transacción en subcolección para UCP
@@ -543,8 +538,6 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                 <div className="text-brand-500 bg-brand-500/5 border-brand-500/10 mt-2 flex items-center rounded-xl border p-2 px-3 text-[10px] font-black tracking-widest uppercase">
                                   <Hash className="mr-2 h-3 w-3" />
                                   Ref: {booking.paymentReference}
-                                </div>
-                              )}
                                 </div>
                               )}
                             <div className="text-brand-navy mt-4 flex items-center border-t border-dashed border-gray-100 py-4 text-xl font-black">
