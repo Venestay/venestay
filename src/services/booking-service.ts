@@ -19,7 +19,7 @@ export const getReservedDates = async (listingId: string): Promise<{ start: Date
   const q = query(
     collection(db, 'bookings'),
     where('listingId', '==', listingId),
-    where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION'])
+    where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_PAYMENT', 'PENDING_APPROVAL'])
   );
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => {
@@ -27,7 +27,7 @@ export const getReservedDates = async (listingId: string): Promise<{ start: Date
     return {
       start: parseISO(data.startDate),
       end: parseISO(data.endDate),
-      type: data.status === 'CONFIRMED' ? 'confirmed' : 'pending'
+      type: ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_PAYMENT'].includes(data.status) ? 'confirmed' : 'pending'
     };
   });
 };
@@ -71,14 +71,12 @@ export const createBookingWithTransaction = async (
     const listingId = bookingData.listingId;
     if (!listingId) throw new Error('Falta el ID del alojamiento.');
 
-    // AVAILABILITY CONFLICT CHECK: Solo estados "hard block" (confirmados o en verificación).
-    // PENDING_APPROVAL queda excluido intencionalmente: son solicitudes aún no aprobadas
-    // y las reglas de Firestore no permiten queryarlos públicamente (solo CONFIRMED y AWAITING_VERIFICATION
-    // están cubiertas por la regla pública de disponibilidad).
+    // AVAILABILITY CONFLICT CHECK: Solo estados "hard block" (confirmados o en verificación o pago pendiente).
+    // PENDING_APPROVAL queda excluido intencionalmente para permitir múltiples solicitudes.
     const bookingsQuery = query(
       collection(db, 'bookings'),
       where('listingId', '==', listingId),
-      where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION'])
+      where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_PAYMENT'])
     );
     const querySnapshot = await getDocs(bookingsQuery);
     
@@ -153,7 +151,7 @@ export const requestBookingDirectly = async (
     const bookingsQuery = query(
       collection(db, 'bookings'),
       where('listingId', '==', listingId),
-      where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_APPROVAL', 'PENDING_PAYMENT'])
+      where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_PAYMENT'])
     );
     const querySnapshot = await getDocs(bookingsQuery);
     

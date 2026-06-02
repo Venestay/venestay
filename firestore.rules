@@ -218,7 +218,7 @@ service cloud.firestore {
         (request.auth.uid == resource.data.ownerId && (
           // Action: Confirm/Reject/Approve Request
           (incoming().status in ['CONFIRMED', 'AWAITING_VERIFICATION', 'REJECTED', 'PENDING_PAYMENT'] &&
-           incoming().diff(existing()).affectedKeys().hasAny(['status', 'verifiedAt', 'verifiedBy', 'rejectionReason', 'hostResponseNote', 'updatedAt', 'statusHistory']))
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'verifiedAt', 'verifiedBy', 'rejectionReason', 'hostResponseNote', 'updatedAt', 'statusHistory', 'paymentInstructions', 'hostSelectedPaymentMethod', 'paymentExpiresAt']))
         )) ||
         // Lazy Expiry (Guest or Owner can transition a pending approval request to EXPIRED)
         ((request.auth.uid == resource.data.guestId || request.auth.uid == resource.data.ownerId) &&

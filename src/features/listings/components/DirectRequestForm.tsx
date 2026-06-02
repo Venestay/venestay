@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { format, differenceInDays, parseISO } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -24,12 +24,16 @@ interface DirectRequestFormProps {
   listing: Listing;
   user: User | null;
   onSuccess?: (bookingId: string) => void;
+  reservedDates?: { start: Date; end: Date }[];
+  softReservedDates?: { start: Date; end: Date }[];
 }
 
 export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
   listing,
   user,
-  onSuccess
+  onSuccess,
+  reservedDates = [],
+  softReservedDates = []
 }) => {
   const navigate = useNavigate();
   const { profileData } = useAuth();
@@ -45,22 +49,9 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
   const [guestMessage, setGuestMessage] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'ves' | 'usdt'>('usdt');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [reservedDates, setReservedDates] = useState<{ start: Date; end: Date }[]>([]);
-
   // Caracteres restantes
   const messageLength = guestMessage.trim().length;
   const isMessageValid = messageLength >= 20;
-
-  useEffect(() => {
-    // Cargar fechas bloqueadas
-    if (listing.blockedDates) {
-      const dates = listing.blockedDates.map(d => {
-        const parsed = parseISO(d);
-        return { start: parsed, end: parsed };
-      });
-      setReservedDates(dates);
-    }
-  }, [listing]);
 
   const totalNights = startDate && endDate ? differenceInDays(endDate, startDate) : 0;
   const totalPrice = totalNights > 0 ? listing.pricePerNight * totalNights : listing.pricePerNight;
@@ -223,6 +214,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
                     startDate={startDate}
                     endDate={endDate}
                     reservedDates={reservedDates}
+                    softReservedDates={softReservedDates}
                     minNights={listing.minNights ?? 2}
                     onChange={(start, end) => {
                       setStartDate(start);

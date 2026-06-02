@@ -327,11 +327,17 @@ const AdminDashboard: React.FC = () => {
         note: note || '',
       };
 
-      await updateDoc(doc(db, 'bookings', booking.id), {
+      const updateData: Record<string, any> = {
         status: newStatus,
         updatedAt: new Date().toISOString(),
         statusHistory: [...(booking.statusHistory || []), historyEntry],
-      });
+      };
+
+      if (newStatus === 'REJECTED' && note) {
+        updateData.rejectionReason = note;
+      }
+
+      await updateDoc(doc(db, 'bookings', booking.id), updateData);
       toast.success('Estado actualizado');
     } catch {
       toast.error('Error al actualizar estado');

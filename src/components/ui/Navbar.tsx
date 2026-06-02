@@ -6,7 +6,6 @@ import { useAuth } from '@/features/auth/hooks/AuthContext';
 import { useChatNotifications } from '@/features/bookings/hooks/useChatNotifications';
 import AuthModal from '@/features/auth/components/AuthModal';
 import CalendarComponent from '@/features/bookings/components/Calendar';
-import MyTrips from '@/features/bookings/components/MyTrips';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   Search,
@@ -386,7 +385,7 @@ const Navbar: React.FC<NavbarProps> = ({
                             </Link>
                             <button
                               onClick={() => {
-                                setIsMyTripsOpen(true);
+                                navigate('/mis-viajes');
                                 setIsUserMenuOpen(false);
                               }}
                               className="flex w-full items-center justify-between px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
@@ -533,7 +532,6 @@ const Navbar: React.FC<NavbarProps> = ({
         )}
       </div>
 
-      <MyTrips isOpen={isMyTripsOpen} onClose={() => setIsMyTripsOpen(false)} />
     </nav>
   );
 };

@@ -1425,6 +1425,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     listing={currentListing}
                     user={user}
                     onSuccess={(bookingId) => navigate('/mis-viajes')}
+                    reservedDates={reservedDates}
+                    softReservedDates={softReservedDates}
                   />
                 </div>
               ) : (
@@ -1914,6 +1916,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     setIsMobileRequestOpen(false);
                     navigate('/mis-viajes');
                   }}
+                  reservedDates={reservedDates}
+                  softReservedDates={softReservedDates}
                 />
               </div>
             </motion.div>
