@@ -131,7 +131,7 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
         ? `${selectedPayment.label} - ${selectedPayment.type}\nDetalles adicionales provistos por el anfitrión en su perfil.`
         : 'Pago Móvil (o método predeterminado).';
         
-      await approveBookingRequestWithDetails(booking.id, hostNote, paymentInstructions, booking.ownerId);
+      await approveBookingRequestWithDetails(booking.id, hostNote, paymentInstructions, booking.ownerId, selectedPayment);
       toast.success('Solicitud de reserva aprobada con éxito');
       if (onApproveSuccess) onApproveSuccess(booking.id);
       onClose();

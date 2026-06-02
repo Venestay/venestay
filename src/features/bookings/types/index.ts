@@ -59,6 +59,7 @@ export interface Booking {
   hostSelectedPaymentMethod?: PaymentMethod;
   createdAt: string | Date | FieldValue;
   updatedAt: string | Date | FieldValue;
+  hostSelectedPaymentMethod?: PaymentMethod;
   statusHistory?: {
     status: BookingStatus;
     timestamp: string | Date | FieldValue;
