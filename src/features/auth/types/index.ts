@@ -11,7 +11,32 @@ export type PaymentMethodType =
   | 'Transferencia'
   | 'Otro';
 
-export type KYCStatus = 'UNVERIFIED' | 'PENDING_REVIEW' | 'VERIFIED' | 'REJECTED';
+export type KYCStatus =
+  | 'NOT_SUBMITTED'
+  | 'UNVERIFIED'
+  | 'PENDING_REVIEW'
+  | 'VERIFIED'
+  | 'REJECTED'
+  | 'REVOKED';
+
+export interface KYCStatusHistoryEntry {
+  status: KYCStatus;
+  timestamp: string;        // ISO 8601
+  actorId: string;          // uid del admin o 'user' si fue el usuario
+  actorRole: 'user' | 'admin';
+  note?: string;            // obligatorio si status === 'REJECTED'
+}
+
+export interface UserKYCFields {
+  kycStatus: KYCStatus;
+  kycDocumentUrl?: string;   // solo presente en PENDING_REVIEW o VERIFIED
+  isIdentityVerified: boolean;
+  kycStatusHistory: KYCStatusHistoryEntry[];
+  kycSubmittedAt?: string;
+  kycReviewedAt?: string;
+  kycRejectionNote?: string;
+}
+
 
 export interface PaymentMethod {
   id: string;
@@ -55,6 +80,11 @@ export interface UserProfile {
   isIdentityVerified?: boolean;
   kycStatus?: KYCStatus;
   isVerified?: boolean;
+  kycDocumentUrl?: string;
+  kycStatusHistory?: KYCStatusHistoryEntry[];
+  kycSubmittedAt?: string;
+  kycReviewedAt?: string;
+  kycRejectionNote?: string;
   
   // Pasaporte VeneStay / Identity
   bio?: string;

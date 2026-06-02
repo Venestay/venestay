@@ -43,10 +43,13 @@ console.log(
   `[Firebase] Initialized with database: ${(firebaseConfig as Record<string, unknown>).firestoreDatabaseId as string || '(default)'}`
 );
 
+import { getFunctions } from 'firebase/functions';
+
 export const storage = getStorage(app);
 storage.maxUploadRetryTime = 120000;
 storage.maxOperationRetryTime = 120000;
 export const googleProvider = new GoogleAuthProvider();
+export const functions = getFunctions(app);
 
 // Connection diagnostic
 async function testConnection() {

@@ -138,7 +138,7 @@ service cloud.firestore {
                     incoming().role == 'user' && // Prevent self-escalation
                     !incoming().keys().hasAny(['loyaltyStats', 'currentCommissionRate']);
       allow update: if isSignedIn() && (
-                    (request.auth.uid == userId && !incoming().diff(existing()).affectedKeys().hasAny(['loyaltyStats', 'currentCommissionRate', 'role'])) ||
+                    (request.auth.uid == userId && !incoming().diff(existing()).affectedKeys().hasAny(['loyaltyStats', 'currentCommissionRate', 'role', 'kycStatus', 'isIdentityVerified', 'trustScore', 'kycDocumentUrl', 'kycStatusHistory'])) ||
                     isAdmin()
                   );
     }

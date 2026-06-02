@@ -109,3 +109,79 @@ export const onBookingStateChanged = functions.firestore
 
     return null;
   });
+
+/**
+ * Notificación a administradores
+ */
+async function notifyAdmins(payload: { title: string; body: string; data?: unknown }) {
+  console.log('Admin Notification:', payload);
+  await db.collection('adminNotifications').add({
+    ...payload,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    read: false
+  });
+}
+
+/**
+ * Cloud Function: submitKYCDocument
+ * Registra el documento de KYC y cambia el estado a PENDING_REVIEW
+ */
+export const submitKYCDocument = functions.https.onCall(
+  async (data: { documentType: 'cedula' | 'pasaporte'; storageFileName: string }, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Autenticación requerida.');
+    }
+
+    const uid = context.auth.uid;
+    const userRef = db.collection('users').doc(uid);
+
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(userRef);
+      const user = snap.data();
+
+      // Permitir UNVERIFIED (valor inicial de la BD) o NOT_SUBMITTED o REJECTED
+      const currentStatus = user?.kycStatus || 'NOT_SUBMITTED';
+      if (!['NOT_SUBMITTED', 'REJECTED', 'UNVERIFIED'].includes(currentStatus)) {
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          `No se puede subir un documento en el estado actual: ${currentStatus}.`
+        );
+      }
+
+      // Verificar que el archivo existe en Storage antes de registrar en Firestore
+      const storagePath = `kyc/${uid}/${data.storageFileName}`;
+      try {
+        await admin.storage().bucket().file(storagePath).getMetadata();
+      } catch (err) {
+        throw new functions.https.HttpsError('not-found', 'El archivo no se encontró en Storage.');
+      }
+
+      const historyEntry = {
+        status: 'PENDING_REVIEW',
+        timestamp: new Date().toISOString(),
+        actorId: uid,
+        actorRole: 'user',
+      };
+
+      tx.update(userRef, {
+        kycStatus: 'PENDING_REVIEW',
+        kycDocumentUrl: storagePath, // guardamos el path relativo
+        kycDocumentType: data.documentType,
+        isIdentityVerified: false,
+        kycSubmittedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        kycStatusHistory: admin.firestore.FieldValue.arrayUnion(historyEntry),
+      });
+    });
+
+    // Notificar a admins
+    await notifyAdmins({
+      title: 'Nueva verificación KYC pendiente',
+      body: `El usuario ${uid} acaba de subir su documento de identidad.`,
+      data: { type: 'kyc_pending', uid },
+    });
+
+    return { success: true };
+  }
+);
+
