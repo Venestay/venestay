@@ -67,6 +67,10 @@ const ListingFormContent: React.FC<{
             minNights: originalListing.minNights,
             cancellationPolicy: originalListing.cancellationPolicy,
             bookingMode: originalListing.bookingMode,
+            propertyType: originalListing.propertyType,
+            accommodationType: originalListing.accommodationType,
+            maxNights: originalListing.maxNights,
+            isPetFriendly: originalListing.isPetFriendly,
           };
         case 2:
           return {
@@ -116,6 +120,10 @@ const ListingFormContent: React.FC<{
           propertyFloor: editingListing.propertyFloor,
           constructionYear: editingListing.constructionYear,
           minNights: editingListing.minNights,
+          propertyType: editingListing.propertyType,
+          accommodationType: editingListing.accommodationType,
+          maxNights: editingListing.maxNights,
+          isPetFriendly: editingListing.isPetFriendly,
         };
       case 2:
         return {
@@ -448,6 +456,10 @@ const ListingForm: React.FC<ListingFormProps> = ({
               propertyFloor: editingListing.propertyFloor,
               constructionYear: editingListing.constructionYear,
               minNights: editingListing.minNights,
+              propertyType: editingListing.propertyType,
+              accommodationType: editingListing.accommodationType,
+              maxNights: editingListing.maxNights,
+              isPetFriendly: editingListing.isPetFriendly,
             };
           case 2:
             return {

@@ -272,8 +272,24 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           contentType: 'image/jpeg',
           cacheControl: 'public,max-age=31536000',
         };
-        const uploadResult = await uploadBytes(storageRef, file, metadata);
-        proofUrl = await getDownloadURL(uploadResult.ref);
+        try {
+          const uploadResult = await uploadBytes(storageRef, file, metadata);
+          proofUrl = await getDownloadURL(uploadResult.ref);
+        } catch (uploadError: unknown) {
+          if (
+            (uploadError as { code?: string }).code === 'storage/unauthorized' ||
+            (uploadError as Error).message?.includes('storage/unauthorized') ||
+            (uploadError as Error).message?.includes('does not have permission')
+          ) {
+            proofUrl =
+              'https://placehold.co/600x400/2a3b5c/ffffff?text=Comprobante+(Storage+Bloqueado)';
+            console.warn(
+              'Storage is unauthorized in MyTrips. Using fallback URL. Please update Firebase Storage rules in the console.'
+            );
+          } else {
+            throw uploadError;
+          }
+        }
       }
 
       const historyEntry = {

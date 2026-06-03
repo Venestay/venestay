@@ -56,7 +56,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
   const totalNights = startDate && endDate ? differenceInDays(endDate, startDate) : 0;
   const totalPrice = totalNights > 0 ? listing.pricePerNight * totalNights : listing.pricePerNight;
   
-  const breakdown = calculatePaymentBreakdown(totalPrice);
+  const breakdown = calculatePaymentBreakdown(totalPrice, 12, listing.cleaningFee || 0);
   const anticipoAmount = breakdown.depositAmount;
   const remainingAmount = breakdown.remainingBalance;
 
@@ -326,6 +326,14 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
             <span className="font-extrabold text-brand-navy">${(listing.pricePerNight * (totalNights > 0 ? totalNights : 1)).toLocaleString()} USD</span>
           </div>
           <div className="flex justify-between text-xs font-medium text-slate-500">
+            <span>Limpieza de alojamiento</span>
+            {listing.cleaningFee && listing.cleaningFee > 0 ? (
+              <span className="font-extrabold text-brand-navy font-sans text-xs">${listing.cleaningFee} USD</span>
+            ) : (
+              <span className="text-emerald-600 font-bold text-[9px] bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none uppercase tracking-widest">Incluida</span>
+            )}
+          </div>
+          <div className="flex justify-between text-xs font-medium text-slate-500">
             <span>Servicios e Impuestos</span>
             <span className="text-emerald-600 font-bold text-[9px] bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none uppercase tracking-widest">Incluidos</span>
           </div>
@@ -338,7 +346,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
               </span>
             </div>
             <div className="flex justify-between items-baseline font-bold text-slate-400 text-[10px]">
-              <span>Saldo al llegar (80%)</span>
+              <span>Saldo al llegar (80% + Limpieza)</span>
               <span className="font-semibold">${remainingAmount.toFixed(0)} USD</span>
             </div>
           </div>

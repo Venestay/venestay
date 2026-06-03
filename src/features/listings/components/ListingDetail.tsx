@@ -102,6 +102,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
     (mapsAuthError ? { message: 'ApiTargetBlockedMapError' } : null);
 
   const [insights, setInsights] = useState<string>('');
+  const SHOW_CANCELLATION_POLICY_DETAIL = false;
+  const SHOW_HOUSE_RULES_DETAIL = false;
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [activeImage, setActiveImage] = useState<string>(
     currentListing?.images?.[0] ?? ''
@@ -1026,13 +1028,13 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                         totalPrice={totalNights > 0 ? totalPrice : currentListing.pricePerNight}
                         depositAmount={
                           totalNights > 0
-                            ? calculatePaymentBreakdown(totalPrice).depositAmount
-                            : currentListing.pricePerNight * 0.20
+                            ? calculatePaymentBreakdown(totalPrice, 12, currentListing.cleaningFee || 0).depositAmount
+                            : calculatePaymentBreakdown(currentListing.pricePerNight, 12, currentListing.cleaningFee || 0).depositAmount
                         }
                         remainingAmount={
                           totalNights > 0
-                            ? calculatePaymentBreakdown(totalPrice).remainingBalance
-                            : currentListing.pricePerNight * 0.80
+                            ? calculatePaymentBreakdown(totalPrice, 12, currentListing.cleaningFee || 0).remainingBalance
+                            : calculatePaymentBreakdown(currentListing.pricePerNight, 12, currentListing.cleaningFee || 0).remainingBalance
                         }
                         paymentMethods={currentListing.paymentMethods}
                       />
@@ -1066,9 +1068,15 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                               </div>
                               <div className="flex justify-between items-center">
                                 <span className="text-slate-500 font-medium">Limpieza de alojamiento</span>
-                                <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none">
-                                  Incluida
-                                </span>
+                                {currentListing.cleaningFee && currentListing.cleaningFee > 0 ? (
+                                  <span className="font-extrabold text-brand-navy font-sans text-sm">
+                                    ${currentListing.cleaningFee} USD
+                                  </span>
+                                ) : (
+                                  <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none">
+                                    Incluida
+                                  </span>
+                                )}
                               </div>
                               <div className="flex justify-between items-center">
                                 <span className="text-slate-500 font-medium">Servicios de plataforma</span>
@@ -1085,7 +1093,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                               <div className="border-t border-slate-100 pt-3.5 flex justify-between items-baseline font-black text-brand-navy mt-1">
                                 <span className="text-[10px] tracking-widest uppercase text-slate-400 font-extrabold">Total Final</span>
                                 <span className="text-base font-extrabold font-sans">
-                                  ${(currentListing.pricePerNight * (totalNights > 0 ? totalNights : 1)).toLocaleString()} USD
+                                  ${(currentListing.pricePerNight * (totalNights > 0 ? totalNights : 1) + (currentListing.cleaningFee || 0)).toLocaleString()} USD
                                 </span>
                               </div>
                             </div>
@@ -1094,24 +1102,26 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       </AnimatePresence>
                     </div>
 
-                    {/* Política de Cancelación en Móvil */}
-                    <div className="border-t border-slate-100 pt-4 space-y-2">
-                      <div className="flex items-center gap-1.5 text-[9px] font-black tracking-widest text-[#0a142c]/60 uppercase select-none">
-                        <Info className="h-3.5 w-3.5 text-brand-gold" />
-                        <span>Política de Cancelación</span>
+                    {/* Política de Cancelación en Móvil - Ocultado por requerimiento de diseño */}
+                    {SHOW_CANCELLATION_POLICY_DETAIL && (
+                      <div className="border-t border-slate-100 pt-4 space-y-2">
+                        <div className="flex items-center gap-1.5 text-[9px] font-black tracking-widest text-[#0a142c]/60 uppercase select-none">
+                          <Info className="h-3.5 w-3.5 text-brand-gold" />
+                          <span>Política de Cancelación</span>
+                        </div>
+                        <p className="text-[10.5px] leading-relaxed text-slate-500 font-medium">
+                          {(() => {
+                            const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
+                            const policy = CANCELLATION_POLICIES[policyKey];
+                            return (
+                              <>
+                                <strong>{policy.label}:</strong> {policy.detail}
+                              </>
+                            );
+                          })()}
+                        </p>
                       </div>
-                      <p className="text-[10.5px] leading-relaxed text-slate-500 font-medium">
-                        {(() => {
-                          const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
-                          const policy = CANCELLATION_POLICIES[policyKey];
-                          return (
-                            <>
-                              <strong>{policy.label}:</strong> {policy.detail}
-                            </>
-                          );
-                        })()}
-                      </p>
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -1297,125 +1307,127 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                   </div>
                 </div>
 
-                {/* 06 Reglas y Políticas Section */}
-                <div className="space-y-10 border-t border-gray-100 pt-12">
-                  <div className="flex flex-col gap-4">
-                    <h3 className="text-brand-navy flex items-center text-2xl font-black">
-                      <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
-                        <span className="hidden lg:inline">06</span>
-                        <span className="inline lg:hidden">07</span>
-                      </span>
-                      Reglas y Políticas
-                    </h3>
-                  </div>
+                {/* 06 Reglas y Políticas Section - Ocultado por requerimiento de diseño */}
+                {SHOW_HOUSE_RULES_DETAIL && (
+                  <div className="space-y-10 border-t border-gray-100 pt-12">
+                    <div className="flex flex-col gap-4">
+                      <h3 className="text-brand-navy flex items-center text-2xl font-black">
+                        <span className="bg-brand-navy text-brand-500 mr-3 flex h-8 w-8 items-center justify-center rounded-lg text-sm">
+                          <span className="hidden lg:inline">06</span>
+                          <span className="inline lg:hidden">07</span>
+                        </span>
+                        Reglas y Políticas
+                      </h3>
+                    </div>
 
-                  {(() => {
-                    const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
-                    const policy = CANCELLATION_POLICIES[policyKey];
-                    const timeline = POLICY_TIMELINE[policyKey];
-                    
-                    return (
-                      <div className="space-y-8">
-                        {/* Policy Detail Card */}
-                        <div className="rounded-[28px] border border-slate-100 bg-slate-50/50 p-6 md:p-8 space-y-6">
-                          <div className="flex items-center gap-3">
-                            <span className={cn("inline-block h-3.5 w-3.5 rounded-full", policy.dotColor)} />
-                            <h4 className="text-lg font-black text-brand-navy tracking-tight">{policy.label}</h4>
-                            <span className={cn("rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-widest leading-none", policy.badgeColor)}>
-                              Activa
-                            </span>
-                          </div>
-                          
-                          <p className="text-sm font-semibold leading-relaxed text-slate-600">
-                            {policy.detail}
-                          </p>
-
-                          {/* Visual Timeline */}
-                          <div className="relative pt-6 pb-2">
-                            {/* Horizontal Line */}
-                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 -translate-y-1/2 rounded-full" />
-                            
-                            <div className="relative flex justify-between">
-                              {timeline.milestones.map((milestone, idx) => (
-                                <div key={idx} className="flex flex-col items-center text-center space-y-2 relative z-10">
-                                  {/* Milestone Bullet */}
-                                  <div className={cn(
-                                    "flex h-6 w-6 items-center justify-center rounded-full border-4 border-white shadow-md transition-colors",
-                                    milestone.refundPct === 100 
-                                      ? "bg-emerald-500" 
-                                      : milestone.refundPct === 50 
-                                        ? "bg-amber-500" 
-                                        : "bg-red-500"
-                                  )}>
-                                    {milestone.refundPct > 0 ? (
-                                      <Check className="h-2 w-2 text-white stroke-[4]" />
-                                    ) : (
-                                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                                    )}
-                                  </div>
-                                  
-                                  {/* Label */}
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                    {milestone.label}
-                                  </span>
-                                  
-                                  {/* Refund Percentage */}
-                                  <span className={cn(
-                                    "text-xs font-extrabold",
-                                    milestone.refundPct === 100 
-                                      ? "text-emerald-600" 
-                                      : milestone.refundPct === 50 
-                                        ? "text-amber-600" 
-                                        : "text-red-600"
-                                  )}>
-                                    {milestone.refundPct}% reembolso
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {timeline.strictNote && (
-                            <p className="text-xs font-semibold text-red-500 bg-red-50/50 border border-red-100/50 rounded-xl px-4 py-2.5">
-                              ⚠️ {timeline.strictNote}
-                            </p>
-                          )}
-
-                          {/* UCP Note */}
-                          <div className="border-t border-slate-100 pt-5 mt-4">
-                            <p className="text-[11px] leading-relaxed text-slate-400 font-bold">
-                              ℹ️ <span className="uppercase tracking-widest text-[9px] font-extrabold mr-1 text-slate-500">Garantía de Reserva 20/80:</span>
-                              Aseguras tu estadía pagando solo un 20% hoy a la plataforma (Depósito de Garantía), el cual está protegido por esta política de cancelación. El 80% restante lo abonas directamente a tu anfitrión al momento de hacer el check-in.
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* House Rules */}
-                        <div className="space-y-4">
-                          <h4 className="text-xs font-black tracking-widest uppercase text-slate-400">
-                            Normas de la Casa
-                          </h4>
-                          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                            <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
-                              <span className="text-base">🚭</span>
-                              <span className="text-[11.5px] font-bold text-slate-600">No Fumar</span>
-                            </div>
-                            <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
-                              <span className="text-base">🐾</span>
-                              <span className="text-[11.5px] font-bold text-slate-600">
-                                {currentListing.isPetFriendly ? 'Pet Friendly' : 'No Mascotas'}
+                    {(() => {
+                      const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
+                      const policy = CANCELLATION_POLICIES[policyKey];
+                      const timeline = POLICY_TIMELINE[policyKey];
+                      
+                      return (
+                        <div className="space-y-8">
+                          {/* Policy Detail Card */}
+                          <div className="rounded-[28px] border border-slate-100 bg-slate-50/50 p-6 md:p-8 space-y-6">
+                            <div className="flex items-center gap-3">
+                              <span className={cn("inline-block h-3.5 w-3.5 rounded-full", policy.dotColor)} />
+                              <h4 className="text-lg font-black text-brand-navy tracking-tight">{policy.label}</h4>
+                              <span className={cn("rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-widest leading-none", policy.badgeColor)}>
+                                Activa
                               </span>
                             </div>
-                            <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
-                              <span className="text-base">⏰</span>
-                              <span className="text-[11.5px] font-bold text-slate-600">Check-in: 14:00</span>
+                            
+                            <p className="text-sm font-semibold leading-relaxed text-slate-600">
+                              {policy.detail}
+                            </p>
+
+                            {/* Visual Timeline */}
+                            <div className="relative pt-6 pb-2">
+                              {/* Horizontal Line */}
+                              <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 -translate-y-1/2 rounded-full" />
+                              
+                              <div className="relative flex justify-between">
+                                {timeline.milestones.map((milestone, idx) => (
+                                  <div key={idx} className="flex flex-col items-center text-center space-y-2 relative z-10">
+                                    {/* Milestone Bullet */}
+                                    <div className={cn(
+                                      "flex h-6 w-6 items-center justify-center rounded-full border-4 border-white shadow-md transition-colors",
+                                      milestone.refundPct === 100 
+                                        ? "bg-emerald-500" 
+                                        : milestone.refundPct === 50 
+                                          ? "bg-amber-500" 
+                                          : "bg-red-500"
+                                    )}>
+                                      {milestone.refundPct > 0 ? (
+                                        <Check className="h-2 w-2 text-white stroke-[4]" />
+                                      ) : (
+                                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                                      )}
+                                    </div>
+                                    
+                                    {/* Label */}
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                      {milestone.label}
+                                    </span>
+                                    
+                                    {/* Refund Percentage */}
+                                    <span className={cn(
+                                      "text-xs font-extrabold",
+                                      milestone.refundPct === 100 
+                                        ? "text-emerald-600" 
+                                        : milestone.refundPct === 50 
+                                          ? "text-amber-600" 
+                                          : "text-red-600"
+                                    )}>
+                                      {milestone.refundPct}% reembolso
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {timeline.strictNote && (
+                              <p className="text-xs font-semibold text-red-500 bg-red-50/50 border border-red-100/50 rounded-xl px-4 py-2.5">
+                                ⚠️ {timeline.strictNote}
+                              </p>
+                            )}
+
+                            {/* UCP Note */}
+                            <div className="border-t border-slate-100 pt-5 mt-4">
+                              <p className="text-[11px] leading-relaxed text-slate-400 font-bold">
+                                ℹ️ <span className="uppercase tracking-widest text-[9px] font-extrabold mr-1 text-slate-500">Garantía de Reserva 20/80:</span>
+                                Aseguras tu estadía pagando solo un 20% hoy a la plataforma (Depósito de Garantía), el cual está protegido por esta política de cancelación. El 80% restante lo abonas directamente a tu anfitrión al momento de hacer el check-in.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* House Rules */}
+                          <div className="space-y-4">
+                            <h4 className="text-xs font-black tracking-widest uppercase text-slate-400">
+                              Normas de la Casa
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                              <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                <span className="text-base">🚭</span>
+                                <span className="text-[11.5px] font-bold text-slate-600">No Fumar</span>
+                              </div>
+                              <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                <span className="text-base">🐾</span>
+                                <span className="text-[11.5px] font-bold text-slate-600">
+                                  {currentListing.isPetFriendly ? 'Pet Friendly' : 'No Mascotas'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                <span className="text-base">⏰</span>
+                                <span className="text-[11.5px] font-bold text-slate-600">Check-in: 14:00</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })()}
-                </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
 
               {/* Desktop Booking Panel — Variantes Expanded / Collapsed */}
@@ -1596,13 +1608,13 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                           totalPrice={totalNights > 0 ? totalPrice : currentListing.pricePerNight}
                           depositAmount={
                             totalNights > 0
-                              ? calculatePaymentBreakdown(totalPrice).depositAmount
-                              : currentListing.pricePerNight * 0.20
+                              ? calculatePaymentBreakdown(totalPrice, 12, currentListing.cleaningFee || 0).depositAmount
+                              : calculatePaymentBreakdown(currentListing.pricePerNight, 12, currentListing.cleaningFee || 0).depositAmount
                           }
                           remainingAmount={
                             totalNights > 0
-                              ? calculatePaymentBreakdown(totalPrice).remainingBalance
-                              : currentListing.pricePerNight * 0.80
+                              ? calculatePaymentBreakdown(totalPrice, 12, currentListing.cleaningFee || 0).remainingBalance
+                              : calculatePaymentBreakdown(currentListing.pricePerNight, 12, currentListing.cleaningFee || 0).remainingBalance
                           }
                           paymentMethods={currentListing.paymentMethods}
                         />
@@ -1636,9 +1648,15 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                                 </div>
                                 <div className="flex justify-between items-center">
                                   <span className="text-slate-500 font-medium">Limpieza de alojamiento</span>
-                                  <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none select-none">
-                                    Incluida
-                                  </span>
+                                  {currentListing.cleaningFee && currentListing.cleaningFee > 0 ? (
+                                    <span className="font-extrabold text-brand-navy font-sans text-sm">
+                                      ${currentListing.cleaningFee} USD
+                                    </span>
+                                  ) : (
+                                    <span className="text-emerald-600 font-bold text-[9px] uppercase tracking-widest bg-emerald-50/70 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none select-none">
+                                      Incluida
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="flex justify-between items-center">
                                   <span className="text-slate-500 font-medium">Servicios de plataforma</span>
@@ -1655,7 +1673,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                                 <div className="border-t border-slate-100 pt-3.5 flex justify-between items-baseline font-black text-brand-navy mt-1">
                                   <span className="text-[10px] tracking-widest uppercase text-slate-400 font-extrabold">Total Final</span>
                                   <span className="text-base font-extrabold font-sans">
-                                    ${(currentListing.pricePerNight * (totalNights > 0 ? totalNights : 1)).toLocaleString()} USD
+                                    ${(currentListing.pricePerNight * (totalNights > 0 ? totalNights : 1) + (currentListing.cleaningFee || 0)).toLocaleString()} USD
                                   </span>
                                 </div>
                               </div>
@@ -1702,33 +1720,35 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                         </p>
                       </div>
 
-                      {/* 7. POLÍTICA DE CANCELACIÓN — DINÁMICA */}
-                      <div className="border-t border-slate-100 pt-4 space-y-2.5">
-                        <div className="flex items-center gap-1.5 text-[9px] font-black tracking-widest text-[#0a142c]/60 uppercase select-none">
-                          <Info className="h-3.5 w-3.5 text-brand-gold" />
-                          <span>Política de Cancelación</span>
+                      {/* 7. POLÍTICA DE CANCELACIÓN — DINÁMICA - Ocultado por requerimiento de diseño */}
+                      {SHOW_CANCELLATION_POLICY_DETAIL && (
+                        <div className="border-t border-slate-100 pt-4 space-y-2.5">
+                          <div className="flex items-center gap-1.5 text-[9px] font-black tracking-widest text-[#0a142c]/60 uppercase select-none">
+                            <Info className="h-3.5 w-3.5 text-brand-gold" />
+                            <span>Política de Cancelación</span>
+                          </div>
+                          {(() => {
+                            const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
+                            const policy = CANCELLATION_POLICIES[policyKey];
+                            return (
+                              <>
+                                <div className="flex items-center gap-1.5">
+                                  <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', policy.dotColor)} />
+                                  <span className={cn(
+                                    'inline-flex items-center rounded-lg border px-2.5 py-1 text-[9px] font-black tracking-widest uppercase',
+                                    policy.badgeColor
+                                  )}>
+                                    {policy.label}
+                                  </span>
+                                </div>
+                                <p className="text-[10.5px] leading-relaxed text-slate-500 font-medium">
+                                  {policy.detail}
+                                </p>
+                              </>
+                            );
+                          })()}
                         </div>
-                        {(() => {
-                          const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
-                          const policy = CANCELLATION_POLICIES[policyKey];
-                          return (
-                            <>
-                              <div className="flex items-center gap-1.5">
-                                <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', policy.dotColor)} />
-                                <span className={cn(
-                                  'inline-flex items-center rounded-lg border px-2.5 py-1 text-[9px] font-black tracking-widest uppercase',
-                                  policy.badgeColor
-                                )}>
-                                  {policy.label}
-                                </span>
-                              </div>
-                              <p className="text-[10.5px] leading-relaxed text-slate-500 font-medium">
-                                {policy.detail}
-                              </p>
-                            </>
-                          );
-                        })()}
-                      </div>
+                      )}
 
                       {/* 5. BLOQUE DE CONFIANZA */}
                       <div className="grid grid-cols-2 gap-x-2 gap-y-3.5 pt-5 border-t border-slate-100 select-none">

@@ -85,7 +85,8 @@ service firebase.storage {
     // =========================================================================
     // Se aplican a 'receipts', 'payment-proofs' y a 'bookings/{bookingId}/payments'
     match /receipts/{bookingId}/{fileName} {
-      allow read: if isAuthenticated() && (
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
         isAdmin()
@@ -98,7 +99,8 @@ service firebase.storage {
     }
 
     match /payment-proofs/{bookingId}/{fileName} {
-      allow read: if isAuthenticated() && (
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
         isAdmin()
@@ -116,8 +118,8 @@ service firebase.storage {
     }
 
     match /bookings/{bookingId}/payments/{fileName} {
-      // Lectura: Restringida a huésped, anfitrión o admin
-      allow read: if isAuthenticated() && (
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
         isAdmin()

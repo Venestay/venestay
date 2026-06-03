@@ -10,20 +10,20 @@ Este documento define como trabajar con especificaciones pequenas y claras para 
 
 ### Paso 0.1 — Leer el Master Agent Prompt v3.0
 
-Al iniciar cualquier sesión en este proyecto (`c:\VeneStay`), el agente DEBE leer y aplicar íntegramente el archivo:
+Al iniciar cualquier sesión en este proyecto (independientemente de si la ruta base es `c:\VeneStay` o `C:\Users\carlos.zabala\Documents\VeneStay`), el agente DEBE leer y aplicar íntegramente el archivo utilizando la ruta relativa al espacio de trabajo actual:
 
 ```
-c:\VeneStay\docs\plans\VENESTAY_AGENT_PROMPT_SDD.md
+./docs/plans/VENESTAY_AGENT_PROMPT_SDD.md
 ```
 
 Este archivo contiene el contrato operativo completo: pipeline SDD, roles de agentes, reglas de arquitectura, paleta de diseño, y protocolo de memoria tiered. Es de lectura obligatoria antes de responder cualquier pedido.
 
 ### Paso 0.2 — Cargar MEMORY_HOT.md (Tiered Memory)
 
-Inmediatamente después de leer el Master Prompt, cargar:
+Inmediatamente después de leer el Master Prompt, cargar el archivo en la ruta relativa:
 
 ```
-c:\VeneStay\docs\ai_harness\MEMORY_HOT.md
+./docs/ai_harness/MEMORY_HOT.md
 ```
 
 - Si NO existe → crearlo con la plantilla HOT del Master Prompt y avisar al usuario.

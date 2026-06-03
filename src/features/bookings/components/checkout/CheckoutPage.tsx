@@ -832,8 +832,8 @@ const CheckoutPage: React.FC = () => {
             : 'USD',
         amounts: {
           total: booking.totalAmount,
-          depositRequired: calculatePaymentBreakdown(booking.totalAmount).depositAmount,
-          offlineBalance: calculatePaymentBreakdown(booking.totalAmount).remainingBalance,
+          depositRequired: calculatePaymentBreakdown(booking.totalAmount, 12, listing.cleaningFee || 0).depositAmount,
+          offlineBalance: calculatePaymentBreakdown(booking.totalAmount, 12, listing.cleaningFee || 0).remainingBalance,
         },
         metadata: { agenticReady: true },
       };
@@ -1335,7 +1335,9 @@ const CheckoutPage: React.FC = () => {
                       >
                         $
                         {calculatePaymentBreakdown(
-                          booking.totalAmount
+                          booking.totalAmount,
+                          12,
+                          listing.cleaningFee || 0
                         ).depositAmount.toFixed(2)}
                       </p>
                       {!HIDE_BCV_PRICES && convertedAmount && rates && (
@@ -1347,7 +1349,7 @@ const CheckoutPage: React.FC = () => {
                         >
                           Bs.{' '}
                           {(
-                            calculatePaymentBreakdown(booking.totalAmount)
+                            calculatePaymentBreakdown(booking.totalAmount, 12, listing.cleaningFee || 0)
                               .depositAmount * rates.bcv
                           ).toLocaleString('es-VE', {
                             maximumFractionDigits: 0,
@@ -1363,7 +1365,9 @@ const CheckoutPage: React.FC = () => {
                       <strong aria-label="offline-balance-amount">
                         $
                         {calculatePaymentBreakdown(
-                          booking.totalAmount
+                          booking.totalAmount,
+                          12,
+                          listing.cleaningFee || 0
                         ).remainingBalance.toFixed(2)}
                       </strong>{' '}
                       se liquida directamente con tu anfitrión al momento del Check-in.
@@ -1689,7 +1693,7 @@ const CheckoutPage: React.FC = () => {
                                   <div className="bg-white p-4 rounded-3xl inline-block shadow-inner">
                                     <img
                                       src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
-                                        `pago_movil:tel=${selectedMethod.data.phoneNumber}&rif=${selectedMethod.data.idNumber}&banco=${selectedMethod.data.bankName || ''}&monto=${(calculatePaymentBreakdown(booking.totalAmount).depositAmount * rates.bcv).toFixed(2)}&concepto=Reserva-${booking.id || 'Draft'}`
+                                        `pago_movil:tel=${selectedMethod.data.phoneNumber}&rif=${selectedMethod.data.idNumber}&banco=${selectedMethod.data.bankName || ''}&monto=${(calculatePaymentBreakdown(booking.totalAmount, 12, listing.cleaningFee || 0).depositAmount * rates.bcv).toFixed(2)}&concepto=Reserva-${booking.id || 'Draft'}`
                                       )}`}
                                       alt="QR Dinámico de Pago Rápido"
                                       width={140}

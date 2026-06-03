@@ -14,6 +14,7 @@ BLOQUEANTE: ninguno
 | Fase 1: MVP KYC Huésped | src/services/kyc-service.ts, functions/src/submitKYCDocument.ts | COMPLETADO (Desplegado a Firebase Cloud) | 0/3 |
 | Fase 2: Panel Auditoría Admin | functions/src/approveKYC.ts, ... | PENDIENTE (Siguiente paso) | 0/3 |
 | Fase 3: Integración Checkout | src/features/bookings/components/checkout/CheckoutPage.tsx | PENDIENTE | 0/3 |
+| Preparación Sprint 7: Análisis Tarifa de Limpieza | docs/plans/informe_tarifa_limpieza.md | COMPLETADO | 0/3 |
 
 ## Notas de Integración / Estado de Emuladores
 *   **Java JDK Configurado:** Java se localizó en `C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin`.
@@ -22,4 +23,4 @@ BLOQUEANTE: ninguno
 *   **Resultados QA:** TypeScript compila con éxito. Eslint sin errores en código nuevo. Vitest reporta 0 tests configurados (esperado).
 
 ## Próxima acción requerida
-1. Proponer la especificación atómica para la Fase 2 (Aprobación/Rechazo de documentos de identidad, generación de URL firmadas y panel administrativo).
+1. Al iniciar la próxima sesión, decidir si priorizar la Fase 2 del Sprint S04 (Panel Admin KYC) o iniciar el Sprint 7 basado en `docs/plans/informe_tarifa_limpieza.md`.

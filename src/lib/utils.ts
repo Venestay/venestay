@@ -31,14 +31,14 @@ export interface PaymentBreakdown {
   remainingBalance: number;
 }
 
-export function calculatePaymentBreakdown(total: number, tier: CommissionTier = 12): PaymentBreakdown {
+export function calculatePaymentBreakdown(total: number, tier: CommissionTier = 12, cleaningFee: number = 0): PaymentBreakdown {
   const breakdown = calculateCommission(total, tier);
   return {
-    total,
+    total: total + cleaningFee,
     depositAmount: breakdown.ucpDeposit,
     platformFee: breakdown.platformFee,
     hostPayout: breakdown.settlementAmount,
-    remainingBalance: breakdown.ucpBalance,
+    remainingBalance: breakdown.ucpBalance + cleaningFee,
   };
 }
 
