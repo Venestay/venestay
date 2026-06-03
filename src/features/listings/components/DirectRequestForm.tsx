@@ -47,7 +47,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [guestsCount, setGuestsCount] = useState(2);
   const [guestMessage, setGuestMessage] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'ves' | 'usdt'>('usdt');
+  const paymentMethod: 'ves' | 'usdt' = 'usdt';
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Caracteres restantes
   const messageLength = guestMessage.trim().length;
@@ -258,39 +258,6 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
           </div>
         </div>
 
-        {/* MÉTODO DE PAGO PREFERIDO */}
-        <div className="space-y-2">
-          <label className="text-[8.5px] font-black tracking-[0.12em] uppercase text-slate-400 block">
-            Método de Pago Preferido (Si se aprueba)
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setPaymentMethod('usdt')}
-              className={cn(
-                "py-3 rounded-2xl text-xs font-black tracking-wide border transition-all text-center",
-                paymentMethod === 'usdt' 
-                  ? "border-[#b08f23] bg-brand-gold/[0.05] text-[#b08f23]" 
-                  : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-              )}
-            >
-              Cripto USDT (Binance Pay)
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentMethod('ves')}
-              className={cn(
-                "py-3 rounded-2xl text-xs font-black tracking-wide border transition-all text-center",
-                paymentMethod === 'ves' 
-                  ? "border-[#b08f23] bg-brand-gold/[0.05] text-[#b08f23]" 
-                  : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-              )}
-            >
-              Pago Móvil VES
-            </button>
-          </div>
-        </div>
-
         {/* MENSAJE AL ANFITRIÓN */}
         <div className="space-y-2">
           <div className="flex justify-between items-baseline">
@@ -342,7 +309,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
             <div className="flex justify-between items-baseline font-black text-brand-navy">
               <span className="text-[9px] tracking-widest uppercase text-slate-400">Anticipo (UCP 20%)</span>
               <span className="text-sm font-black text-brand-gold">
-                ${anticipoAmount.toFixed(0)} {paymentMethod === 'ves' ? 'VES' : 'USDT'}
+                ${anticipoAmount.toFixed(0)} USDT
               </span>
             </div>
             <div className="flex justify-between items-baseline font-bold text-slate-400 text-[10px]">

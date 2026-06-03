@@ -26,6 +26,7 @@ export const LISTINGS: Listing[] = [
     hostName: 'Carlos',
     hostAvatar: 'https://i.pravatar.cc/150?u=carlos',
     hostId: 'admin_carlos',
+    cleaningFee: 25,
   },
   {
     id: '2',
@@ -58,6 +59,7 @@ export const LISTINGS: Listing[] = [
     hostName: 'Maria',
     hostAvatar: 'https://i.pravatar.cc/150?u=maria',
     hostId: 'admin_maria',
+    cleaningFee: 35,
   },
   {
     id: '3',
@@ -84,6 +86,7 @@ export const LISTINGS: Listing[] = [
     hostName: 'Alejandro',
     hostAvatar: 'https://i.pravatar.cc/150?u=alejandro',
     hostId: 'admin_alejandro',
+    cleaningFee: 10,
   },
   {
     id: '4',
@@ -116,6 +119,7 @@ export const LISTINGS: Listing[] = [
     hostName: 'Elena',
     hostAvatar: 'https://i.pravatar.cc/150?u=fem-elena',
     hostId: 'admin_elena',
+    cleaningFee: 45,
   },
   {
     id: '5',
@@ -142,6 +146,7 @@ export const LISTINGS: Listing[] = [
     hostName: 'Ricardo',
     hostAvatar: 'https://i.pravatar.cc/150?u=ricardo',
     hostId: 'admin_ricardo',
+    cleaningFee: 20,
   },
   {
     id: 'test-lecheria',
@@ -176,6 +181,7 @@ export const LISTINGS: Listing[] = [
     paymentInstructions:
       'BANCO MERCANTIL\nCuenta Corriente: 0105-XXXX-XXXX-XXXX-XXXX\nBeneficiario: VeneStay Rentals J-12345678-9\n\nPAGO MÓVIL:\nBanco: Mercantil (0105)\nCédula: 12.345.678\nTeléfono: 0414-123.45.67\n\nZELLE:\npagos@venestay.com (A nombre de Carlos R.)',
     blockedDates: ['2026-06-01', '2026-06-02'],
+    cleaningFee: 60,
   },
 ];
 

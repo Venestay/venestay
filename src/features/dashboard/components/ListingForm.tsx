@@ -71,6 +71,7 @@ const ListingFormContent: React.FC<{
             accommodationType: originalListing.accommodationType,
             maxNights: originalListing.maxNights,
             isPetFriendly: originalListing.isPetFriendly,
+            cleaningFee: originalListing.cleaningFee,
           };
         case 2:
           return {
@@ -124,6 +125,7 @@ const ListingFormContent: React.FC<{
           accommodationType: editingListing.accommodationType,
           maxNights: editingListing.maxNights,
           isPetFriendly: editingListing.isPetFriendly,
+          cleaningFee: editingListing.cleaningFee,
         };
       case 2:
         return {
@@ -460,6 +462,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
               accommodationType: editingListing.accommodationType,
               maxNights: editingListing.maxNights,
               isPetFriendly: editingListing.isPetFriendly,
+              cleaningFee: editingListing.cleaningFee,
             };
           case 2:
             return {

@@ -205,6 +205,53 @@ const StepGeneral: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
+        
+        {/* Gastos de Limpieza (Opcional) */}
+        <div className="space-y-2">
+          <label htmlFor="listing-cleaningFee" className={cn(
+            "text-[10px] font-black tracking-widest uppercase ml-1 transition-colors",
+            touched.cleaningFee && errors.cleaningFee ? "text-red-500" : "text-brand-navy/40"
+          )}>
+            Gastos de Limpieza ($)
+          </label>
+          <input
+            id="listing-cleaningFee"
+            type="number"
+            aria-invalid={!!(touched.cleaningFee && errors.cleaningFee)}
+            aria-describedby={touched.cleaningFee && errors.cleaningFee ? "listing-cleaningFee-error" : "listing-cleaningFee-suggestion"}
+            className={cn(
+              "text-brand-navy w-full rounded-2xl border bg-gray-50 px-6 py-4 font-bold outline-none transition-all",
+              touched.cleaningFee && errors.cleaningFee ? "border-red-200 bg-red-50 focus:border-red-500" :
+                touched.cleaningFee && !errors.cleaningFee && editingListing.cleaningFee ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
+                  "border-gray-100 focus:border-brand-500"
+            )}
+            value={editingListing.cleaningFee ?? ''}
+            onChange={(e) => {
+              const val = e.target.value === '' ? undefined : Number(e.target.value);
+              setEditingListing(prev => prev ? { ...prev, cleaningFee: val } : null);
+              if (touched.cleaningFee) validateField('cleaningFee', val);
+            }}
+            onBlur={() => {
+              setFieldTouched('cleaningFee');
+              validateField('cleaningFee', editingListing.cleaningFee);
+            }}
+            placeholder="Ej: 25"
+          />
+          <AnimatePresence>
+            {touched.cleaningFee && errors.cleaningFee ? (
+              <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} id="listing-cleaningFee-error" role="alert" className="ml-1 text-[9px] font-bold text-red-500 uppercase tracking-wider">{errors.cleaningFee}</motion.p>
+            ) : (
+              <p id="listing-cleaningFee-suggestion" className="ml-1 text-[9px] font-semibold text-slate-400 tracking-wide">
+                💡 Tarifa única por estancia. Sugerido para tu propiedad ({editingListing.bedrooms || 0} hab): {
+                  (editingListing.bedrooms || 0) <= 1 ? 'entre $0 y $20 USD' :
+                  (editingListing.bedrooms || 0) === 2 ? 'entre $15 y $40 USD' :
+                  (editingListing.bedrooms || 0) === 3 ? 'entre $30 y $60 USD' :
+                  'entre $50 y $100 USD'
+                }.
+              </p>
+            )}
+          </AnimatePresence>
+        </div>
 
         <div className="space-y-2">
           <label htmlFor="listing-city" className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Ciudad</label>

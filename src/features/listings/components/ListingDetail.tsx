@@ -1246,6 +1246,21 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       </div>
                     </div>
                   </div>
+
+                  {/* Dirección detallada visible debajo del mapa */}
+                  <div className="mt-5 flex items-start gap-4 rounded-[28px] border border-gray-100 bg-white p-6 shadow-md transition-all hover:shadow-lg">
+                    <div className="bg-brand-500/10 text-brand-500 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl">
+                      <MapPin className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        Dirección de la Propiedad
+                      </h4>
+                      <p className="text-brand-navy font-black leading-relaxed text-sm">
+                        {currentListing.manualAddress || currentListing.location || "Dirección no especificada"}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Reviews Section */}
