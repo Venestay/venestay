@@ -219,7 +219,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     filteredBookings,
     activosCount,
     historialCount,
-  } = useTripFilters(bookings, unreadChatMap);
+  } = useTripFilters(bookings, unreadChatMap, nowMs);
 
   const processAndSetFile = async (selectedFile: File) => {
     if (!selectedFile.type.startsWith('image/')) {

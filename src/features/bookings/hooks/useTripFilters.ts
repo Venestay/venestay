@@ -17,7 +17,8 @@ type TerminalStatus = typeof TERMINAL_STATUSES[number];
 
 export function useTripFilters(
   bookings: Booking[],
-  unreadChatMap: Record<string, boolean>
+  unreadChatMap: Record<string, boolean>,
+  nowMs: number
 ): TripFiltersResult {
   const [activeTab, setActiveTabState] = useState<'activos' | 'historial'>(() => {
     const saved = sessionStorage.getItem('mytrips_active_tab');
@@ -32,10 +33,13 @@ export function useTripFilters(
   };
 
   const { classifiedActivos, classifiedHistorial } = useMemo(() => {
-    const now = Date.now();
     const threshold48h = ACTIVOS_HOURS * 60 * 60 * 1000;
     const activos: Booking[] = [];
     const historial: Booking[] = [];
+
+    const todayStart = new Date(nowMs);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayStartMs = todayStart.getTime();
 
     bookings.forEach((booking) => {
       const status = booking.status as string;
@@ -45,7 +49,7 @@ export function useTripFilters(
       const isCompletedConfirmed =
         status === 'CONFIRMED' &&
         booking.endDate &&
-        new Date(booking.endDate).getTime() < new Date().setHours(0, 0, 0, 0);
+        new Date(booking.endDate).getTime() < todayStartMs;
 
       const isTerminal = TERMINAL_STATUSES.includes(status as TerminalStatus) || isCompletedConfirmed;
 
@@ -67,7 +71,7 @@ export function useTripFilters(
           updatedMs = (updatedRaw as { seconds: number }).seconds * 1000;
         }
 
-        const isRecent = updatedMs !== null && (now - updatedMs) < threshold48h;
+        const isRecent = updatedMs !== null && (nowMs - updatedMs) < threshold48h;
         if (isRecent) {
           activos.push(booking);
         } else {
@@ -79,7 +83,7 @@ export function useTripFilters(
     });
 
     return { classifiedActivos: activos, classifiedHistorial: historial };
-  }, [bookings, unreadChatMap]);
+  }, [bookings, unreadChatMap, nowMs]);
 
   const filteredBookings = useMemo(() => {
     const targetGroup = activeTab === 'activos' ? classifiedActivos : classifiedHistorial;
