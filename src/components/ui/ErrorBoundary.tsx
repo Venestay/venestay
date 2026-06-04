@@ -46,7 +46,7 @@ class ErrorBoundary extends Component<Props, State> {
         const now = Date.now();
         if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
           sessionStorage.setItem('last_chunk_error_reload', now.toString());
-          window.location.reload();
+          window.location.href = window.location.pathname + '?t=' + now;
         }
       } catch (e) {
         console.error('Failed to auto-reload on chunk error:', e);
@@ -66,7 +66,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReload() {
-    window.location.reload();
+    window.location.href = window.location.pathname + '?t=' + Date.now();
   }
 
   public render() {
