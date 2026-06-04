@@ -11,7 +11,7 @@ export type City =
   | 'Puerto La Cruz';
 
 
-export type CancellationPolicyType = 'flexible' | 'moderate' | 'strict';
+export type CancellationPolicyType = 'flexible' | 'moderate' | 'strict' | 'non_refundable_reschedulable';
 
 export interface Listing {
   id: string;
@@ -61,6 +61,11 @@ export interface Listing {
     phoneNumber?: string; // Pago Móvil
   };
   bookingMode?: 'instant' | 'request';
+  allowSmoking?: boolean;
+  allowEvents?: boolean;
+  checkInTime?: string;
+  checkOutTime?: string;
+  additionalRules?: string[];
 }
 
 

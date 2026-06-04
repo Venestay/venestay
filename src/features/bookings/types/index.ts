@@ -1,6 +1,7 @@
 import { CommissionBreakdown } from '@/lib/commission';
 import { FieldValue } from 'firebase/firestore';
 import { PaymentMethod } from '@/features/auth/types';
+import { CancellationPolicyType } from '@/features/listings/types';
 
 export type BookingStatus =
   | 'NEGOTIATING'
@@ -11,7 +12,9 @@ export type BookingStatus =
   | 'CANCELLED'
   | 'PENDING_APPROVAL'
   | 'EXPIRED'
-  | 'CANCELLED_BY_GUEST';
+  | 'CANCELLED_BY_GUEST'
+  | 'RESCHEDULE_REQUESTED'
+  | 'RESCHEDULE_PENDING';
 
 export interface DirectBookingRequestPayload {
   listingId: string;
@@ -50,7 +53,7 @@ export interface Booking {
   rejectionReason?: string;
   guests: number;
   isDraft?: boolean;
-  cancellationPolicySnapshot?: 'flexible' | 'moderate' | 'strict';
+  cancellationPolicySnapshot?: CancellationPolicyType;
   bookingMode?: 'instant' | 'request';
   guestMessage?: string;
   hostResponseNote?: string;
@@ -59,6 +62,10 @@ export interface Booking {
   hostSelectedPaymentMethod?: PaymentMethod;
   createdAt: string | Date | FieldValue;
   updatedAt: string | Date | FieldValue;
+  seasonalAdjustmentFee?: number;
+  proposedStartDate?: string;
+  proposedEndDate?: string;
+  rescheduleNote?: string;
   statusHistory?: {
     status: BookingStatus;
     timestamp: string | Date | FieldValue;

@@ -39,7 +39,12 @@ export const ListingSchema = z.object({
     idNumber: z.string(),
     phoneNumber: z.string().optional(),
   }).optional(),
-  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict']).optional().default('moderate'),
+  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict', 'non_refundable_reschedulable']).optional().default('non_refundable_reschedulable'),
+  allowSmoking: z.boolean().optional().default(false),
+  allowEvents: z.boolean().optional().default(false),
+  checkInTime: z.string().optional(),
+  checkOutTime: z.string().optional(),
+  additionalRules: z.array(z.string()).optional().default([]),
 });
 
 export type ValidatedListing = z.infer<typeof ListingSchema>;

@@ -4,6 +4,7 @@ import { AlertCircle, Check, Minus, Plus, Zap, MessageSquare } from 'lucide-reac
 import { cn } from '@/lib/utils';
 import { City } from '@/types';
 import { useListingForm } from '../ListingFormContext';
+import { getAmenityIcon } from '@/features/listings/utils/amenities-icons';
 
 interface NumberStepperProps {
   id: string;
@@ -73,12 +74,19 @@ const StepGeneral: React.FC = () => {
   const { editingListing, setEditingListing, validation } = useListingForm();
   const { errors, touched, validateField, setFieldTouched } = validation;
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const SHOW_CANCELLATION_POLICY_FORM = false;
+  const SHOW_CANCELLATION_POLICY_FORM = true;
 
   // Focus management: move focus to first input when step mounts
   useEffect(() => {
     firstInputRef.current?.focus();
   }, []);
+
+  // Forzar política única no reembolsable y reprogramable
+  useEffect(() => {
+    if (editingListing && editingListing.cancellationPolicy !== 'non_refundable_reschedulable') {
+      setEditingListing(prev => prev ? { ...prev, cancellationPolicy: 'non_refundable_reschedulable' } : null);
+    }
+  }, [editingListing, setEditingListing]);
 
   return (
     <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
@@ -415,14 +423,187 @@ const StepGeneral: React.FC = () => {
         <div className="flex flex-wrap gap-2" role="group" aria-labelledby="amenities-label">
           {['WiFi', 'A/A', 'TV', 'Smart TV', 'Cocina equipada', 'Electrodomésticos', 'Calentador de agua', 'Purificador de Agua', 'Lavadora', 'Secadora', 'Piscina', 'Planta Eléctrica', 'Tanque de Agua', 'Vista al Mar', 'Muelle Privado / Acceso al Canal', 'Parrillera / BBQ (a Gas o Carbón)', 'Kayak / Paddle Board incluido', 'Gimnasio', 'Estacionamiento', 'Cerradura Inteligente', 'Elementos de seguridad', 'Extintor de incendios', 'Botiquín de primeros auxilios'].map(amenity => {
             const isActive = editingListing.amenities?.includes(amenity);
+            const Icon = getAmenityIcon(amenity);
             return (
               <button key={amenity} type="button" aria-pressed={isActive} onClick={() => {
                 const current = editingListing.amenities || [];
                 const next = isActive ? current.filter(a => a !== amenity) : [...current, amenity];
                 setEditingListing(prev => prev ? { ...prev, amenities: next } : null);
-              }} className={`rounded-full px-5 py-2.5 text-[10px] font-bold transition-all min-h-[44px] ${isActive ? 'bg-brand-navy text-white shadow-md' : 'bg-gray-100 text-brand-navy/60 hover:bg-gray-200'}`}>{amenity}</button>
+              }} className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-[10px] font-bold transition-all min-h-[44px] ${isActive ? 'bg-brand-navy text-white shadow-md' : 'bg-gray-100 text-brand-navy/60 hover:bg-gray-200'}`}>
+                <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-white" : "text-brand-navy/60")} />
+                {amenity}
+              </button>
             );
           })}
+        </div>
+      </section>
+
+      {/* Normas de la Casa */}
+      <section className="space-y-4 border-t border-gray-200/60 pt-6">
+        <h3 className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Normas de la Casa</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+          {/* Toggles */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between min-h-[44px]">
+              <span className="text-[10px] font-black tracking-widest uppercase text-brand-navy/60 ml-1">
+                ¿Se permite fumar?
+              </span>
+              <button
+                type="button"
+                aria-label="Permitir fumar"
+                onClick={() => {
+                  const newVal = !editingListing.allowSmoking;
+                  setEditingListing(prev => prev ? { ...prev, allowSmoking: newVal } : null);
+                }}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border min-h-[44px]",
+                  editingListing.allowSmoking
+                    ? "bg-brand-navy border-brand-navy text-white shadow-md"
+                    : "bg-gray-100 border-gray-200 text-brand-navy/60 hover:bg-gray-200"
+                )}
+              >
+                {editingListing.allowSmoking ? 'Sí' : 'No'}
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-between min-h-[44px]">
+              <span className="text-[10px] font-black tracking-widest uppercase text-brand-navy/60 ml-1">
+                ¿Se permiten fiestas o eventos?
+              </span>
+              <button
+                type="button"
+                aria-label="Permitir fiestas o eventos"
+                onClick={() => {
+                  const newVal = !editingListing.allowEvents;
+                  setEditingListing(prev => prev ? { ...prev, allowEvents: newVal } : null);
+                }}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border min-h-[44px]",
+                  editingListing.allowEvents
+                    ? "bg-brand-navy border-brand-navy text-white shadow-md"
+                    : "bg-gray-100 border-gray-200 text-brand-navy/60 hover:bg-gray-200"
+                )}
+              >
+                {editingListing.allowEvents ? 'Sí' : 'No'}
+              </button>
+            </div>
+          </div>
+
+          {/* Horarios */}
+          <div className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="check-in-time" className="text-[10px] font-black tracking-widest uppercase text-brand-navy/60 ml-1">
+                Horario de Check-in (Entrada)
+              </label>
+              <select
+                id="check-in-time"
+                value={editingListing.checkInTime || '14:00'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setEditingListing(prev => prev ? { ...prev, checkInTime: val } : null);
+                }}
+                className="w-full text-brand-navy rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-xs font-bold outline-none focus:border-brand-500 min-h-[44px]"
+              >
+                {Array.from({ length: 16 }, (_, i) => {
+                  const hour = i + 8;
+                  const formatted = `${hour < 10 ? '0' : ''}${hour}:00`;
+                  return <option key={formatted} value={formatted}>{formatted}</option>;
+                })}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="check-out-time" className="text-[10px] font-black tracking-widest uppercase text-brand-navy/60 ml-1">
+                Horario de Check-out (Salida)
+              </label>
+              <select
+                id="check-out-time"
+                value={editingListing.checkOutTime || '11:00'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setEditingListing(prev => prev ? { ...prev, checkOutTime: val } : null);
+                }}
+                className="w-full text-brand-navy rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-xs font-bold outline-none focus:border-brand-500 min-h-[44px]"
+              >
+                {Array.from({ length: 16 }, (_, i) => {
+                  const hour = i + 8;
+                  const formatted = `${hour < 10 ? '0' : ''}${hour}:00`;
+                  return <option key={formatted} value={formatted}>{formatted}</option>;
+                })}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Reglas adicionales list builder */}
+        <div className="space-y-3">
+          <label htmlFor="additional-rule-input" className="text-[10px] font-black tracking-widest uppercase text-brand-navy/60 ml-1">
+            Normas Adicionales del Anfitrión
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="additional-rule-input"
+              type="text"
+              placeholder="Ej: Apagar los aires acondicionados al salir"
+              className="text-brand-navy flex-1 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-xs font-bold outline-none focus:border-brand-500 min-h-[44px]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const target = e.currentTarget;
+                  const val = target.value.trim();
+                  if (val) {
+                    const rules = editingListing.additionalRules || [];
+                    if (!rules.includes(val)) {
+                      setEditingListing(prev => prev ? { ...prev, additionalRules: [...rules, val] } : null);
+                    }
+                    target.value = '';
+                  }
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={(e) => {
+                const input = document.getElementById('additional-rule-input') as HTMLInputElement | null;
+                const val = input?.value.trim();
+                if (val) {
+                  const rules = editingListing.additionalRules || [];
+                  if (!rules.includes(val)) {
+                    setEditingListing(prev => prev ? { ...prev, additionalRules: [...rules, val] } : null);
+                  }
+                  if (input) input.value = '';
+                }
+              }}
+              className="px-6 rounded-xl bg-brand-navy text-white text-[10px] font-black uppercase tracking-widest min-h-[44px] hover:bg-brand-navy/90 active:scale-95 transition-all"
+            >
+              + Agregar
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2">
+            {(editingListing.additionalRules || []).map((rule, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition-colors rounded-xl pl-4 pr-2 py-2 text-xs font-bold text-brand-navy"
+              >
+                <span>{rule}</span>
+                <button
+                  type="button"
+                  aria-label={`Eliminar norma: ${rule}`}
+                  onClick={() => {
+                    const next = (editingListing.additionalRules || []).filter((_, i) => i !== idx);
+                    setEditingListing(prev => prev ? { ...prev, additionalRules: next } : null);
+                  }}
+                  className="w-6 h-6 flex items-center justify-center rounded-lg bg-gray-200 hover:bg-red-100 hover:text-red-500 text-brand-navy/60 transition-colors"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+            {(editingListing.additionalRules || []).length === 0 && (
+              <p className="text-[10px] font-bold text-brand-navy/30 ml-1">No hay normas adicionales configuradas.</p>
+            )}
+          </div>
         </div>
       </section>
 
@@ -446,68 +627,23 @@ const StepGeneral: React.FC = () => {
               Política de Cancelación Aplicable
             </label>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" role="group" aria-labelledby="cancellation-policy-label">
-            {([
-              {
-                key: 'flexible' as const,
-                title: 'Flexible',
-                desc: 'Reembolso del 100% del depósito hasta 48 horas antes del check-in.',
-                dot: 'bg-emerald-400',
-              },
-              {
-                key: 'moderate' as const,
-                title: 'Moderada',
-                desc: 'Reembolso del 100% del depósito hasta 7 días antes del check-in.',
-                dot: 'bg-amber-400',
-              },
-              {
-                key: 'strict' as const,
-                title: 'Estricta',
-                desc: 'Reembolso del 100% hasta 30 días antes. 50% entre 30 y 14 días.',
-                dot: 'bg-red-400',
-              },
-            ]).map((policy) => {
-              const isActive = (editingListing.cancellationPolicy ?? 'moderate') === policy.key;
-              return (
-                <button
-                  key={policy.key}
-                  type="button"
-                  aria-pressed={isActive}
-                  onClick={() => setEditingListing(prev => prev ? { ...prev, cancellationPolicy: policy.key } : null)}
-                  className={cn(
-                    'relative flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-all duration-200',
-                    isActive
-                      ? 'border-brand-navy bg-brand-navy/[0.03] ring-1 ring-brand-navy/20 shadow-sm'
-                      : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 hover:bg-gray-50'
-                  )}
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <span className={cn('h-2 w-2 shrink-0 rounded-full', policy.dot)} />
-                    <span className={cn(
-                      'text-[11px] font-black tracking-wide transition-colors',
-                      isActive ? 'text-brand-navy' : 'text-brand-navy/60'
-                    )}>
-                      {policy.title}
-                    </span>
-                    {isActive && (
-                      <span className="ml-auto">
-                        <Check className="h-3.5 w-3.5 text-brand-navy" />
-                      </span>
-                    )}
-                  </div>
-                  <p className={cn(
-                    'text-[10px] font-semibold leading-relaxed transition-colors',
-                    isActive ? 'text-slate-500' : 'text-slate-400'
-                  )}>
-                    {policy.desc}
-                  </p>
-                </button>
-              );
-            })}
+          <div className="rounded-3xl border border-brand-gold/20 bg-brand-gold/[0.03] p-6 space-y-4 max-w-2xl">
+            <div className="flex items-center gap-3">
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#C5A059] animate-pulse" />
+              <h4 className="text-xs font-black tracking-wide text-brand-navy uppercase">
+                Política Única VeneStay: No Reembolsable y Reprogramable
+              </h4>
+              <span className="ml-auto bg-brand-gold/10 text-[#b08f23] rounded-lg px-2.5 py-1 text-[9px] font-black tracking-widest uppercase border border-brand-gold/20">
+                Estándar VeneStay
+              </span>
+            </div>
+            <p className="text-[11.5px] font-medium leading-relaxed text-slate-600">
+              Todas las propiedades en VeneStay operan bajo la política unificada de depósito del <strong>20% no reembolsable</strong>. El <strong>80% restante</strong> se abona al realizar el check-in. Los huéspedes pueden solicitar reprogramaciones de fechas bajo consentimiento del anfitrión sin perder su depósito.
+            </p>
+            <div className="border-t border-brand-gold/10 pt-3 flex items-center gap-2 text-[9px] font-bold text-slate-400 tracking-wide">
+              <span>💡 Esta política se aplica de forma automática y obligatoria para todos los alojamientos de la plataforma.</span>
+            </div>
           </div>
-          <p className="ml-1 text-[9px] font-semibold text-slate-400 tracking-wide">
-            Solo rige el depósito del 20%. El 80% restante se abona al check-in.
-          </p>
         </section>
       )}
 

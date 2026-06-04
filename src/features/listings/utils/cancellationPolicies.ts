@@ -24,6 +24,12 @@ export const CANCELLATION_POLICIES: Record<CancellationPolicyType, {
     dotColor: 'bg-red-400',
     detail: 'Reembolso completo del depósito del 20% hasta 30 días antes. Reembolso del 50% entre 30 y 14 días. Sin reembolso en los últimos 14 días.',
   },
+  non_refundable_reschedulable: {
+    label: 'No Reembolsable · Reprogramable',
+    badgeColor: 'text-brand-navy bg-brand-gold/10 border-brand-gold/30',
+    dotColor: 'bg-brand-gold',
+    detail: 'El anticipo del 20% es estrictamente no reembolsable. Puedes solicitar reprogramación de fechas con aprobación del anfitrión.',
+  },
 };
 
 export interface TimelineMilestone {
@@ -57,5 +63,13 @@ export const POLICY_TIMELINE: Record<CancellationPolicyType, {
       { label: 'Últimos 14 días', daysBeforeCheckin: 0, refundPct: 0 },
     ],
     strictNote: 'Sin reembolso del depósito en los 14 días anteriores al check-in.',
+  },
+  non_refundable_reschedulable: {
+    milestones: [
+      { label: 'Pago anticipo (20%)', daysBeforeCheckin: Infinity, refundPct: 0 },
+      { label: 'Solicitud de reprogramación', daysBeforeCheckin: 7, refundPct: 0 },
+      { label: 'Sin cancelación', daysBeforeCheckin: 0, refundPct: 0 },
+    ],
+    strictNote: 'Aplican cargos de ajuste si las nuevas fechas cruzan hacia temporada de mayor demanda.',
   },
 };

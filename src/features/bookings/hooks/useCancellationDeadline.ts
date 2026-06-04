@@ -6,6 +6,7 @@ const GRACE_DAYS: Record<CancellationPolicyType, number> = {
   flexible: 2,
   moderate: 7,
   strict: 30,
+  non_refundable_reschedulable: 0,
 };
 
 export function calculateCancellationDeadline(

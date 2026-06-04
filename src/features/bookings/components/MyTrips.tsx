@@ -43,6 +43,7 @@ import { useChatNotifications } from '../hooks/useChatNotifications';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { cleanupExpiredBookings } from '@/services/booking-service';
+import { RescheduleRequestModal } from './RescheduleRequestModal';
 
 interface MyTripsProps {
   isOpen?: boolean;
@@ -105,6 +106,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     null
   );
   const [mobileTab, setMobileTab] = useState<'reservas' | 'chat'>('reservas');
+  const [rescheduleBookingId, setRescheduleBookingId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Stable snapshot of "now" for the 48-hour threshold comparison.
@@ -419,6 +421,18 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           icon: <AlertCircle className="h-3 w-3" />,
           color: 'text-slate-500 bg-slate-50 border-slate-200',
         };
+      case 'RESCHEDULE_REQUESTED':
+        return {
+          label: 'Reprogramación Solicitada',
+          icon: <Clock className="h-3 w-3" />,
+          color: 'text-amber-600 bg-amber-50 border-amber-100',
+        };
+      case 'RESCHEDULE_PENDING':
+        return {
+          label: 'Reprogramación: Pago Ajuste',
+          icon: <CreditCard className="h-3 w-3" />,
+          color: 'text-blue-600 bg-blue-50 border-blue-100',
+        };
       default:
         return {
           label: status,
@@ -702,12 +716,22 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                       </button>
                                     </div>
                                   ) : (
-                                    <button
-                                      onClick={() => navigate(`/checkout/${booking.id}`)}
-                                      className="w-full bg-gray-100 hover:bg-gray-200 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
-                                    >
-                                      Ver Resumen
-                                    </button>
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => navigate(`/checkout/${booking.id}`)}
+                                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
+                                      >
+                                        Ver Resumen
+                                      </button>
+                                      {booking.status === 'CONFIRMED' && booking.cancellationPolicySnapshot === 'non_refundable_reschedulable' && (
+                                        <button
+                                          onClick={() => setRescheduleBookingId(booking.id)}
+                                          className="flex-1 border border-[#C5A059] hover:bg-[#C5A059]/10 text-[#C5A059] rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
+                                        >
+                                          Reprogramar
+                                        </button>
+                                      )}
+                                    </div>
                                   )}
                                 </div>
 
@@ -786,6 +810,11 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
+      <RescheduleRequestModal
+        isOpen={!!rescheduleBookingId}
+        onClose={() => setRescheduleBookingId(null)}
+        bookingId={rescheduleBookingId || ''}
+      />
     </div>
   );
 };

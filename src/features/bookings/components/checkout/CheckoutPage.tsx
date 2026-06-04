@@ -510,7 +510,7 @@ const CheckoutPage: React.FC = () => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         guests: booking.guests,
-        cancellationPolicySnapshot: listing.cancellationPolicy ?? 'moderate',
+        cancellationPolicySnapshot: listing.cancellationPolicy ?? 'non_refundable_reschedulable',
         statusHistory: [
           {
             status: 'PENDING_PAYMENT' as BookingStatus,
@@ -724,7 +724,7 @@ const CheckoutPage: React.FC = () => {
           expiresAt: expiresAtVal,
           paymentInstructions: listing.paymentInstructions || '',
           guests: booking.guests,
-          cancellationPolicySnapshot: listing.cancellationPolicy ?? 'moderate',
+          cancellationPolicySnapshot: listing.cancellationPolicy ?? 'non_refundable_reschedulable',
           statusHistory: [
             {
               status: initialStatus as BookingStatus,
@@ -1380,31 +1380,39 @@ const CheckoutPage: React.FC = () => {
 
                   {/* BANNER DE POLÍTICA DE CANCELACIÓN */}
                   {(() => {
-                    const policyKey = (listing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
+                    const policyKey = (listing.cancellationPolicy ?? 'non_refundable_reschedulable') as CancellationPolicyType;
                     const policy = CANCELLATION_POLICIES[policyKey];
                     const { deadlineFormatted, isExpired } = calculateCancellationDeadline(
                       booking.startDate,
                       policyKey
                     );
+                    const isNonRefundable = policyKey === 'non_refundable_reschedulable';
                     return (
                       <div className={cn(
                         'flex items-start gap-4 rounded-[28px] border p-6',
+                        isNonRefundable ? 'border-brand-gold/20 bg-brand-gold/[0.03]' :
                         isExpired ? 'border-red-100 bg-red-50' : 'border-amber-100 bg-amber-50/70'
                       )}>
                         <div className={cn(
                           'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                          isNonRefundable ? 'bg-brand-gold/10' :
                           isExpired ? 'bg-red-100' : 'bg-amber-100'
                         )}>
-                          <Info className={cn('h-5 w-5', isExpired ? 'text-red-500' : 'text-amber-600')} />
+                          <Info className={cn('h-5 w-5', isNonRefundable ? 'text-brand-gold' : isExpired ? 'text-red-500' : 'text-amber-600')} />
                         </div>
                         <div>
                           <p className={cn(
                             'text-[10px] font-black tracking-widest uppercase mb-1',
+                            isNonRefundable ? 'text-brand-navy' :
                             isExpired ? 'text-red-600' : 'text-amber-700'
                           )}>
                             {policy.label}
                           </p>
-                          {isExpired ? (
+                          {isNonRefundable ? (
+                            <p className="text-xs font-semibold text-slate-700">
+                              El depósito del 20% es estrictamente no reembolsable, pero cuentas con el beneficio de solicitar la reprogramación de fechas de tu viaje con la aprobación de tu anfitrión.
+                            </p>
+                          ) : isExpired ? (
                             <p className="text-xs font-semibold text-red-600">
                               El plazo de cancelación gratuita ya venció. El depósito del 20% no es reembolsable.
                             </p>
@@ -1946,7 +1954,7 @@ const CheckoutPage: React.FC = () => {
                   <p className="text-[10.5px] leading-relaxed font-semibold text-slate-500">
                     Acepto los Términos de Servicio y la{' '}
                     <strong className="text-brand-navy">
-                      {CANCELLATION_POLICIES[(listing.cancellationPolicy ?? 'moderate') as CancellationPolicyType].label}
+                      {CANCELLATION_POLICIES[(listing.cancellationPolicy ?? 'non_refundable_reschedulable') as CancellationPolicyType].label}
                     </strong>{' '}
                     de este alojamiento. Entiendo que el depósito del 20% rige bajo esta política.
                   </p>

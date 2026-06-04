@@ -271,4 +271,127 @@ export const cleanupExpiredBookings = async (): Promise<void> => {
   }
 };
 
+export const requestReschedule = async (params: {
+  bookingId: string;
+  proposedStartDate: string;  // ISO
+  proposedEndDate: string;    // ISO
+  rescheduleNote?: string;
+  actorId: string;
+  actorName: string;
+}): Promise<void> => {
+  const bookingRef = doc(db, 'bookings', params.bookingId);
+  await runTransaction(db, async (transaction) => {
+    const bookingDoc = await transaction.get(bookingRef);
+    if (!bookingDoc.exists()) {
+      throw new Error('La reserva no existe');
+    }
+    const data = bookingDoc.data() as Booking;
+    const historyEntry = {
+      status: 'RESCHEDULE_REQUESTED' as BookingStatus,
+      timestamp: new Date().toISOString(),
+      actorId: params.actorId,
+      actorName: params.actorName,
+      note: params.rescheduleNote || 'Solicitud de reprogramación enviada.',
+    };
+
+    transaction.update(bookingRef, {
+      status: 'RESCHEDULE_REQUESTED',
+      proposedStartDate: params.proposedStartDate,
+      proposedEndDate: params.proposedEndDate,
+      rescheduleNote: params.rescheduleNote || '',
+      updatedAt: serverTimestamp(),
+      statusHistory: [...(data.statusHistory || []), historyEntry],
+    });
+  });
+
+  // Post-commit: save system message
+  try {
+    const messagesColRef = collection(db, 'messages');
+    const systemMsgDocRef = doc(messagesColRef);
+    await setDoc(systemMsgDocRef, {
+      id: systemMsgDocRef.id,
+      bookingId: params.bookingId,
+      senderId: 'system',
+      senderName: 'Sistema VeneStay',
+      text: `Solicitud de reprogramación enviada por el huésped para las fechas ${params.proposedStartDate} a ${params.proposedEndDate}.`,
+      type: 'text',
+      status: 'sent',
+      createdAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error writing messages post-commit for requestReschedule:', error);
+  }
+};
+
+export const approveReschedule = async (params: {
+  bookingId: string;
+  originalStartDate: string;
+  originalEndDate: string;
+  seasonalAdjustmentFee: number;  // 0 si no aplica
+  actorId: string;
+  actorName: string;
+}): Promise<void> => {
+  const bookingRef = doc(db, 'bookings', params.bookingId);
+  await runTransaction(db, async (transaction) => {
+    const bookingDoc = await transaction.get(bookingRef);
+    if (!bookingDoc.exists()) {
+      throw new Error('La reserva no existe');
+    }
+    const data = bookingDoc.data() as Booking;
+    if (!data.proposedStartDate || !data.proposedEndDate) {
+      throw new Error('No hay fechas propuestas de reprogramación');
+    }
+
+    const nextStatus: BookingStatus = params.seasonalAdjustmentFee > 0 ? 'RESCHEDULE_PENDING' : 'CONFIRMED';
+    const historyEntry = {
+      status: nextStatus,
+      timestamp: new Date().toISOString(),
+      actorId: params.actorId,
+      actorName: params.actorName,
+      note: params.seasonalAdjustmentFee > 0
+        ? `Reprogramación aprobada con cargo de ajuste de $${params.seasonalAdjustmentFee}. Esperando pago.`
+        : 'Reprogramación aprobada y confirmada sin cargos adicionales.',
+    };
+
+    const updates: Partial<Booking> = {
+      status: nextStatus,
+      seasonalAdjustmentFee: params.seasonalAdjustmentFee,
+      updatedAt: serverTimestamp() as unknown as string,
+      statusHistory: [...(data.statusHistory || []), historyEntry],
+    };
+
+    if (params.seasonalAdjustmentFee === 0) {
+      // Confirmado de inmediato: hacer swap de fechas
+      updates.startDate = data.proposedStartDate;
+      updates.endDate = data.proposedEndDate;
+      updates.proposedStartDate = '';
+      updates.proposedEndDate = '';
+    }
+
+    transaction.update(bookingRef, updates);
+  });
+
+  // Post-commit: save system message
+  try {
+    const messagesColRef = collection(db, 'messages');
+    const systemMsgDocRef = doc(messagesColRef);
+    const text = params.seasonalAdjustmentFee > 0
+      ? `Reprogramación pre-aprobada por el anfitrión. Aplica cargo de ajuste de $${params.seasonalAdjustmentFee}.`
+      : `Reprogramación confirmada. Fechas actualizadas con éxito.`;
+    await setDoc(systemMsgDocRef, {
+      id: systemMsgDocRef.id,
+      bookingId: params.bookingId,
+      senderId: 'system',
+      senderName: 'Sistema VeneStay',
+      text,
+      type: 'text',
+      status: 'sent',
+      createdAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error writing messages post-commit for approveReschedule:', error);
+  }
+};
+
+
 

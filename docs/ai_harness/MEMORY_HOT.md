@@ -9,6 +9,8 @@ BLOQUEANTE: ninguno
 ## Módulos del Sprint S04 (En progreso)
 | Módulo | Archivo Objetivo | Estado | Iteraciones QA |
 |:---|:---|:---|:---|
+| **SPEC-DASHBOARD-AMENITIESICONS-01 (P1)** | src/features/dashboard/components/form-steps/StepGeneral.tsx, src/features/listings/components/ListingDetail.tsx, src/features/listings/utils/amenities-icons.ts | **COMPLETADO** | 1/3 |
+| **SPEC-DASHBOARD-HOUSERULES-01 (P1)** | src/features/dashboard/components/form-steps/StepGeneral.tsx, src/features/listings/components/ListingDetail.tsx, src/features/listings/utils/amenities-icons.ts | **COMPLETADO** | 1/3 |
 | Plan de Implementación KYC v2.0 | docs/plans/implementation_plan_kyc_v2.md | APROBADO | 0/3 |
 | SPEC-KYC-01: Reglas y Tipos | storage.rules, firestore.rules, src/types/user.types.ts | COMPLETADO | 0/3 |
 | Fase 1: MVP KYC Huésped | src/services/kyc-service.ts, functions/src/submitKYCDocument.ts | COMPLETADO (Desplegado a Firebase Cloud) | 0/3 |
@@ -21,6 +23,7 @@ BLOQUEANTE: ninguno
 | **SPEC-BOOKINGS-UX-REDESIGN (P1)** | src/features/bookings/components/MyTrips.tsx, src/components/Chat.tsx | **COMPLETADO** | 1/3 |
 | **Fix Infra Vercel (P0)** | vercel.json, ErrorBoundary.tsx | **COMPLETADO** | 1/3 |
 | **Unificación de Ramas** | Rama principal (`main`) | **COMPLETADO** | 1/3 |
+| **Política de Cancelación Reprogramable (P1)** | useRescheduleRequest.ts, RescheduleRequestModal.tsx, CancellationPolicyCard.tsx, ... | **COMPLETADO** | 1/3 |
 
 ## Notas de Integración / Estado de Emuladores
 *   **Java JDK Configurado:** Java se localizó en `C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin`.
@@ -32,7 +35,10 @@ BLOQUEANTE: ninguno
 *   **Fix P1 aplicado (2026-06-04):** Corregido ReferenceError `raw` -> `updatedRaw` que ocultaba el historial de viajes. Añadido chat persistente de escritorio en el lado derecho y un alternador de chat ("Ver Chat") en las tarjetas de reservas activas.
 *   **Rediseño UX aplicado (2026-06-04):** Completado el rediseño completo de Mis Viajes según PROMPT_UX_MIS_VIAJES.md. Layout de dos columnas fluidas al 100% en desktop, diseño de tarjetas compactas BookingCard unificando fechas/viajeros y desglose financiero en una línea, y sistema de pestañas de navegación móvil (Reservas/Chat).
 *   **Fix Infra Vercel aplicado (2026-06-04):** Solucionado el error `ChunkLoadError` ("Failed to fetch dynamically imported module") en despliegues. Se agregaron políticas de `Cache-Control` explícitas en `vercel.json` y se inyectó un cache buster (`?t=timestamp`) en `src/components/ui/ErrorBoundary.tsx` para forzar recargas limpias post-despliegue.
+*   **Política de Cancelación Reprogramable (2026-06-04):** Implementada la política `non_refundable_reschedulable` (depósito del 20% no reembolsable). Se crearon el componente de visualización `CancellationPolicyCard.tsx`, el modal de interacción `RescheduleRequestModal.tsx` y el hook `useRescheduleRequest.ts`. Se extendió `booking-service.ts` con transacciones seguras para `requestReschedule` y `approveReschedule` y se activaron las flags de feature flags para anfitriones y huéspedes.
+*   **Unificación de Políticas Pendiente (2026-06-04):** El Director del Proyecto solicitó unificar la plataforma para que **únicamente** la política No Reembolsable/Reprogramable sea válida, eliminando la visualización y selección de "Flexible", "Moderada" y "Estricta".
 
 ## Próxima acción requerida
 1. Iniciar el desarrollo de la Fase 2 del Sprint S04 (Panel Auditoría Admin KYC) para continuar con el flujo completo de verificación de identidad de VeneStay.
+2. Implementar el Panel de Aprobación de Reprogramación para Anfitrión (SPEC-CANCEL-07) diferido para el Sprint S05.
 

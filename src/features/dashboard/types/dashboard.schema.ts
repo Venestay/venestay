@@ -29,7 +29,7 @@ export const listingSchema = z.object({
   environmentPhotos: z.record(z.string(), z.string()).optional(),
   isVerified: z.boolean().default(true),
   isPetFriendly: z.boolean().default(false),
-  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict']).default('moderate'),
+  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict', 'non_refundable_reschedulable']).default('non_refundable_reschedulable'),
   paymentMethods: z.array(z.discriminatedUnion('type', [
     z.object({
       id: z.string(),
@@ -103,6 +103,11 @@ export const listingSchema = z.object({
     .optional()
     .default(0),
   bookingMode: z.enum(['instant', 'request']).default('instant'),
+  allowSmoking: z.boolean().default(false),
+  allowEvents: z.boolean().default(false),
+  checkInTime: z.string().default('14:00'),
+  checkOutTime: z.string().default('11:00'),
+  additionalRules: z.array(z.string()).default([]),
 }).refine((data) => data.propertyFloor <= data.buildingFloors, {
   message: "El piso del alojamiento no puede ser mayor que el total de pisos del edificio",
   path: ["propertyFloor"],

@@ -14,6 +14,7 @@ import {
   Booking,
   UserProfile,
 } from '@/types';
+import { CancellationPolicyCard } from './CancellationPolicyCard';
 import CalendarComponent from '@/features/bookings/components/Calendar';
 import Navbar from '@/components/ui/Navbar';
 import { getLocalInsights } from '@/services/gemini-service';
@@ -57,6 +58,7 @@ import {
 import { cn, calculatePaymentBreakdown } from '@/lib/utils';
 import Skeleton from '@/components/ui/Skeleton';
 import { checkProfileCompletion } from '@/lib/user-utils';
+import { getAmenityIcon, HOUSE_RULES_ICONS } from '../utils/amenities-icons';
 import { motion, AnimatePresence } from 'motion/react';
 import ReviewCard from '@/features/reviews/components/ReviewCard';
 import ReviewForm from '@/features/reviews/components/ReviewForm';
@@ -102,8 +104,8 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
     (mapsAuthError ? { message: 'ApiTargetBlockedMapError' } : null);
 
   const [insights, setInsights] = useState<string>('');
-  const SHOW_CANCELLATION_POLICY_DETAIL = false;
-  const SHOW_HOUSE_RULES_DETAIL = false;
+  const SHOW_CANCELLATION_POLICY_DETAIL = true;
+  const SHOW_HOUSE_RULES_DETAIL = true;
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [activeImage, setActiveImage] = useState<string>(
     currentListing?.images?.[0] ?? ''
@@ -919,19 +921,22 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                       <div key={category} className="space-y-4">
                         <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">{category}</p>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                          {items.map((item) => (
-                            <div
-                              key={item}
-                              className="hover:border-brand-100 hover:bg-brand-50 flex items-center space-x-4 rounded-2xl border border-transparent bg-gray-50 p-4 transition-all duration-300"
-                            >
-                              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
-                                <Check className="text-brand-500 h-5 w-5" />
+                          {items.map((item) => {
+                            const Icon = getAmenityIcon(item);
+                            return (
+                              <div
+                                key={item}
+                                className="hover:border-brand-100 hover:bg-brand-50 flex items-center space-x-4 rounded-2xl border border-transparent bg-gray-50 p-4 transition-all duration-300"
+                              >
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                                  <Icon className="text-brand-500 h-5 w-5 shrink-0" />
+                                </div>
+                                <span className="text-brand-navy font-bold">
+                                  {item}
+                                </span>
                               </div>
-                              <span className="text-brand-navy font-bold">
-                                {item}
-                              </span>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     ))}
@@ -1111,7 +1116,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                         </div>
                         <p className="text-[10.5px] leading-relaxed text-slate-500 font-medium">
                           {(() => {
-                            const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
+                            const policyKey = 'non_refundable_reschedulable' as CancellationPolicyType;
                             const policy = CANCELLATION_POLICIES[policyKey];
                             return (
                               <>
@@ -1336,107 +1341,104 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                     </div>
 
                     {(() => {
-                      const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
-                      const policy = CANCELLATION_POLICIES[policyKey];
-                      const timeline = POLICY_TIMELINE[policyKey];
+                      const policyKey = 'non_refundable_reschedulable' as CancellationPolicyType;
                       
                       return (
                         <div className="space-y-8">
                           {/* Policy Detail Card */}
-                          <div className="rounded-[28px] border border-slate-100 bg-slate-50/50 p-6 md:p-8 space-y-6">
-                            <div className="flex items-center gap-3">
-                              <span className={cn("inline-block h-3.5 w-3.5 rounded-full", policy.dotColor)} />
-                              <h4 className="text-lg font-black text-brand-navy tracking-tight">{policy.label}</h4>
-                              <span className={cn("rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-widest leading-none", policy.badgeColor)}>
-                                Activa
-                              </span>
-                            </div>
-                            
-                            <p className="text-sm font-semibold leading-relaxed text-slate-600">
-                              {policy.detail}
-                            </p>
-
-                            {/* Visual Timeline */}
-                            <div className="relative pt-6 pb-2">
-                              {/* Horizontal Line */}
-                              <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 -translate-y-1/2 rounded-full" />
-                              
-                              <div className="relative flex justify-between">
-                                {timeline.milestones.map((milestone, idx) => (
-                                  <div key={idx} className="flex flex-col items-center text-center space-y-2 relative z-10">
-                                    {/* Milestone Bullet */}
-                                    <div className={cn(
-                                      "flex h-6 w-6 items-center justify-center rounded-full border-4 border-white shadow-md transition-colors",
-                                      milestone.refundPct === 100 
-                                        ? "bg-emerald-500" 
-                                        : milestone.refundPct === 50 
-                                          ? "bg-amber-500" 
-                                          : "bg-red-500"
-                                    )}>
-                                      {milestone.refundPct > 0 ? (
-                                        <Check className="h-2 w-2 text-white stroke-[4]" />
-                                      ) : (
-                                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                                      )}
-                                    </div>
-                                    
-                                    {/* Label */}
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                      {milestone.label}
-                                    </span>
-                                    
-                                    {/* Refund Percentage */}
-                                    <span className={cn(
-                                      "text-xs font-extrabold",
-                                      milestone.refundPct === 100 
-                                        ? "text-emerald-600" 
-                                        : milestone.refundPct === 50 
-                                          ? "text-amber-600" 
-                                          : "text-red-600"
-                                    )}>
-                                      {milestone.refundPct}% reembolso
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {timeline.strictNote && (
-                              <p className="text-xs font-semibold text-red-500 bg-red-50/50 border border-red-100/50 rounded-xl px-4 py-2.5">
-                                ⚠️ {timeline.strictNote}
-                              </p>
-                            )}
-
-                            {/* UCP Note */}
-                            <div className="border-t border-slate-100 pt-5 mt-4">
-                              <p className="text-[11px] leading-relaxed text-slate-400 font-bold">
-                                ℹ️ <span className="uppercase tracking-widest text-[9px] font-extrabold mr-1 text-slate-500">Garantía de Reserva 20/80:</span>
-                                Aseguras tu estadía pagando solo un 20% hoy a la plataforma (Depósito de Garantía), el cual está protegido por esta política de cancelación. El 80% restante lo abonas directamente a tu anfitrión al momento de hacer el check-in.
-                              </p>
-                            </div>
-                          </div>
+                          <CancellationPolicyCard policyType={policyKey} />
 
                           {/* House Rules */}
                           <div className="space-y-4">
                             <h4 className="text-xs font-black tracking-widest uppercase text-slate-400">
                               Normas de la Casa
                             </h4>
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                              <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
-                                <span className="text-base">🚭</span>
-                                <span className="text-[11.5px] font-bold text-slate-600">No Fumar</span>
-                              </div>
-                              <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
-                                <span className="text-base">🐾</span>
-                                <span className="text-[11.5px] font-bold text-slate-600">
-                                  {currentListing.isPetFriendly ? 'Pet Friendly' : 'No Mascotas'}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
-                                <span className="text-base">⏰</span>
-                                <span className="text-[11.5px] font-bold text-slate-600">Check-in: 14:00</span>
-                              </div>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                              {/* Smoking Rule */}
+                              {(() => {
+                                const allowed = currentListing.allowSmoking ?? false;
+                                const ruleData = allowed ? HOUSE_RULES_ICONS.smokingAllowed : HOUSE_RULES_ICONS.smokingForbidden;
+                                const Icon = ruleData.icon;
+                                return (
+                                  <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                    <Icon className="h-5 w-5 text-slate-500 shrink-0" />
+                                    <span className="text-[11.5px] font-bold text-slate-600">{ruleData.label}</span>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Pets Rule */}
+                              {(() => {
+                                const allowed = currentListing.isPetFriendly ?? false;
+                                const ruleData = allowed ? HOUSE_RULES_ICONS.petsAllowed : HOUSE_RULES_ICONS.petsForbidden;
+                                const Icon = ruleData.icon;
+                                return (
+                                  <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                    <Icon className="h-5 w-5 text-slate-500 shrink-0" />
+                                    <span className="text-[11.5px] font-bold text-slate-600">
+                                      {allowed ? 'Se admiten mascotas' : 'No se admiten mascotas'}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Events Rule */}
+                              {(() => {
+                                const allowed = currentListing.allowEvents ?? false;
+                                const ruleData = allowed ? HOUSE_RULES_ICONS.eventsAllowed : HOUSE_RULES_ICONS.eventsForbidden;
+                                const Icon = ruleData.icon;
+                                return (
+                                  <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                    <Icon className="h-5 w-5 text-slate-500 shrink-0" />
+                                    <span className="text-[11.5px] font-bold text-slate-600">{ruleData.label}</span>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Check-in Time */}
+                              {(() => {
+                                const time = currentListing.checkInTime || '14:00';
+                                const Icon = HOUSE_RULES_ICONS.checkIn.icon;
+                                return (
+                                  <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                    <Icon className="h-5 w-5 text-slate-500 shrink-0" />
+                                    <span className="text-[11.5px] font-bold text-slate-600">Entrada: {time}</span>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Check-out Time */}
+                              {(() => {
+                                const time = currentListing.checkOutTime || '11:00';
+                                const Icon = HOUSE_RULES_ICONS.checkOut.icon;
+                                return (
+                                  <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                    <Icon className="h-5 w-5 text-slate-500 shrink-0" />
+                                    <span className="text-[11.5px] font-bold text-slate-600">Salida: {time}</span>
+                                  </div>
+                                );
+                              })()}
                             </div>
+
+                            {/* Additional Rules */}
+                            {currentListing.additionalRules && currentListing.additionalRules.length > 0 && (
+                              <div className="mt-6 space-y-3">
+                                <h5 className="text-[10px] font-black tracking-widest uppercase text-slate-400">
+                                  Normas Adicionales
+                                </h5>
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                  {currentListing.additionalRules.map((rule, idx) => {
+                                    const Icon = HOUSE_RULES_ICONS.rule.icon;
+                                    return (
+                                      <div key={idx} className="flex items-start gap-3 rounded-2xl border border-gray-100 bg-gray-50/10 p-4">
+                                        <Icon className="h-4 w-4 text-brand-gold shrink-0 mt-0.5" />
+                                        <span className="text-[11px] font-bold text-slate-600">{rule}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -1743,7 +1745,7 @@ const ListingDetail: React.FC<ListingDetailProps> = ({
                             <span>Política de Cancelación</span>
                           </div>
                           {(() => {
-                            const policyKey = (currentListing.cancellationPolicy ?? 'moderate') as CancellationPolicyType;
+                            const policyKey = 'non_refundable_reschedulable' as CancellationPolicyType;
                             const policy = CANCELLATION_POLICIES[policyKey];
                             return (
                               <>

@@ -307,7 +307,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
 
           <div className="border-t border-slate-100 pt-3 flex flex-col gap-2">
             <div className="flex justify-between items-baseline font-black text-brand-navy">
-              <span className="text-[9px] tracking-widest uppercase text-slate-400">Anticipo (UCP 20%)</span>
+              <span className="text-[9px] tracking-widest uppercase text-slate-400">Anticipo de Reserva (20%)</span>
               <span className="text-sm font-black text-brand-gold">
                 ${anticipoAmount.toFixed(0)} USDT
               </span>

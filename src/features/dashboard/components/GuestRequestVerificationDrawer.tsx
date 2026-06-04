@@ -408,7 +408,7 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
               {/* UCP Earnings Breakdown */}
               <div className="space-y-4">
                 <h4 className="text-brand-navy font-black text-sm uppercase border-b border-gray-100 pb-2">
-                  Desglose Financiero (Protocolo UCP 20/80)
+                  Desglose Financiero (Garantía 20% / Saldo 80%)
                 </h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
