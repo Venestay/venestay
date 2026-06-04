@@ -6,7 +6,6 @@ import {
   query,
   where,
   onSnapshot,
-  orderBy,
   serverTimestamp,
   addDoc,
 } from 'firebase/firestore';
@@ -27,7 +26,6 @@ import {
   CreditCard,
   ChevronRight,
   Hash,
-  RefreshCcw,
   MessageSquare,
   Upload,
   ChevronDown,
@@ -84,6 +82,11 @@ const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
   );
 };
 
+// Threshold for considering a terminal booking as "recent" (visible in main section)
+const RECENT_TERMINAL_HOURS = 48;
+const TERMINAL_STATUSES = ['CANCELLED', 'REJECTED', 'EXPIRED', 'CANCELLED_BY_GUEST'] as const;
+type TerminalStatus = typeof TERMINAL_STATUSES[number];
+
 const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -99,6 +102,10 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     null
   );
   const navigate = useNavigate();
+
+  // Stable snapshot of "now" for the 48-hour threshold comparison.
+  // useState(Date.now) calls Date.now once at mount (lazy initializer — not in render).
+  const [nowMs] = useState<number>(Date.now);
 
   const activeOpen = isOpen !== undefined ? isOpen : true;
 
@@ -144,13 +151,34 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
         setBookings(sortedData);
         setLoading(false);
-        
+
+        // Auto-expand history when no active/recent bookings exist
+        const nowMs = Date.now();
+        const threshold48h = RECENT_TERMINAL_HOURS * 60 * 60 * 1000;
+        const hasActiveOrRecent = sortedData.some((b) => {
+          if (!TERMINAL_STATUSES.includes(b.status as TerminalStatus)) return true;
+          const raw =
+            (b as unknown as { updatedAt?: string | { seconds: number } }).updatedAt ||
+            (b as unknown as { createdAt?: string | { seconds: number } }).createdAt;
+          if (typeof raw === 'string') {
+            const d = new Date(raw);
+            return !isNaN(d.getTime()) && (nowMs - d.getTime()) < threshold48h;
+          }
+          if (raw && typeof (raw as { seconds: number }).seconds === 'number') {
+            return (nowMs - (raw as { seconds: number }).seconds * 1000) < threshold48h;
+          }
+          return false;
+        });
+        if (!hasActiveOrRecent && sortedData.length > 0) {
+          setIsHistoryExpanded(true);
+        }
+
         // Auto-select or update chat booking dynamically
         if (sortedData.length > 0) {
           const currentSelected = sortedData.find(b => b.id === activeChatId);
           // If no chat selected, or current selection is terminal, select the first active booking
-          if (!activeChatId || !currentSelected || ['CANCELLED', 'REJECTED', 'EXPIRED', 'CANCELLED_BY_GUEST'].includes(currentSelected.status)) {
-            const active = sortedData.find(b => !['CANCELLED', 'REJECTED', 'EXPIRED', 'CANCELLED_BY_GUEST'].includes(b.status));
+          if (!activeChatId || !currentSelected || TERMINAL_STATUSES.includes(currentSelected.status as TerminalStatus)) {
+            const active = sortedData.find(b => !TERMINAL_STATUSES.includes(b.status as TerminalStatus));
             const first = active || sortedData[0];
             setActiveChatId(first.id);
             setActiveChatBooking(first);
@@ -173,25 +201,53 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const { activeBookings, pastBookings } = useMemo(() => {
     const active: Booking[] = [];
     const past: Booking[] = [];
+    const threshold48h = RECENT_TERMINAL_HOURS * 60 * 60 * 1000;
 
     bookings.forEach((booking) => {
-      const status = booking.status;
-      const isCompletedOrTerminal =
-        status === 'CANCELLED' ||
-        status === 'REJECTED' ||
-        (status === 'CONFIRMED' &&
-          booking.endDate &&
-          new Date(booking.endDate).getTime() < new Date().setHours(0, 0, 0, 0));
+      const status = booking.status as string;
 
-      if (isCompletedOrTerminal) {
+      // CONFIRMED bookings whose end date has passed → history
+      const isCompletedConfirmed =
+        status === 'CONFIRMED' &&
+        booking.endDate &&
+        new Date(booking.endDate).getTime() < new Date().setHours(0, 0, 0, 0);
+
+      if (isCompletedConfirmed) {
         past.push(booking);
-      } else {
-        active.push(booking);
+        return;
       }
+
+      // Terminal statuses: only send to history if older than 48 hours
+      // so the guest always sees a recent rejection/cancellation in the main view.
+      if (TERMINAL_STATUSES.includes(status as TerminalStatus)) {
+        const updatedRaw =
+          (booking as unknown as { updatedAt?: string | { seconds: number } }).updatedAt ||
+          (booking as unknown as { createdAt?: string | { seconds: number } }).createdAt;
+
+        let updatedMs: number | null = null;
+        if (typeof updatedRaw === 'string') {
+          const d = new Date(updatedRaw);
+          if (!isNaN(d.getTime())) updatedMs = d.getTime();
+        } else if (updatedRaw && typeof (updatedRaw as { seconds: number }).seconds === 'number') {
+          updatedMs = (updatedRaw as { seconds: number }).seconds * 1000;
+        }
+
+        const isRecent = updatedMs !== null && (nowMs - updatedMs) < threshold48h;
+        if (isRecent) {
+          // Show in main section so the guest cannot miss it
+          active.push(booking);
+        } else {
+          past.push(booking);
+        }
+        return;
+      }
+
+      // Everything else (PENDING_APPROVAL, PENDING_PAYMENT, AWAITING_VERIFICATION, CONFIRMED in-progress)
+      active.push(booking);
     });
 
     return { activeBookings: active, pastBookings: past };
-  }, [bookings]);
+  }, [bookings, nowMs]);
 
   const processAndSetFile = async (selectedFile: File) => {
     if (!selectedFile.type.startsWith('image/')) {
@@ -459,18 +515,24 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
             </div>
           ) : (
             <div className="space-y-8">
-              {/* --- VIAJE ACTIVO PRINCIPAL --- */}
+              {/* --- VIAJES ACTIVOS Y RECIENTES --- */}
               {activeBookings.length > 0 ? (
-                <div className="mx-auto max-w-2xl">
+                <div className="mx-auto max-w-2xl space-y-6">
                   <h3 className="text-brand-navy mb-4 text-[10px] font-black tracking-[0.25em] uppercase">
-                    Viaje Actual
+                    Viajes Activos y Recientes
                   </h3>
-                  {activeBookings.slice(0, 1).map((booking) => {
+                  {activeBookings.map((booking) => {
                     const statusInfo = getStatusDisplay(booking.status);
+                    const isTerminalRecent = ['REJECTED', 'CANCELLED', 'EXPIRED', 'CANCELLED_BY_GUEST'].includes(booking.status);
                     return (
                       <div
                         key={booking.id}
-                        className="group relative overflow-hidden rounded-[32px] border border-gray-100 bg-white p-8 shadow-md transition-all duration-500 hover:shadow-xl"
+                        className={cn(
+                          'group relative overflow-hidden rounded-[32px] border p-8 shadow-md transition-all duration-500 hover:shadow-xl',
+                          isTerminalRecent
+                            ? 'border-red-100 bg-red-50/30'
+                            : 'border-gray-100 bg-white'
+                        )}
                       >
                         <div className="bg-brand-navy/5 absolute top-0 right-0 h-32 w-32 translate-x-6 -translate-y-6 rounded-bl-[120px] transition-transform group-hover:scale-110" />
 
