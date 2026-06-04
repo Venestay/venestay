@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeneStay — Conversational Commerce (WhatsApp & Jelou AI)</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --color-navy: #0B1120;
+      --color-navy-light: #151F32;
+      --color-gold: #C5A059;
+      --color-gold-hover: #DFBA73;
+      --color-wa-green: #25D366;
+      --color-wa-chat-bg: #0b141a;
+      --color-wa-bubble-in: #202c33;
+      --color-wa-bubble-out: #005c4b;
+      --color-slate-400: #94A3B8;
+      --color-slate-700: #334155;
+      
+      --font-outfit: 'Outfit', sans-serif;
+      --font-inter: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-navy);
+      color: white;
+      font-family: var(--font-inter);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+      padding-bottom: 4rem;
+    }
+
+    .glow-bg {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(197, 160, 89, 0.06) 0%, rgba(11, 17, 32, 0) 70%);
+      top: -150px;
+      right: -100px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .brand-logo {
+      font-family: var(--font-outfit);
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--color-gold);
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: var(--font-outfit);
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #FFFFFF 65%, var(--color-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--color-slate-400);
+      font-size: 1.1rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    main {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Grid Layout for Interactive Experience */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+
+    /* Steps Section */
+    .steps-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .step-card {
+      background: var(--color-navy-light);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 1.8rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      position: relative;
+      display: flex;
+      gap: 1.2rem;
+    }
+
+    .step-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background-color: transparent;
+      border-radius: 4px 0 0 4px;
+      transition: background-color 0.3s;
+    }
+
+    .step-card.active {
+      border-color: rgba(197, 160, 89, 0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transform: translateX(8px);
+    }
+
+    .step-card.active::before {
+      background-color: var(--color-gold);
+    }
+
+    .step-number {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--color-slate-400);
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-outfit);
+      font-weight: 800;
+      font-size: 1.1rem;
+      transition: all 0.3s;
+    }
+
+    .step-card.active .step-number {
+      background: var(--color-gold);
+      color: var(--color-navy);
+      box-shadow: 0 0 15px rgba(197, 160, 89, 0.4);
+    }
+
+    .step-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step-title {
+      font-family: var(--font-outfit);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .step-badge {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 50px;
+      font-weight: 700;
+    }
+
+    .badge-blue { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .badge-amber { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge-green { background-color: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge-purple { background-color: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+
+    .step-desc {
+      color: var(--color-slate-400);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* WhatsApp Simulator Mockup */
+    .phone-mockup {
+      background: #000;
+      border: 12px solid #2d2d2d;
+      border-radius: 40px;
+      height: 650px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Speaker and Camera notch */
+    .phone-mockup::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 25px;
+      background: #2d2d2d;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+      z-index: 20;
+    }
+
+    /* WhatsApp Header */
+    .wa-header {
+      background: #1f2c34;
+      padding: 1.8rem 1rem 0.8rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      z-index: 10;
+    }
+
+    .wa-avatar {
+      width: 38px;
+      height: 38px;
+      background: var(--color-gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--color-navy);
+      font-family: var(--font-outfit);
+      font-size: 1.1rem;
+    }
+
+    .wa-user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wa-username {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: white;
+    }
+
+    .wa-status {
+      font-size: 0.72rem;
+      color: var(--color-wa-green);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .wa-status::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background-color: var(--color-wa-green);
+      border-radius: 50%;
+    }
+
+    /* WhatsApp Chat Body */
+    .wa-body {
+      flex: 1;
+      background-color: var(--color-wa-chat-bg);
+      background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 0);
+      background-size: 24px 24px;
+      padding: 1.2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      scroll-behavior: smooth;
+    }
+
+    /* Message Bubbles */
+    .msg {
+      max-width: 85%;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      position: relative;
+      line-height: 1.45;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      animation: msgPop 0.4s ease forwards;
+    }
+
+    @keyframes msgPop {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .msg.in {
+      background-color: var(--color-wa-bubble-in);
+      align-self: flex-start;
+      border-top-left-radius: 0;
+      color: #e9edef;
+    }
+
+    .msg.out {
+      background-color: var(--color-wa-bubble-out);
+      align-self: flex-end;
+      border-top-right-radius: 0;
+      color: #e9edef;
+    }
+
+    .msg-time {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.4);
+      text-align: right;
+      margin-top: 0.3rem;
+    }
+
+    /* Flow Card components simulated inside WhatsApp */
+    .wa-flow-card {
+      background: #111b21;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .wa-flow-card-img {
+      width: 100%;
+      height: 100px;
+      background: #202c33;
+      border-radius: 6px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .wa-flow-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: white;
+    }
+
+    .wa-flow-desc {
+      font-size: 0.75rem;
+      color: var(--color-slate-400);
+    }
+
+    .wa-flow-action-btn {
+      background-color: var(--color-wa-green);
+      color: black;
+      border: none;
+      border-radius: 20px;
+      padding: 0.4rem;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-align: center;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    /* Info Bar for state syncing visualizer */
+    .state-indicator-bar {
+      background: rgba(197, 160, 89, 0.08);
+      border-top: 1px solid rgba(197, 160, 89, 0.2);
+      padding: 0.8rem 1.2rem;
+      font-size: 0.75rem;
+      font-family: var(--font-outfit);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .state-indicator-bar span strong {
+      color: var(--color-gold);
+    }
+
+    /* Bottom input mockup */
+    .wa-footer-input {
+      background: #1f2c34;
+      padding: 0.8rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .wa-input-box {
+      flex: 1;
+      background: #2a3942;
+      border-radius: 30px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .wa-send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--color-wa-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: black;
+      font-weight: bold;
+    }
+
+    /* Explanatory Footer */
+    .bottom-info-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-top: 3rem;
+    }
+
+    .bottom-info-title {
+      font-family: var(--font-outfit);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--color-gold);
+      text-align: center;
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .benefit-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .benefit-header {
+      font-weight: 700;
+      color: white;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .benefit-icon {
+      color: var(--color-gold);
+    }
+
+    .benefit-desc {
+      color: var(--color-slate-400);
+      font-size: 0.88rem;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      color: var(--color-slate-700);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-bg"></div>
+
+  <header>
+    <div class="brand-logo">VeneStay Conversational Commerce</div>
+    <h1>Simulador de Flujo WhatsApp</h1>
+    <p class="subtitle">Guía visual e interactiva diseñada para personas no técnicas. Haz clic en cada paso para ver cómo avanza el huésped y cómo se sincronizan los estados.</p>
+  </header>
+
+  <main>
+    <div class="dashboard-grid">
+      
+      <!-- STEPS LIST -->
+      <div class="steps-container">
+        
+        <!-- Paso 1 -->
+        <div class="step-card active" onclick="activateStep(1)">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3 class="step-title">
+              Descubrimiento de Propiedades
+              <span class="step-badge badge-blue">Chat Inbound</span>
+            </h3>
+            <p class="step-desc">El huésped escribe "Hola VeneStay" o busca propiedades. Jelou AI procesa el texto (NLP) y le muestra opciones directamente en burbujas con imágenes y botón interactivo.</p>
+          </div>
+        </div>
+        
+        <!-- Paso 2 -->
+        <div class="step-card" onclick="activateStep(2)">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3 class="step-title">
+              Filtro de Seguridad (Trust Score)
+              <span class="step-badge badge-purple">Seguridad en 1s</span>
+            </h3>
+            <p class="step-desc">Al intentar reservar, el sistema valida en segundo plano si el número tiene un puntaje de seguridad apto. Si es apto (Score >= 75), permite avanzar de inmediato.</p>
+          </div>
+        </div>
+        
+        <!-- Paso 3 -->
+        <div class="step-card" onclick="activateStep(3)">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3 class="step-title">
+              Intención de Reserva (UCP 20/80)
+              <span class="step-badge badge-amber">Desglose Claro</span>
+            </h3>
+            <p class="step-desc">Se crea la reserva en la base de datos como "Pendiente de Pago". Se le calcula y presenta de manera explícita el depósito del 20% y el saldo del 80% a pagar al llegar.</p>
+          </div>
+        </div>
+        
+        <!-- Paso 4 -->
+        <div class="step-card" onclick="activateStep(4)">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3 class="step-title">
+              Carga del Pago y Sincronización
+              <span class="step-badge badge-green">Omnicanalidad</span>
+            </h3>
+            <p class="step-desc">El usuario le toma una foto al comprobante y la envía en el chat. Jelou sube el archivo a la base de datos de VeneStay de inmediato. La reserva pasa a "Pendiente de Aprobación".</p>
+          </div>
+        </div>
+        
+      </div>
+
+      <!-- WHATSAPP MOBILE PHONE MOCKUP -->
+      <div class="phone-mockup">
+        <!-- Header -->
+        <div class="wa-header">
+          <div class="wa-avatar">VS</div>
+          <div class="wa-user-info">
+            <span class="wa-username">VeneStay Reservas</span>
+            <span class="wa-status">en línea (Jelou AI)</span>
+          </div>
+        </div>
+
+        <!-- Chat Area (Dynamically changes based on steps) -->
+        <div class="wa-body" id="chat-container">
+          <!-- Step 1 content default -->
+          <div class="msg out">Quiero buscar un apartamento en Lechería de 120$ la noche.<span class="msg-time">09:30 AM</span></div>
+          <div class="msg in">
+            ¡Hola! Encontré esta excelente opción disponible en Lechería:
+            <div class="wa-flow-card">
+              <div class="wa-flow-card-img" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80');"></div>
+              <div class="wa-flow-title">Apto Vista Mar - Complejo El Morro</div>
+              <div class="wa-flow-desc">Precio: 120 USD/noche<br>Capacidad: 4 huéspedes</div>
+              <button class="wa-flow-action-btn" onclick="activateStep(2)">Reservar Ahora</button>
+            </div>
+            <span class="msg-time">09:31 AM</span>
+          </div>
+        </div>
+
+        <!-- Realtime state visualizer -->
+        <div class="state-indicator-bar">
+          <span>Estado Firestore: <strong id="firestore-state">EXPLORANDO</strong></span>
+          <span>Base de datos synced ⚡</span>
+        </div>
+
+        <!-- Chat Input Mockup -->
+        <div class="wa-footer-input">
+          <div class="wa-input-box" id="wa-input-text">Escribe un mensaje...</div>
+          <div class="wa-send-btn">➔</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BENEFIT & NON-TECHNICAL SUMMARY -->
+    <div class="bottom-info-box">
+      <h2 class="bottom-info-title">¿Cómo beneficia esto al negocio?</h2>
+      <div class="benefits-grid">
+        <div class="benefit-item">
+          <div class="benefit-header">
+            <span class="benefit-icon">✦</span> Cero Descargas Requeridas
+          </div>
+          <div class="benefit-desc">El 80% de los clientes en Venezuela prefiere resolver todo vía WhatsApp. No necesitan descargar la App ni registrarse en páginas complejas.</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-header">
+            <span class="benefit-icon">✦</span> Sincronización Real
+          </div>
+          <div class="benefit-desc">Todo mensaje enviado por WhatsApp se graba automáticamente en la plataforma web. Si un administrador atiende desde la Web, el huésped lo lee en su celular de inmediato.</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-header">
+            <span class="benefit-icon">✦</span> Seguridad Blindada
+          </div>
+          <div class="benefit-desc">El Trust Score analiza comportamientos y listas para evitar estafas telefónicas y depósitos falsos antes de bloquear el calendario.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    División de Ingeniería de IA — Antigravity &copy; 2026 · VeneStay Premium Vacation Rentals
+  </footer>
+
+  <script>
+    const chatSteps = {
+      1: `
+        <div class="msg out">Quiero buscar un apartamento en Lechería de 120$ la noche.<span class="msg-time">09:30 AM</span></div>
+        <div class="msg in">
+          ¡Hola! Encontré esta excelente opción disponible en Lechería:
+          <div class="wa-flow-card">
+            <div class="wa-flow-card-img" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80');"></div>
+            <div class="wa-flow-title">Apto Vista Mar - Complejo El Morro</div>
+            <div class="wa-flow-desc">Precio: 120 USD/noche<br>Capacidad: 4 huéspedes</div>
+            <button class="wa-flow-action-btn" onclick="activateStep(2)">Reservar Ahora</button>
+          </div>
+          <span class="msg-time">09:31 AM</span>
+        </div>
+      `,
+      2: `
+        <div class="msg out">Quiero iniciar la reserva de esa opción.<span class="msg-time">09:32 AM</span></div>
+        <div class="msg in">
+          Un momento por favor, estamos verificando su nivel de confianza en VeneStay Security Shield... 🔒
+          <span class="msg-time">09:32 AM</span>
+        </div>
+        <div class="msg in">
+          ✅ <strong>¡Verificación Exitosa!</strong> Su Trust Score es de <strong>88/100</strong>. Cumple con los requisitos para reserva rápida directa en WhatsApp.
+          <span class="msg-time">09:33 AM</span>
+        </div>
+      `,
+      3: `
+        <div class="msg out">Excelente. ¿Cuál es el monto del depósito?<span class="msg-time">09:33 AM</span></div>
+        <div class="msg in">
+          Perfecto. Bajo el protocolo financiero 20/80 de VeneStay, tu reserva queda registrada en la base de datos.
+          <br><br>
+          <strong>Desglose de Montos:</strong><br>
+          • 💵 Pago Hoy (Depósito del 20%): <strong>$126.00 USD</strong><br>
+          • 🏨 Pago en Check-In (80% restante): <strong>$504.00 USD</strong><br>
+          • Total: $630.00 USD
+          <br><br>
+          Puedes hacer Pago Móvil o transferencia a:
+          <br><strong>Banesco:</strong> 0134-XXXX-XX-XXXXXXXXXX<br>
+          <strong>Titular:</strong> VeneStay Lechería C.A.<br>
+          <strong>Pago Móvil:</strong> +584141234567 (RIF J-12345678-9)
+          <span class="msg-time">09:34 AM</span>
+        </div>
+      `,
+      4: `
+        <div class="msg out">
+          Listo, adjunto la foto de la transferencia de los $126.00 del depósito.
+          <div style="background-color: #202c33; border-radius: 6px; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.1); margin-top: 5px;">
+            📸 <strong>[Comprobante_Banesco.jpg]</strong>
+          </div>
+          <span class="msg-time">09:36 AM</span>
+        </div>
+        <div class="msg in">
+          📥 Recibido. El comprobante fue subido a los servidores seguros de VeneStay.
+          <br><br>
+          Tu reserva ha pasado al estado <strong>PENDIENTE DE APROBACIÓN</strong>. Te avisaremos en unos minutos cuando el anfitrión valide la transacción en su panel web. ⚡
+          <span class="msg-time">09:37 AM</span>
+        </div>
+      `
+    };
+
+    const stateTexts = {
+      1: "EXPLORANDO",
+      2: "VALIDANDO_TRUST",
+      3: "PENDING_PAYMENT",
+      4: "PENDING_APPROVAL"
+    };
+
+    const inputTextTemplates = {
+      1: "Quiero buscar un apartamento...",
+      2: "Procesando Trust Score...",
+      3: "Enviando métodos de pago...",
+      4: "Subiendo comprobante de pago..."
+    };
+
+    function activateStep(stepNumber) {
+      // Toggle active states on cards
+      const cards = document.querySelectorAll('.step-card');
+      cards.forEach((card, index) => {
+        if (index + 1 === stepNumber) {
+          card.classList.add('active');
+        } else {
+          card.classList.remove('active');
+        }
+      });
+
+      // Update Chat simulation
+      const chatContainer = document.getElementById('chat-container');
+      chatContainer.innerHTML = chatSteps[stepNumber];
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // Update Firestore State
+      document.getElementById('firestore-state').innerText = stateTexts[stepNumber];
+
+      // Update Input field simulation text
+      document.getElementById('wa-input-text').innerText = inputTextTemplates[stepNumber];
+    }
+  </script>
+</body>
+</html>
