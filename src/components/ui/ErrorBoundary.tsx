@@ -30,6 +30,29 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public static getDerivedStateFromError(error: Error): State {
+    const errorMsg = error.message || '';
+    const errorName = error.name || '';
+    
+    const isChunkError = 
+      errorMsg.includes('Failed to fetch dynamically imported module') ||
+      errorName === 'ChunkLoadError' ||
+      errorMsg.includes('ChunkLoadError') ||
+      errorMsg.includes('Failed to load module script') ||
+      errorMsg.includes('Expected a JavaScript-or-Wasm module script');
+      
+    if (isChunkError) {
+      try {
+        const lastReload = sessionStorage.getItem('last_chunk_error_reload');
+        const now = Date.now();
+        if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+          sessionStorage.setItem('last_chunk_error_reload', now.toString());
+          window.location.reload();
+        }
+      } catch (e) {
+        console.error('Failed to auto-reload on chunk error:', e);
+      }
+    }
+
     return { hasError: true, error };
   }
 
