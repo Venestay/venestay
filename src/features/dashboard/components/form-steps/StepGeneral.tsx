@@ -73,6 +73,7 @@ const StepGeneral: React.FC = () => {
   const { editingListing, setEditingListing, validation } = useListingForm();
   const { errors, touched, validateField, setFieldTouched } = validation;
   const firstInputRef = useRef<HTMLInputElement>(null);
+  const SHOW_CANCELLATION_POLICY_FORM = false;
 
   // Focus management: move focus to first input when step mounts
   useEffect(() => {
@@ -204,6 +205,53 @@ const StepGeneral: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
+        
+        {/* Gastos de Limpieza (Opcional) */}
+        <div className="space-y-2">
+          <label htmlFor="listing-cleaningFee" className={cn(
+            "text-[10px] font-black tracking-widest uppercase ml-1 transition-colors",
+            touched.cleaningFee && errors.cleaningFee ? "text-red-500" : "text-brand-navy/40"
+          )}>
+            Gastos de Limpieza ($)
+          </label>
+          <input
+            id="listing-cleaningFee"
+            type="number"
+            aria-invalid={!!(touched.cleaningFee && errors.cleaningFee)}
+            aria-describedby={touched.cleaningFee && errors.cleaningFee ? "listing-cleaningFee-error" : "listing-cleaningFee-suggestion"}
+            className={cn(
+              "text-brand-navy w-full rounded-2xl border bg-gray-50 px-6 py-4 font-bold outline-none transition-all",
+              touched.cleaningFee && errors.cleaningFee ? "border-red-200 bg-red-50 focus:border-red-500" :
+                touched.cleaningFee && !errors.cleaningFee && editingListing.cleaningFee ? "border-emerald-100 bg-emerald-50/30 focus:border-emerald-500" :
+                  "border-gray-100 focus:border-brand-500"
+            )}
+            value={editingListing.cleaningFee ?? ''}
+            onChange={(e) => {
+              const val = e.target.value === '' ? undefined : Number(e.target.value);
+              setEditingListing(prev => prev ? { ...prev, cleaningFee: val } : null);
+              if (touched.cleaningFee) validateField('cleaningFee', val);
+            }}
+            onBlur={() => {
+              setFieldTouched('cleaningFee');
+              validateField('cleaningFee', editingListing.cleaningFee);
+            }}
+            placeholder="Ej: 25"
+          />
+          <AnimatePresence>
+            {touched.cleaningFee && errors.cleaningFee ? (
+              <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} id="listing-cleaningFee-error" role="alert" className="ml-1 text-[9px] font-bold text-red-500 uppercase tracking-wider">{errors.cleaningFee}</motion.p>
+            ) : (
+              <p id="listing-cleaningFee-suggestion" className="ml-1 text-[9px] font-semibold text-slate-400 tracking-wide">
+                💡 Tarifa única por estancia. Sugerido para tu propiedad ({editingListing.bedrooms || 0} hab): {
+                  (editingListing.bedrooms || 0) <= 1 ? 'entre $0 y $20 USD' :
+                  (editingListing.bedrooms || 0) === 2 ? 'entre $15 y $40 USD' :
+                  (editingListing.bedrooms || 0) === 3 ? 'entre $30 y $60 USD' :
+                  'entre $50 y $100 USD'
+                }.
+              </p>
+            )}
+          </AnimatePresence>
+        </div>
 
         <div className="space-y-2">
           <label htmlFor="listing-city" className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Ciudad</label>
@@ -224,17 +272,56 @@ const StepGeneral: React.FC = () => {
             ))}
           </select>
         </div>
+
+        {/* Tipo de Propiedad */}
+        <div className="space-y-2">
+          <label htmlFor="listing-propertyType" className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Tipo de Propiedad</label>
+          <select
+            id="listing-propertyType"
+            className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 font-bold outline-none transition-all appearance-none"
+            value={editingListing.propertyType || 'Apartamento'}
+            onChange={(e) => {
+              const val = e.target.value;
+              setEditingListing(prev => prev ? { ...prev, propertyType: val } : null);
+              validateField('propertyType', val);
+            }}
+          >
+            {['Apartamento', 'Casa', 'Townhouse', 'Villa', 'Estudio', 'Habitación'].map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Tipo de Alojamiento */}
+        <div className="space-y-2">
+          <label htmlFor="listing-accommodationType" className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Tipo de Alojamiento</label>
+          <select
+            id="listing-accommodationType"
+            className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-100 bg-gray-50 px-6 py-4 font-bold outline-none transition-all appearance-none"
+            value={editingListing.accommodationType || 'Alojamiento entero'}
+            onChange={(e) => {
+              const val = e.target.value;
+              setEditingListing(prev => prev ? { ...prev, accommodationType: val } : null);
+              validateField('accommodationType', val);
+            }}
+          >
+            {['Alojamiento entero', 'Habitación privada', 'Habitación compartida'].map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
       </section>
 
       {/* Detalles de Edificación */}
       <section className="bg-gray-50 space-y-6 rounded-[32px] p-6 border border-gray-100/50 shadow-sm">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-5">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-6">
           {[
             { label: 'Huéspedes', key: 'maxGuests' as const, min: 1 },
             { label: 'Dormitorios', key: 'bedrooms' as const, min: 0 },
             { label: 'Camas', key: 'beds' as const, min: 1 },
             { label: 'Baños', key: 'baths' as const, min: 1 },
             { label: 'Noches Mín.', key: 'minNights' as const, min: 2 },
+            { label: 'Noches Máx.', key: 'maxNights' as const, min: 1 },
           ].map(item => (
             <div key={item.key} className="space-y-3">
               <label htmlFor={`listing-${item.key}`} className={cn(
@@ -289,6 +376,29 @@ const StepGeneral: React.FC = () => {
               </div>
             ))}
           </div>
+          
+          {/* Pet Friendly Toggle Option */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <span className="text-[10px] font-black tracking-widest uppercase text-brand-navy/40 ml-1">
+              ¿Acepta Mascotas? (Pet Friendly)
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const newVal = !editingListing.isPetFriendly;
+                setEditingListing(prev => prev ? { ...prev, isPetFriendly: newVal } : null);
+                validateField('isPetFriendly', newVal);
+              }}
+              className={cn(
+                "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border min-h-[44px]",
+                editingListing.isPetFriendly
+                  ? "bg-brand-navy border-brand-navy text-white shadow-md"
+                  : "bg-gray-100 border-gray-200 text-brand-navy/60 hover:bg-gray-200"
+              )}
+            >
+              {editingListing.isPetFriendly ? 'Sí (Apto)' : 'No'}
+            </button>
+          </div>
           <AnimatePresence>
             {(errors.propertyFloor || Number(editingListing.propertyFloor) > Number(editingListing.buildingFloors)) && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} id="propertyFloor-error" role="alert" className="flex items-center gap-2 text-red-500 text-[10px] font-bold uppercase pt-2 ml-1">
@@ -328,76 +438,78 @@ const StepGeneral: React.FC = () => {
         />
       </section>
 
-      {/* Política de Cancelación */}
-      <section className="space-y-3" aria-labelledby="cancellation-policy-label">
-        <div className="ml-1 flex items-center gap-2">
-          <label id="cancellation-policy-label" className="text-brand-navy/40 text-[10px] font-black tracking-widest uppercase">
-            Política de Cancelación Aplicable
-          </label>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" role="group" aria-labelledby="cancellation-policy-label">
-          {([
-            {
-              key: 'flexible' as const,
-              title: 'Flexible',
-              desc: 'Reembolso del 100% del depósito hasta 48 horas antes del check-in.',
-              dot: 'bg-emerald-400',
-            },
-            {
-              key: 'moderate' as const,
-              title: 'Moderada',
-              desc: 'Reembolso del 100% del depósito hasta 7 días antes del check-in.',
-              dot: 'bg-amber-400',
-            },
-            {
-              key: 'strict' as const,
-              title: 'Estricta',
-              desc: 'Reembolso del 100% hasta 30 días antes. 50% entre 30 y 14 días.',
-              dot: 'bg-red-400',
-            },
-          ]).map((policy) => {
-            const isActive = (editingListing.cancellationPolicy ?? 'moderate') === policy.key;
-            return (
-              <button
-                key={policy.key}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => setEditingListing(prev => prev ? { ...prev, cancellationPolicy: policy.key } : null)}
-                className={cn(
-                  'relative flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-all duration-200',
-                  isActive
-                    ? 'border-brand-navy bg-brand-navy/[0.03] ring-1 ring-brand-navy/20 shadow-sm'
-                    : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 hover:bg-gray-50'
-                )}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <span className={cn('h-2 w-2 shrink-0 rounded-full', policy.dot)} />
-                  <span className={cn(
-                    'text-[11px] font-black tracking-wide transition-colors',
-                    isActive ? 'text-brand-navy' : 'text-brand-navy/60'
-                  )}>
-                    {policy.title}
-                  </span>
-                  {isActive && (
-                    <span className="ml-auto">
-                      <Check className="h-3.5 w-3.5 text-brand-navy" />
-                    </span>
+      {/* Política de Cancelación - Ocultada por requerimiento de diseño */}
+      {SHOW_CANCELLATION_POLICY_FORM && (
+        <section className="space-y-3" aria-labelledby="cancellation-policy-label">
+          <div className="ml-1 flex items-center gap-2">
+            <label id="cancellation-policy-label" className="text-brand-navy/40 text-[10px] font-black tracking-widest uppercase">
+              Política de Cancelación Aplicable
+            </label>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" role="group" aria-labelledby="cancellation-policy-label">
+            {([
+              {
+                key: 'flexible' as const,
+                title: 'Flexible',
+                desc: 'Reembolso del 100% del depósito hasta 48 horas antes del check-in.',
+                dot: 'bg-emerald-400',
+              },
+              {
+                key: 'moderate' as const,
+                title: 'Moderada',
+                desc: 'Reembolso del 100% del depósito hasta 7 días antes del check-in.',
+                dot: 'bg-amber-400',
+              },
+              {
+                key: 'strict' as const,
+                title: 'Estricta',
+                desc: 'Reembolso del 100% hasta 30 días antes. 50% entre 30 y 14 días.',
+                dot: 'bg-red-400',
+              },
+            ]).map((policy) => {
+              const isActive = (editingListing.cancellationPolicy ?? 'moderate') === policy.key;
+              return (
+                <button
+                  key={policy.key}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => setEditingListing(prev => prev ? { ...prev, cancellationPolicy: policy.key } : null)}
+                  className={cn(
+                    'relative flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-all duration-200',
+                    isActive
+                      ? 'border-brand-navy bg-brand-navy/[0.03] ring-1 ring-brand-navy/20 shadow-sm'
+                      : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 hover:bg-gray-50'
                   )}
-                </div>
-                <p className={cn(
-                  'text-[10px] font-semibold leading-relaxed transition-colors',
-                  isActive ? 'text-slate-500' : 'text-slate-400'
-                )}>
-                  {policy.desc}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-        <p className="ml-1 text-[9px] font-semibold text-slate-400 tracking-wide">
-          Solo rige el depósito del 20%. El 80% restante se abona al check-in.
-        </p>
-      </section>
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <span className={cn('h-2 w-2 shrink-0 rounded-full', policy.dot)} />
+                    <span className={cn(
+                      'text-[11px] font-black tracking-wide transition-colors',
+                      isActive ? 'text-brand-navy' : 'text-brand-navy/60'
+                    )}>
+                      {policy.title}
+                    </span>
+                    {isActive && (
+                      <span className="ml-auto">
+                        <Check className="h-3.5 w-3.5 text-brand-navy" />
+                      </span>
+                    )}
+                  </div>
+                  <p className={cn(
+                    'text-[10px] font-semibold leading-relaxed transition-colors',
+                    isActive ? 'text-slate-500' : 'text-slate-400'
+                  )}>
+                    {policy.desc}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+          <p className="ml-1 text-[9px] font-semibold text-slate-400 tracking-wide">
+            Solo rige el depósito del 20%. El 80% restante se abona al check-in.
+          </p>
+        </section>
+      )}
 
       {/* Modo de Reserva */}
       <section className="space-y-4 border-t border-gray-200/60 pt-8" aria-labelledby="booking-mode-label">

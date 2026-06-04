@@ -52,6 +52,7 @@ export interface Listing {
   paymentMethods?: PaymentMethod[];
   isPublishedFromDashboard?: boolean;
   cancellationPolicy?: CancellationPolicyType;
+  cleaningFee?: number;
   bankDetails?: {
     bankName: string;
     accountHolder: string;

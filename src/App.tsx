@@ -12,6 +12,7 @@ import { Toaster } from 'sonner';
 import { useBookingManager } from '@/features/bookings/hooks/use-booking-manager';
 import { useDatabaseSeeder } from '@/lib/hooks/use-database-seeder';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { ChatNotificationProvider } from '@/features/bookings/hooks/useChatNotifications';
 
 // 🚀 CODE SPLITTING: Lazy Load de componentes pesados
 const AdminDashboard = lazy(
@@ -23,6 +24,7 @@ const CheckoutPage = lazy(
 const HostGuide = lazy(() => import('@/pages/HostGuide'));
 const ListingDetail = lazy(() => import('@/features/listings/components/ListingDetail'));
 const ProfileSettings = lazy(() => import('@/features/auth/components/ProfileSettings'));
+const MyTrips = lazy(() => import('@/features/bookings/components/MyTrips'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -48,6 +50,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <BrowserRouter>
+        <ChatNotificationProvider>
         <ScrollToTop />
       <Suspense
         fallback={
@@ -102,9 +105,18 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/mis-viajes"
+            element={
+              <ProtectedRoute>
+                <MyTrips />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Suspense>
       <Toaster position="top-right" richColors />
+      </ChatNotificationProvider>
     </BrowserRouter>
     </ErrorBoundary>
   );

@@ -30,10 +30,16 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ImageModal } from '@/components/ui/ImageModal';
 
+interface SystemMessage extends Message {
+  details?: string;
+  note?: string;
+}
+
 interface ChatProps {
   bookingId: string;
   senderId: string;
   senderName: string;
+  recipientId?: string;
   isFloating?: boolean;
   onAuthRequired?: () => void;
 }
@@ -42,6 +48,7 @@ const Chat: React.FC<ChatProps> = ({
   bookingId,
   senderId,
   senderName,
+  recipientId,
   isFloating,
   onAuthRequired,
 }) => {
@@ -134,6 +141,10 @@ const Chat: React.FC<ChatProps> = ({
         status: 'sent',
         createdAt: serverTimestamp(),
       };
+      
+      if (recipientId) {
+        payload.recipientId = recipientId;
+      }
 
       if (type === 'text') {
         payload.text = newMessage.trim();
@@ -243,6 +254,53 @@ const Chat: React.FC<ChatProps> = ({
             const isMe = msg.senderId === senderId;
             const showName =
               idx === 0 || messages[idx - 1].senderId !== msg.senderId;
+
+            const isSystem = msg.type?.startsWith('system');
+            if (isSystem) {
+              const sysMsg = msg as SystemMessage;
+              return (
+                <div key={sysMsg.id} className="w-full max-w-[90%] mx-auto my-4 select-none">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                    <div className="flex items-center gap-1.5 pb-2 mb-2 border-b border-slate-200/60 text-[8px] font-black tracking-widest text-slate-400 uppercase">
+                      <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
+                      Sistema VeneStay
+                    </div>
+                    <div className="text-slate-800 font-bold text-xs flex items-start gap-2">
+                      <span className="text-emerald-500">✅</span>
+                      <div className="flex-grow space-y-2">
+                        <p className="font-bold text-slate-800">{sysMsg.text}</p>
+                        {sysMsg.details && (
+                          <div className="bg-white rounded-xl border border-slate-100 p-2.5 mt-2 font-mono text-[10px] text-slate-600">
+                            {sysMsg.details}
+                          </div>
+                        )}
+                        {sysMsg.note && (
+                          <p className="text-[11px] text-slate-500 italic mt-1 bg-white p-2 rounded-xl border border-slate-100/60">
+                            Mensaje: "{sysMsg.note}"
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1 text-center">
+                    <span className="text-[8px] font-bold text-gray-400 uppercase">
+                      {(() => {
+                        const ca = msg.createdAt;
+                        if (!ca) return '...';
+                        let date: Date;
+                        if ((ca as { seconds?: number }).seconds) date = new Date((ca as { seconds?: number }).seconds! * 1000);
+                        else if (ca instanceof Date) date = ca;
+                        else if (typeof ca === 'string') date = new Date(ca);
+                        else if (typeof ca === 'number') date = new Date(ca);
+                        else return '...';
+
+                        return isNaN(date.getTime()) ? '...' : format(date, 'HH:mm');
+                      })()}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
 
             return (
               <div

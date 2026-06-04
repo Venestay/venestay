@@ -66,38 +66,68 @@ service firebase.storage {
     }
 
     match /kyc/{userId}/{fileName} {
-      allow read: if isAuthenticated() && (
-        request.auth.uid == userId ||
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
-      );
-      allow create, update: if isAuthenticated() && request.auth.uid == userId;
-      allow delete: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      // Solo el propietario puede subir su propio documento
+      allow write: if isAuthenticated()
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*')
+            || request.resource.contentType == 'application/pdf')
+        // Solo permitir si el estado actual es NOT_SUBMITTED o REJECTED o UNVERIFIED
+        && firestore.get(/databases/(default)/documents/users/$(userId))
+                   .data.kycStatus in ['NOT_SUBMITTED', 'REJECTED', 'UNVERIFIED'];
+
+      // NADIE puede leer directamente — solo Cloud Functions via Admin SDK o URLs firmadas
+      allow read: if false;
     }
 
     // =========================================================================
     // 2. DIRECTORIO DE COMPROBANTES DE PAGO
     // =========================================================================
-    // Se aplican a 'receipts' y a 'bookings/{bookingId}/payments' (rutas app)
+    // Se aplican a 'receipts', 'payment-proofs' y a 'bookings/{bookingId}/payments'
     match /receipts/{bookingId}/{fileName} {
-      // Lectura: Habilitada para cualquier usuario autenticado en la plataforma
-      allow read: if isAuthenticated();
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+        isAdmin()
+      );
       allow create, update: if isAuthenticated() && isValidImage();
       allow delete: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        isAdmin()
       );
     }
 
-    match /bookings/{bookingId}/payments/{fileName} {
-      // Lectura: Habilitada para cualquier usuario autenticado en la plataforma
-      allow read: if isAuthenticated();
+    match /payment-proofs/{bookingId}/{fileName} {
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+        isAdmin()
+      );
       allow create, update: if isAuthenticated() && isValidImage();
       allow delete: if isAuthenticated() && (
         firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        isAdmin()
+      );
+    }
+
+    function isValidReceipt() {
+      return request.resource.size <= 800 * 1024
+             && request.resource.contentType.matches('image/.*');
+    }
+
+    match /bookings/{bookingId}/payments/{fileName} {
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.ownerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create, update: if isAuthenticated() && isValidReceipt();
+      allow delete: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data.guestId == request.auth.uid ||
+        isAdmin()
       );
     }
 

@@ -1,25 +1,35 @@
 # MEMORY_HOT — VeneStay Agent
-_Sprint: S04 — Flujo Conversacional "Request to Book" (RE-IMPLEMENTACIÓN) · Actualizado: 2026-05-31_
+_Sprint: S04 — KYC & Identity Verification · Actualizado: 2026-06-04_
 
 ## Estado ahora
-SPRINT    : S04 (A-B-C) — Re-implementación desde cero (Código previo borrado/revertido)
-QA_GATE   : PENDIENTE
+SPRINT    : S04 — KYC & Identity Verification
+QA_GATE   : PASS (G1/G2 Verificaciones TypeScript y Lint limpias)
 BLOQUEANTE: ninguno
 
-## Módulos a re-implementar (Sprint S04 completo)
+## Módulos del Sprint S04 (En progreso)
 | Módulo | Archivo Objetivo | Estado | Iteraciones QA |
 |:---|:---|:---|:---|
-| Tipos y Contratos RTB | src/features/bookings/types/index.ts | REVERTIDO | 0/3 |
-| Formulario Inline de Reserva | src/features/listings/components/DirectRequestForm.tsx | PENDIENTE | 0/3 |
-| Integración y Bifurcación en Ficha | src/features/listings/components/ListingDetail.tsx | REVERTIDO | 0/3 |
-| Tarjeta de Estado (Espera/Expiración/Rechazo) | src/features/bookings/components/BookingPendingApprovalCard.tsx | PENDIENTE | 0/3 |
-| Reglas de Seguridad y Validación | firestore.rules | REVERTIDO | 0/3 |
-| Dashboard Galería (Reordenamiento, Lápiz y Selección de Portada) | src/features/dashboard/components/form-steps/StepGallery.tsx | COMPLETADO | 1/3 |
+| Plan de Implementación KYC v2.0 | docs/plans/implementation_plan_kyc_v2.md | APROBADO | 0/3 |
+| SPEC-KYC-01: Reglas y Tipos | storage.rules, firestore.rules, src/types/user.types.ts | COMPLETADO | 0/3 |
+| Fase 1: MVP KYC Huésped | src/services/kyc-service.ts, functions/src/submitKYCDocument.ts | COMPLETADO (Desplegado a Firebase Cloud) | 0/3 |
+| Fase 2: Panel Auditoría Admin | functions/src/approveKYC.ts, ... | PENDIENTE (Siguiente paso) | 0/3 |
+| Fase 3: Integración Checkout | src/features/bookings/components/checkout/CheckoutPage.tsx | PENDIENTE | 0/3 |
+| Preparación Sprint 7: Análisis Tarifa de Limpieza | docs/plans/informe_tarifa_limpieza.md | COMPLETADO | 0/3 |
+| Implementación SPEC-PRICING-CLEANINGFEE-01 | src/features/dashboard/types/dashboard.schema.ts, src/features/dashboard/components/form-steps/StepGeneral.tsx, src/constants/index.tsx | COMPLETADO | 0/3 |
+| **SPEC-BOOKINGS-STATETRANSITION-FIX (P0)** | src/features/bookings/components/MyTrips.tsx | **COMPLETADO** | 1/3 |
+| **SPEC-BOOKINGS-CHAT-LAYOUT-FIX (P1)** | src/features/bookings/components/MyTrips.tsx | **COMPLETADO** | 1/3 |
+| **SPEC-BOOKINGS-UX-REDESIGN (P1)** | src/features/bookings/components/MyTrips.tsx, src/components/Chat.tsx | **COMPLETADO** | 1/3 |
 
-## Próxima acción requerida (¡CRÍTICO PARA EL AGENTE!)
-1. **Leer Obligatoriamente el Post-Mortem:** El agente entrante DEBE leer y analizar exhaustivamente [docs/ai_harness/handoff_diagnostic_report.md](file:///c:/VeneStay/docs/ai_harness/handoff_diagnostic_report.md) antes de escribir una sola línea de código.
-2. **Evitar los Errores del Pasado:**
-   * **Error de Permisos en Commit:** El backend de Firebase denegará escrituras de transacciones complejas en el cliente si hay discrepancias de identidad (`guestId` vs `request.auth.uid`) o si se intentan escribir mensajes de remitente `system` sin los privilegios correctos en `firestore.rules`.
-   * **Violación de List Query:** La consulta de disponibilidad en el cliente debe alinearse perfectamente con las cláusulas `allow list` de Firestore Rules (incluyendo el estado `PENDING_APPROVAL`).
-   * **Tipos Numéricos en Reglas:** Nunca uses `is number` en `firestore.rules`; causa un rechazo silencioso. Usa siempre `(is int || is float)` o `is int`.
-3. **Seguir el Plan:** Estudiar y reconstruir el flujo siguiendo la especificación en [docs/plans/implementation_plan_rtb_v2.md](file:///c:/VeneStay/docs/plans/implementation_plan_rtb_v2.md).
+## Notas de Integración / Estado de Emuladores
+*   **Java JDK Configurado:** Java se localizó en `C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin`.
+*   **Emuladores Locales:** Firestore y Storage emulados correctamente en puertos `8080` y `9199`.
+*   **Deploy Exitoso:** Reglas de seguridad (`firestore.rules` y `storage.rules`) desplegadas con éxito en el proyecto `gen-lang-client-0727178605`.
+*   **Resultados QA:** TypeScript compila con éxito (0 errores). ESLint sin errores en código nuevo (0 errores, solo warnings históricos heredados).
+*   **Fix P0 aplicado (2026-06-04):** Corregido bug crítico en MyTrips.tsx donde reservas rechazadas desaparecían de la vista activa y el huésped veía otra reserva como "Confirmada". Ahora las reservas terminales recientes (<48h) permanecen visibles en la sección principal con fondo rojo. Eliminado slice(0,1). Auto-expansión de historial cuando no hay activos.
+*   **Fix P1 aplicado (2026-06-04):** Corregido ReferenceError `raw` -> `updatedRaw` que ocultaba el historial de viajes. Añadido chat persistente de escritorio en el lado derecho y un alternador de chat ("Ver Chat") en las tarjetas de reservas activas.
+*   **Rediseño UX aplicado (2026-06-04):** Completado el rediseño completo de Mis Viajes según PROMPT_UX_MIS_VIAJES.md. Implementado layout de dos columnas fluidas al 100% en desktop, diseño de tarjetas compactas BookingCard unificando fechas/viajeros y desglose financiero en una línea, y sistema de pestañas de navegación móvil (Reservas/Chat). En Chat.tsx, se agregó el formateador estructurado de mensajes de sistema de VeneStay.
+
+## Próxima acción requerida
+1. Unificar ramas en `main` según el plan de unificación aprobado.
+2. Retomar la Fase 2 del Sprint S04 (Panel Admin KYC) o continuar con el desarrollo completo del Sprint 7 de precios.
+

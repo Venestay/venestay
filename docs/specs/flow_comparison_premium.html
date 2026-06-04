@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeneStay — Comparación de Flujo: Request to Book</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --color-navy: #0B1120;
+      --color-navy-light: #151F32;
+      --color-gold: #C5A059;
+      --color-gold-hover: #DFBA73;
+      --color-emerald: #10B981;
+      --color-amber: #F59E0B;
+      --color-red: #EF4444;
+      --color-slate-100: #F1F5F9;
+      --color-slate-200: #E2E8F0;
+      --color-slate-400: #94A3B8;
+      --color-slate-700: #334155;
+      
+      --font-outfit: 'Outfit', sans-serif;
+      --font-inter: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-navy);
+      color: white;
+      font-family: var(--font-inter);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Premium Glow Accents */
+    .glow-bg {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(197, 160, 89, 0.08) 0%, rgba(11, 17, 32, 0) 70%);
+      top: -100px;
+      right: -100px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 1rem 1.5rem;
+      text-align: center;
+    }
+
+    .brand-logo {
+      font-family: var(--font-outfit);
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--color-gold);
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: var(--font-outfit);
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #FFFFFF 60%, var(--color-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--color-slate-400);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto 2.5rem auto;
+      font-weight: 400;
+    }
+
+    /* Navigation Toggles */
+    .toggle-container {
+      display: inline-flex;
+      background-color: var(--color-navy-light);
+      padding: 0.4rem;
+      border-radius: 100px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      margin-bottom: 3rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .toggle-btn {
+      padding: 0.8rem 2rem;
+      border: none;
+      border-radius: 100px;
+      background: transparent;
+      color: var(--color-slate-400);
+      font-family: var(--font-outfit);
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.38s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .toggle-btn.active {
+      background-color: var(--color-gold);
+      color: var(--color-navy);
+      box-shadow: 0 4px 15px rgba(197, 160, 89, 0.25);
+    }
+
+    main {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem 1.5rem;
+    }
+
+    /* Container for Visual Canvas */
+    .flow-canvas {
+      background-color: var(--color-navy-light);
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      padding: 3rem;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.5s ease;
+    }
+
+    .flow-canvas::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--color-gold), transparent);
+    }
+
+    /* Comparison Views */
+    .view-pane {
+      display: none;
+      animation: fadeIn 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    }
+
+    .view-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Flow Layout (Flex/Grid) */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 2rem;
+      position: relative;
+      margin-top: 1.5rem;
+    }
+
+    /* Connector lines between cards */
+    .step-card {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 28px;
+      padding: 2rem;
+      position: relative;
+      transition: all 0.35s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step-card:hover {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(197, 160, 89, 0.2);
+      transform: translateY(-5px);
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      font-family: var(--font-outfit);
+      font-weight: 800;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .now-view .step-badge {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+
+    .after-view .step-badge {
+      background-color: rgba(197, 160, 89, 0.12);
+      color: var(--color-gold);
+      border: 1px solid rgba(197, 160, 89, 0.2);
+    }
+
+    .step-title {
+      font-family: var(--font-outfit);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      color: white;
+    }
+
+    .step-desc {
+      color: var(--color-slate-400);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+
+    /* Specific Indicators */
+    .indicator-pill {
+      margin-top: auto;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1.5rem;
+    }
+
+    .pill-red { background-color: rgba(239, 68, 68, 0.1); color: var(--color-red); }
+    .pill-amber { background-color: rgba(245, 158, 11, 0.1); color: var(--color-amber); }
+    .pill-emerald { background-color: rgba(16, 185, 129, 0.1); color: var(--color-emerald); }
+
+    /* Comparative Dashboard summary table */
+    .comparison-summary {
+      margin-top: 4rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 3rem;
+    }
+
+    .summary-title {
+      font-family: var(--font-outfit);
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: var(--color-gold);
+    }
+
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .comp-table th {
+      font-family: var(--font-outfit);
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--color-slate-400);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .comp-table td {
+      padding: 1.5rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+      font-size: 0.88rem;
+    }
+
+    .comp-table tr:hover td {
+      background-color: rgba(255, 255, 255, 0.005);
+    }
+
+    .tag-old {
+      color: var(--color-red);
+      font-weight: 600;
+    }
+
+    .tag-new {
+      color: var(--color-emerald);
+      font-weight: 700;
+    }
+
+    /* Footer styling */
+    footer {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: var(--color-slate-700);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    @media (max-width: 768px) {
+      .flow-canvas { padding: 1.5rem; }
+      h1 { font-size: 2rem; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .comp-table th, .comp-table td { font-size: 0.78rem; padding: 1rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-bg"></div>
+
+  <header>
+    <div class="brand-logo">VeneStay Experience Design</div>
+    <h1>Request to Book — Flujo de Estados</h1>
+    <p class="subtitle">Análisis visual intuitivo para entender la transición del flujo complejo actual hacia la nueva experiencia optimizada en 4 pasos.</p>
+    
+    <div class="toggle-container">
+      <button class="toggle-btn" onclick="switchView('now')">Flujo Actual</button>
+      <button class="toggle-btn active" id="btn-after" onclick="switchView('after')">Flujo Optimizado (Después)</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="flow-canvas">
+      
+      <!-- VIEW: BEFORE (NOW) -->
+      <div id="view-now" class="view-pane now-view">
+        <h2 style="font-family: var(--font-outfit); font-size: 1.5rem; margin-bottom: 2rem; color: #FFFFFF;" class="flex items-center">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: var(--color-red); margin-right: 10px;"></span>
+          Flujo Tradicional (Múltiples Confirmaciones y Fricción)
+        </h2>
+        
+        <div class="steps-grid">
+          
+          <!-- Paso 1 -->
+          <div class="step-card">
+            <div class="step-badge">1</div>
+            <h3 class="step-title">Huésped Solicita</h3>
+            <p class="step-desc">El huésped inicia la solicitud desde la ficha e ingresa un mensaje descriptivo en el formulario.</p>
+            <div class="indicator-pill pill-amber">
+              <span>●</span> Esperando aprobación
+            </div>
+          </div>
+          
+          <!-- Paso 2 -->
+          <div class="step-card">
+            <div class="step-badge">2</div>
+            <h3 class="step-title">Aprobación Genérica</h3>
+            <p class="step-desc">El anfitrión aprueba la solicitud a ciegas en el panel. El sistema no inyecta datos bancarios ni de contacto de forma inmediata.</p>
+            <div class="indicator-pill pill-amber">
+              <span>●</span> Sin datos de pago
+            </div>
+          </div>
+          
+          <!-- Paso 3 -->
+          <div class="step-card">
+            <div class="step-badge">3</div>
+            <h3 class="step-title">Huésped espera datos</h3>
+            <p class="step-desc">El huésped debe esperar que el anfitrión le escriba por chat privado o verifique externamente para obtener los métodos de pago (Pago Móvil/Binance).</p>
+            <div class="indicator-pill pill-red">
+              <span>●</span> Alta deserción/Fricción
+            </div>
+          </div>
+          
+          <!-- Paso 4 -->
+          <div class="step-card">
+            <div class="step-badge">4</div>
+            <h3 class="step-title">Envío de Captura</h3>
+            <p class="step-desc">El huésped sube una referencia simple del comprobante a través de un modal genérico de pago.</p>
+            <div class="indicator-pill pill-amber">
+              <span>●</span> En verificación
+            </div>
+          </div>
+          
+          <!-- Paso 5 -->
+          <div class="step-card">
+            <div class="step-badge">5</div>
+            <h3 class="step-title">Conciliación final</h3>
+            <p class="step-desc">El anfitrión/admin aprueba definitivamente y se bloquean las fechas del calendario de forma rígida.</p>
+            <div class="indicator-pill pill-emerald">
+              <span>●</span> Reserva confirmada
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <!-- VIEW: AFTER (PROPOSED) -->
+      <div id="view-after" class="view-pane after-view active">
+        <h2 style="font-family: var(--font-outfit); font-size: 1.5rem; margin-bottom: 2rem; color: #FFFFFF;" class="flex items-center">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: var(--color-gold); margin-right: 10px;"></span>
+          Nuevo Flujo Acortado de 4 Pasos (Automatizado y Directo)
+        </h2>
+        
+        <div class="steps-grid">
+          
+          <!-- Paso 1 -->
+          <div class="step-card">
+            <div class="step-badge">1</div>
+            <h3 class="step-title">Huésped Solicita</h3>
+            <p class="step-desc">Huésped selecciona fechas y envía mensaje de presentación. Se activa un <strong>Soft-Block</strong> (bloqueo preventivo) del calendario en caliente.</p>
+            <div class="indicator-pill pill-amber">
+              <span>✉</span> Alerta al chat y Email
+            </div>
+          </div>
+          
+          <!-- Paso 2 -->
+          <div class="step-card">
+            <div class="step-badge">2</div>
+            <h3 class="step-title">Aprobación Unificada</h3>
+            <p class="step-desc">El anfitrión aprueba la solicitud e inyecta directamente el método de pago registrado en la propiedad mediante un selector automatizado en su panel.</p>
+            <div class="indicator-pill pill-emerald">
+              <span>⚡</span> Inyección directa al chat
+            </div>
+          </div>
+          
+          <!-- Paso 3 -->
+          <div class="step-card">
+            <div class="step-badge">3</div>
+            <h3 class="step-title">Subida con Referencia</h3>
+            <p class="step-desc">Desde `/mis-viajes`, el huésped visualiza la cuenta del anfitrión y debe reportar de forma obligatoria tanto el comprobante visual como la referencia.</p>
+            <div class="indicator-pill pill-amber">
+              <span>🔒</span> Carga Dual Requerida
+            </div>
+          </div>
+          
+          <!-- Paso 4 -->
+          <div class="step-card">
+            <div class="step-badge">4</div>
+            <h3 class="step-title">Conciliación Expresa</h3>
+            <p class="step-desc">El anfitrión valida los datos en un clic. El Soft-Block se convierte en un <strong>Hard-Block</strong> inamovible en el mapa e inventario.</p>
+            <div class="indicator-pill pill-emerald">
+              <span>✓</span> Éxito instantáneo
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <!-- Comparative Table -->
+      <div class="comparison-summary">
+        <h3 class="summary-title">Resumen de Cambios: Antes vs. Después</h3>
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th>Aspecto del Negocio</th>
+              <th>Flujo Anterior (Fricción)</th>
+              <th>Flujo Nuevo (Optimizado)</th>
+              <th>Impacto en Conversión</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 700;">Pasos del Proceso</td>
+              <td class="tag-old">5 pasos (Múltiples idas y vueltas)</td>
+              <td class="tag-new">4 pasos lógicos y directos</td>
+              <td style="color: white; font-weight: 600;">Reducción del 20% en pasos de interacción.</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Método de Pago</td>
+              <td class="tag-old">Acuerdo informal e inconsistente por chat manual.</td>
+              <td class="tag-new">Inyectado en un clic directo de los datos de la propiedad.</td>
+              <td style="color: white; font-weight: 600;">Evita filtración de datos y acelera la transferencia.</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Notificaciones</td>
+              <td class="tag-old">Mensajería pasiva sin integración externa.</td>
+              <td class="tag-new">Pop-up instantáneo de Chat + Simulación de Email en caliente.</td>
+              <td style="color: white; font-weight: 600;">Respuesta del anfitrión en tiempo récord (&lt;2 horas).</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Seguridad y Garantía</td>
+              <td class="tag-old">Subida simple de comprobante sin referencia obligatoria.</td>
+              <td class="tag-new">Validación dual obligatoria de imagen + número de referencia.</td>
+              <td style="color: white; font-weight: 600;">Integridad financiera total bajo protocolo UCP 20/80.</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Calendario y Fechas</td>
+              <td class="tag-old">Bucle complejo de fechas. Solapamientos no filtrados.</td>
+              <td class="tag-new">Soft-block durante negociación y Hard-block inmediato al conciliar.</td>
+              <td style="color: white; font-weight: 600;">Cero reservas duplicadas. Sincronización perfecta.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    División de Ingeniería de IA — Antigravity &copy; 2026 · VeneStay Premium Vacation Rentals
+  </footer>
+
+  <script>
+    function switchView(viewName) {
+      const buttons = document.querySelectorAll('.toggle-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      
+      const panes = document.querySelectorAll('.view-pane');
+      panes.forEach(pane => pane.classList.remove('active'));
+      
+      if (viewName === 'now') {
+        document.getElementById('view-now').classList.add('active');
+        document.querySelector('button[onclick="switchView(\'now\')"]').classList.add('active');
+      } else {
+        document.getElementById('view-after').classList.add('active');
+        document.getElementById('btn-after').classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>

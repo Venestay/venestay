@@ -12,7 +12,7 @@ import PasswordReset from '@/features/auth/components/PasswordReset';
 const ListingDetail = lazy(
   () => import('@/features/listings/components/ListingDetail')
 );
-const MyTrips = lazy(() => import('@/features/bookings/components/MyTrips'));
+
 
 import * as listingService from '@/services/listing-service';
 import {
@@ -36,7 +36,7 @@ const Home: React.FC = () => {
   const [activeCity, setActiveCity] = useState<City>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
-  const [isMyTripsOpen, setIsMyTripsOpen] = useState(false);
+
   // isAdminDashboardOpen wasn't actually rendering a modal, we'll keep the state for compatibility
   // but it's better to navigate to /dashboard
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
@@ -594,12 +594,7 @@ const Home: React.FC = () => {
         initialView={authModalView}
       />
 
-      <Suspense fallback={null}>
-        <MyTrips
-          isOpen={isMyTripsOpen}
-          onClose={() => setIsMyTripsOpen(false)}
-        />
-      </Suspense>
+
 
       <InfoModal
         isOpen={isInfoModalOpen}

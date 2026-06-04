@@ -96,6 +96,12 @@ export const listingSchema = z.object({
     phoneNumber: z.string().optional(),
   }).optional(),
   paymentInstructions: z.string().optional(),
+  cleaningFee: z.coerce
+    .number()
+    .min(0, 'La tarifa de limpieza no puede ser negativa')
+    .max(150, 'La tarifa máxima de limpieza es $150 USD')
+    .optional()
+    .default(0),
   bookingMode: z.enum(['instant', 'request']).default('instant'),
 }).refine((data) => data.propertyFloor <= data.buildingFloors, {
   message: "El piso del alojamiento no puede ser mayor que el total de pisos del edificio",
