@@ -4,11 +4,11 @@ import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  MessageSquare, 
-  Users, 
-  Loader2, 
-  Star, 
+import {
+  MessageSquare,
+  Users,
+  Loader2,
+  Star,
   Clock
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
@@ -37,10 +37,10 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
 }) => {
   const navigate = useNavigate();
   const { profileData } = useAuth();
-  
+
   // Trust Score check
   const { trustScore, isLoading: isProfileLoading } = useGuestProfile(user?.uid);
-  
+
   // State
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -55,7 +55,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
 
   const totalNights = startDate && endDate ? differenceInDays(endDate, startDate) : 0;
   const totalPrice = totalNights > 0 ? listing.pricePerNight * totalNights : listing.pricePerNight;
-  
+
   const breakdown = calculatePaymentBreakdown(totalPrice, 12, listing.cleaningFee || 0);
   const anticipoAmount = breakdown.depositAmount;
   const remainingAmount = breakdown.remainingBalance;
@@ -117,9 +117,9 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
       };
 
       const result = await requestBookingDirectly(payload);
-      
+
       toast.success('¡Solicitud enviada! El anfitrión responderá en menos de 24 horas.');
-      
+
       if (onSuccess) {
         onSuccess(result.bookingId);
       } else {
@@ -136,7 +136,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
 
   return (
     <div className="rounded-[32px] border border-white/60 p-6 md:p-8 bg-white/98 backdrop-blur-md shadow-[0_25px_60px_rgba(0,0,0,0.04),0_0_50px_rgba(212,175,55,0.015)] space-y-6.5">
-      
+
       {/* HEADER EXPLICATIVO */}
       <div className="flex flex-col space-y-3.5 border-b border-slate-100 pb-5">
         <div className="flex items-start justify-between">
@@ -165,7 +165,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
 
       {/* FORMULARIO */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        
+
         {/* BLOQUE DE FECHAS & HUÉSPEDES */}
         <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white">
           <div className="grid grid-cols-2 border-b border-slate-100">
@@ -183,7 +183,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
                 {startDate ? format(startDate, 'dd MMM yyyy', { locale: es }) : 'Elegir fecha'}
               </p>
             </div>
-            
+
             <div
               className="cursor-pointer p-4 hover:bg-slate-50/50"
               onClick={() => setIsCalendarOpen(!isCalendarOpen)}
@@ -304,7 +304,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
             <span>Servicios e Impuestos</span>
             <span className="text-emerald-600 font-bold text-[9px] bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded-md leading-none uppercase tracking-widest">Incluidos</span>
           </div>
-          
+
           <div className="border-t border-slate-100 pt-3 flex flex-col gap-2">
             <div className="flex justify-between items-baseline font-black text-brand-navy">
               <span className="text-[9px] tracking-widest uppercase text-slate-400">Anticipo (UCP 20%)</span>

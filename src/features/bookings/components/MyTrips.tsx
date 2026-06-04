@@ -37,6 +37,9 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import Chat from '@/components/Chat';
 import FloatingChat from '@/components/FloatingChat';
+import { useTripFilters } from '../hooks/useTripFilters';
+import { TripFilterBar } from './TripFilterBar';
+import { useChatNotifications } from '../hooks/useChatNotifications';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { cleanupExpiredBookings } from '@/services/booking-service';
@@ -101,6 +104,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const [activeChatBooking, setActiveChatBooking] = useState<Booking | null>(
     null
   );
+  const [mobileTab, setMobileTab] = useState<'reservas' | 'chat'>('reservas');
   const navigate = useNavigate();
 
   // Stable snapshot of "now" for the 48-hour threshold comparison.
@@ -198,56 +202,24 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   }, [activeOpen, user, activeChatId]);
 
 
-  const { activeBookings, pastBookings } = useMemo(() => {
-    const active: Booking[] = [];
-    const past: Booking[] = [];
-    const threshold48h = RECENT_TERMINAL_HOURS * 60 * 60 * 1000;
-
-    bookings.forEach((booking) => {
-      const status = booking.status as string;
-
-      // CONFIRMED bookings whose end date has passed → history
-      const isCompletedConfirmed =
-        status === 'CONFIRMED' &&
-        booking.endDate &&
-        new Date(booking.endDate).getTime() < new Date().setHours(0, 0, 0, 0);
-
-      if (isCompletedConfirmed) {
-        past.push(booking);
-        return;
-      }
-
-      // Terminal statuses: only send to history if older than 48 hours
-      // so the guest always sees a recent rejection/cancellation in the main view.
-      if (TERMINAL_STATUSES.includes(status as TerminalStatus)) {
-        const updatedRaw =
-          (booking as unknown as { updatedAt?: string | { seconds: number } }).updatedAt ||
-          (booking as unknown as { createdAt?: string | { seconds: number } }).createdAt;
-
-        let updatedMs: number | null = null;
-        if (typeof updatedRaw === 'string') {
-          const d = new Date(updatedRaw);
-          if (!isNaN(d.getTime())) updatedMs = d.getTime();
-        } else if (updatedRaw && typeof (updatedRaw as { seconds: number }).seconds === 'number') {
-          updatedMs = (updatedRaw as { seconds: number }).seconds * 1000;
-        }
-
-        const isRecent = updatedMs !== null && (nowMs - updatedMs) < threshold48h;
-        if (isRecent) {
-          // Show in main section so the guest cannot miss it
-          active.push(booking);
-        } else {
-          past.push(booking);
-        }
-        return;
-      }
-
-      // Everything else (PENDING_APPROVAL, PENDING_PAYMENT, AWAITING_VERIFICATION, CONFIRMED in-progress)
-      active.push(booking);
+  const { unreadPerBooking } = useChatNotifications();
+  const unreadChatMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    Object.keys(unreadPerBooking).forEach((key) => {
+      map[key] = unreadPerBooking[key] > 0;
     });
+    return map;
+  }, [unreadPerBooking]);
 
-    return { activeBookings: active, pastBookings: past };
-  }, [bookings, nowMs]);
+  const {
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    filteredBookings,
+    activosCount,
+    historialCount,
+  } = useTripFilters(bookings, unreadChatMap);
 
   const processAndSetFile = async (selectedFile: File) => {
     if (!selectedFile.type.startsWith('image/')) {
@@ -457,16 +429,16 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100">
+    <div className="h-screen w-screen flex flex-col bg-gray-50/50 font-sans overflow-hidden">
+      <div className="flex flex-col h-full w-full bg-white overflow-hidden">
         {/* Header */}
-        <div className="bg-brand-navy flex shrink-0 items-center justify-between border-b border-gray-100 p-8">
+        <div className="bg-brand-navy flex shrink-0 items-center justify-between border-b border-gray-100 p-6 lg:p-8">
           <div className="flex items-center space-x-4">
             <div className="bg-brand-500/20 rounded-2xl p-3">
               <Calendar className="text-brand-500 h-8 w-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tight text-white">
+              <h2 className="text-xl lg:text-2xl font-black tracking-tight text-white">
                 Mis Viajes
               </h2>
               <p className="text-brand-500 mt-0.5 text-[10px] font-black tracking-[0.2em] uppercase">
@@ -483,509 +455,337 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
+        {/* Mobile Tab Switcher */}
+        <div className="flex lg:hidden border-b border-gray-100 bg-white px-4 shrink-0">
+          <button
+            onClick={() => setMobileTab('reservas')}
+            className={cn(
+              "flex-grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all",
+              mobileTab === 'reservas'
+                ? "border-brand-navy text-brand-navy font-black"
+                : "border-transparent text-gray-400"
+            )}
+          >
+            Reservas
+          </button>
+          <button
+            onClick={() => setMobileTab('chat')}
+            className={cn(
+              "flex-grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all relative flex items-center justify-center gap-1.5",
+              mobileTab === 'chat'
+                ? "border-brand-navy text-brand-navy font-black"
+                : "border-transparent text-gray-400"
+            )}
+          >
+            Chat
+            {activeChatBooking && (
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+            )}
+          </button>
+        </div>
+
         {/* Content & Chat Split */}
-        <div className="flex flex-row overflow-hidden flex-grow">
+        <div className="flex flex-row overflow-hidden flex-grow h-full w-full">
           {/* Left Column: Bookings */}
-          <div className="no-scrollbar flex-1 overflow-y-auto p-8">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center space-y-4 py-20">
-              <div className="border-brand-500 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" />
-              <p className="text-xs font-black tracking-widest text-gray-400 uppercase">
-                Cargando tus aventuras...
-              </p>
-            </div>
-          ) : bookings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-gray-100 bg-gray-50">
-                <MapPin className="h-8 w-8 text-gray-200" />
+          <div className={cn(
+            "no-scrollbar flex-1 overflow-y-auto p-4 lg:p-8 space-y-6",
+            mobileTab === 'reservas' ? 'block' : 'hidden lg:block'
+          )}>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center space-y-4 py-20">
+                <div className="border-brand-500 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" />
+                <p className="text-xs font-black tracking-widest text-gray-400 uppercase">
+                  Cargando tus aventuras...
+                </p>
               </div>
-              <h3 className="text-brand-navy mb-2 text-xl font-black">
-                Aún no tienes viajes
-              </h3>
-              <p className="mx-auto max-w-xs text-sm text-gray-500">
-                Explora nuestras propiedades exclusivas y comienza a planificar
-                tu próxima estancia en Venezuela.
-              </p>
-              <button
-                onClick={handleClose}
-                className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy mt-8 rounded-2xl px-8 py-4 text-[10px] font-black tracking-widest text-white uppercase shadow-xl transition-all"
-              >
-                Explorar Propiedades
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {/* --- VIAJES ACTIVOS Y RECIENTES --- */}
-              {activeBookings.length > 0 ? (
-                <div className="mx-auto max-w-2xl space-y-6">
-                  <h3 className="text-brand-navy mb-4 text-[10px] font-black tracking-[0.25em] uppercase">
-                    Viajes Activos y Recientes
-                  </h3>
-                  {activeBookings.map((booking) => {
-                    const statusInfo = getStatusDisplay(booking.status);
-                    const isTerminalRecent = ['REJECTED', 'CANCELLED', 'EXPIRED', 'CANCELLED_BY_GUEST'].includes(booking.status);
-                    return (
-                      <div
-                        key={booking.id}
-                        className={cn(
-                          'group relative overflow-hidden rounded-[32px] border p-8 shadow-md transition-all duration-500 hover:shadow-xl',
-                          isTerminalRecent
-                            ? 'border-red-100 bg-red-50/30'
-                            : 'border-gray-100 bg-white'
-                        )}
-                      >
-                        <div className="bg-brand-navy/5 absolute top-0 right-0 h-32 w-32 translate-x-6 -translate-y-6 rounded-bl-[120px] transition-transform group-hover:scale-110" />
+            ) : bookings.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-gray-100 bg-gray-50">
+                  <MapPin className="h-8 w-8 text-gray-200" />
+                </div>
+                <h3 className="text-brand-navy mb-2 text-xl font-black">
+                  Aún no tienes viajes
+                </h3>
+                <p className="mx-auto max-w-xs text-sm text-gray-500">
+                  Explora nuestras propiedades exclusivas y comienza a planificar tu próxima estancia en Venezuela.
+                </p>
+                <button
+                  onClick={handleClose}
+                  className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy mt-8 rounded-2xl px-8 py-4 text-[10px] font-black tracking-widest text-white uppercase shadow-xl transition-all"
+                >
+                  Explorar Propiedades
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6 max-w-3xl mx-auto">
+                <TripFilterBar
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  activosCount={activosCount}
+                  historialCount={historialCount}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                />
 
-                        <div className="relative z-10">
-                          <div className="mb-6 flex items-start justify-between">
-                            <div className="flex flex-col gap-2">
-                              <div
-                                className={cn(
-                                  'flex w-fit items-center space-x-2 rounded-full border px-4 py-2 text-[10px] font-black tracking-wider uppercase',
-                                  statusInfo.color
-                                )}
-                              >
-                                {statusInfo.icon}
-                                <span>{statusInfo.label}</span>
-                              </div>
-                              {booking.status === 'PENDING_PAYMENT' && (
-                                <CountdownTimer createdAt={booking.createdAt} />
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-black tracking-tighter text-gray-300 uppercase">
-                                REF: {booking.id.slice(0, 8)}
-                              </span>
-                            </div>
-                          </div>
-
-                          <h4 className="text-brand-navy group-hover:text-brand-500 mb-2 text-2xl leading-tight font-black transition-colors">
-                            {booking.listingTitle}
-                          </h4>
-
-                          <>
-                            {booking.status === 'PENDING_APPROVAL' && (
-                              <div className="bg-brand-gold/[0.05] border-brand-gold/10 mt-4 rounded-2xl border p-4 space-y-2 select-none">
-                                <label className="text-[#b08f23] block text-[8px] font-black tracking-[0.2em] uppercase">
-                                  🕐 SOLICITUD ENVIADA — ESPERANDO AL ANFITRIÓN
-                                </label>
-                                <p className="text-slate-600 text-[10px] leading-relaxed font-bold">
-                                  El anfitrión tiene hasta 24 horas para responder a tu solicitud. Se ha realizado un soft-block temporal de las fechas.
-                                </p>
-                              </div>
+                {filteredBookings.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-center select-none bg-gray-50/30 rounded-[24px] border border-gray-100/50 p-8">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white border border-gray-100 text-gray-300 shadow-sm">
+                      <Clock className="h-6 w-6" />
+                    </div>
+                    <p className="text-xs text-gray-400 font-black tracking-widest uppercase">
+                      {activeTab === 'activos'
+                        ? 'No tienes reservas activas en este momento.'
+                        : 'Tu historial de reservas aparecerá aquí.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <AnimatePresence mode="popLayout">
+                      {filteredBookings.map((booking) => {
+                        const statusInfo = getStatusDisplay(booking.status);
+                        const isTerminalRecent = ['REJECTED', 'CANCELLED', 'EXPIRED', 'CANCELLED_BY_GUEST'].includes(booking.status);
+                        return (
+                          <motion.div
+                            key={booking.id}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.15 }}
+                            className={cn(
+                              'group relative overflow-hidden rounded-[24px] border p-6 shadow-sm transition-all duration-300 hover:shadow-md',
+                              isTerminalRecent
+                                ? 'border-red-100 bg-red-50/10'
+                                : activeChatId === booking.id
+                                ? 'border-brand-gold bg-brand-gold/[0.01]'
+                                : 'border-gray-100 bg-white'
                             )}
+                          >
+                            <div className="bg-brand-navy/5 absolute top-0 right-0 h-24 w-24 translate-x-6 -translate-y-6 rounded-bl-[80px] transition-transform group-hover:scale-110" />
 
-                            {booking.status === 'EXPIRED' && (
-                              <div className="bg-slate-50 border-slate-200 mt-4 rounded-2xl border p-4 space-y-2 select-none">
-                                <label className="text-slate-400 block text-[8px] font-black tracking-[0.2em] uppercase">
-                                  ⏰ SOLICITUD VENCIDA
-                                </label>
-                                <p className="text-slate-500 text-[10px] leading-relaxed font-bold">
-                                  El anfitrión no respondió a tiempo en las 24 horas reglamentarias. Las fechas han quedado liberadas y no se ha realizado ningún cobro.
-                                </p>
-                              </div>
-                            )}
-
-                            {booking.status === 'REJECTED' && booking.rejectionReason && (
-                              <div className="bg-red-50 border-red-100 mt-4 rounded-2xl border p-4 space-y-2 select-none">
-                                <label className="text-red-500 block text-[8px] font-black tracking-[0.2em] uppercase">
-                                  ✕ SOLICITUD RECHAZADA
-                                </label>
-                                <p className="text-red-700 text-[10px] leading-relaxed font-bold">
-                                  Nota del anfitrión: "{booking.rejectionReason}"
-                                </p>
-                              </div>
-                            )}
-
-                            {booking.status === 'PENDING_PAYMENT' &&
-                              (booking.hostSelectedPaymentMethod || booking.paymentInstructions) && (
-                                <div className="bg-brand-500/5 border-brand-500/10 mt-4 rounded-2xl border p-4 space-y-3">
-                                  {booking.hostSelectedPaymentMethod ? (
-                                    <>
-                                      <label className="text-brand-500 block text-[8px] font-black tracking-[0.2em] uppercase">
-                                        Método de Pago Seleccionado por el Anfitrión
-                                      </label>
-                                      <div className="bg-white rounded-xl border border-gray-100 p-3 space-y-2">
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-xs font-black text-brand-navy uppercase">
-                                            {booking.hostSelectedPaymentMethod.label} ({booking.hostSelectedPaymentMethod.type})
-                                          </span>
-                                          <span className="rounded-full bg-emerald-100/50 border border-emerald-200 px-2 py-0.5 text-[8px] font-black tracking-wider text-emerald-600 uppercase flex items-center gap-1">
-                                            ✔ Verificado
-                                          </span>
-                                        </div>
-                                        {booking.hostSelectedPaymentMethod.data && (
-                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-semibold text-gray-500 border-t border-gray-50 pt-2">
-                                            {booking.hostSelectedPaymentMethod.data.bankName && (
-                                              <div><span className="font-bold text-gray-400">Banco:</span> {booking.hostSelectedPaymentMethod.data.bankName}</div>
-                                            )}
-                                            {booking.hostSelectedPaymentMethod.data.accountHolder && (
-                                              <div><span className="font-bold text-gray-400">Titular:</span> {booking.hostSelectedPaymentMethod.data.accountHolder}</div>
-                                            )}
-                                            {booking.hostSelectedPaymentMethod.data.phoneNumber && (
-                                              <div><span className="font-bold text-gray-400">Celular:</span> {booking.hostSelectedPaymentMethod.data.phoneNumber}</div>
-                                            )}
-                                            {booking.hostSelectedPaymentMethod.data.idNumber && (
-                                              <div><span className="font-bold text-gray-400">RIF/V:</span> {booking.hostSelectedPaymentMethod.data.idNumber}</div>
-                                            )}
-                                            {booking.hostSelectedPaymentMethod.data.email && (
-                                              <div><span className="font-bold text-gray-400">Correo:</span> {booking.hostSelectedPaymentMethod.data.email}</div>
-                                            )}
-                                            {booking.hostSelectedPaymentMethod.data.binanceId && (
-                                              <div><span className="font-bold text-gray-400">Binance Pay ID:</span> {booking.hostSelectedPaymentMethod.data.binanceId}</div>
-                                            )}
-                                            {booking.hostSelectedPaymentMethod.data.otherDetails && (
-                                              <div><span className="font-bold text-gray-400">Detalles:</span> {booking.hostSelectedPaymentMethod.data.otherDetails}</div>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <label className="text-brand-500 mb-2 block text-[8px] font-black tracking-[0.2em] uppercase">
-                                        Instrucciones de Pago
-                                      </label>
-                                      <p className="text-brand-navy text-[10px] leading-relaxed font-bold whitespace-pre-line">
-                                        {booking.paymentInstructions}
-                                      </p>
-                                    </>
+                            <div className="relative z-10">
+                              {/* Card Header */}
+                              <div className="flex items-center justify-between mb-4">
+                                <div
+                                  className={cn(
+                                    'flex items-center space-x-1.5 rounded-full border px-3 py-1 text-[9px] font-black tracking-wider uppercase',
+                                    statusInfo.color
                                   )}
+                                >
+                                  {statusInfo.icon}
+                                  <span>{statusInfo.label}</span>
                                 </div>
-                              )}
-                          </>
-
-                          <div className="mt-6 space-y-4">
-                            <div className="flex items-center text-sm font-bold text-gray-500">
-                              <Calendar className="text-brand-navy/20 mr-3 h-4 w-4" />
-                              {booking.startDate &&
-                              !isNaN(new Date(booking.startDate).getTime()) &&
-                              booking.endDate &&
-                              !isNaN(new Date(booking.endDate).getTime())
-                                ? `${format(new Date(booking.startDate), 'dd MMM', { locale: es })} - ${format(new Date(booking.endDate), 'dd MMM yyyy', { locale: es })}`
-                                : 'Fechas inválidas'}
-                            </div>
-                            <div className="flex items-center text-sm font-bold text-gray-500">
-                              <Users className="text-brand-navy/20 mr-3 h-4 w-4" />
-                              {booking.guests}{' '}
-                              {booking.guests === 1 ? 'Viajero' : 'Viajeros'}
-                            </div>
-                            {booking.status === 'AWAITING_VERIFICATION' &&
-                              booking.paymentReference && (
-                                <div className="text-brand-500 bg-brand-500/5 border-brand-500/10 mt-2 flex items-center rounded-xl border p-2 px-3 text-[10px] font-black tracking-widest uppercase">
-                                  <Hash className="mr-2 h-3 w-3" />
-                                  Ref: {booking.paymentReference}
-                                </div>
-                              )}
-                            <div className="text-brand-navy mt-4 border-t border-dashed border-gray-100 pt-4">
-                              <div className="flex items-center justify-between text-xl font-black">
-                                <span className="text-[10px] text-gray-400 uppercase">
-                                  Total Reserva
+                                <span className="text-[10px] font-mono font-black text-gray-300">
+                                  REF: {booking.id.toUpperCase().slice(0, 8)}
                                 </span>
-                                <span>${booking.totalAmount}</span>
                               </div>
-                              <div className="mt-2 rounded-2xl border border-brand-500/10 bg-brand-500/[0.02] p-3.5 space-y-1.5">
-                                <div className="flex justify-between text-[10px] font-black text-brand-navy">
-                                  <span className="uppercase text-brand-500">🔒 Garantía de Reserva (20%)</span>
-                                  <span>${(booking.totalAmount * 0.20).toFixed(2)}</span>
-                                </div>
-                                <p className="text-[9px] font-bold text-gray-400 leading-normal">
-                                  Abono inmediato para asegurar tu fecha.
-                                </p>
-                                <div className="border-t border-dashed border-gray-100 my-1.5 pt-1.5 flex justify-between text-[10px] font-black text-brand-navy">
-                                  <span className="uppercase">🔑 Saldo en Check-In (80%)</span>
-                                  <span>${(booking.totalAmount * 0.80).toFixed(2)}</span>
-                                </div>
-                                <p className="text-[9px] font-bold text-gray-400 leading-normal">
-                                  A pagar directamente en el alojamiento al llegar.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
 
-                          {booking.status === 'PENDING_PAYMENT' && (
-                            <div className="mt-6">
-                              <AnimatePresence mode="wait">
-                                {verifyingId === booking.id ? (
-                                  <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4"
+                              <h4 className="text-brand-navy group-hover:text-brand-500 mb-3 text-lg lg:text-xl leading-tight font-black transition-colors">
+                                {booking.listingTitle}
+                              </h4>
+
+                              {/* Rejection note */}
+                              {booking.status === 'REJECTED' && booking.rejectionReason && (
+                                <div className="bg-red-50/40 border border-red-100/50 rounded-xl p-3 mb-4 select-none">
+                                  <label className="text-red-500 block text-[8px] font-black tracking-[0.2em] uppercase mb-1">
+                                    Nota del anfitrión
+                                  </label>
+                                  <p className="text-red-700 text-[10px] leading-relaxed font-bold">
+                                    "{booking.rejectionReason}"
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Countdown for Pending Payment */}
+                              {booking.status === 'PENDING_PAYMENT' && (
+                                <div className="mb-4">
+                                  <CountdownTimer createdAt={booking.createdAt} />
+                                </div>
+                              )}
+
+                              {/* Dates & Guests (single line) */}
+                              <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-gray-500 mb-4 border-y border-gray-50 py-3">
+                                <span className="flex items-center gap-1.5">
+                                  <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                                  {booking.startDate && booking.endDate
+                                    ? `${format(new Date(booking.startDate), 'dd MMM', { locale: es })} → ${format(new Date(booking.endDate), 'dd MMM yyyy', { locale: es })}`
+                                    : 'Fechas por definir'}
+                                </span>
+                                <span className="text-gray-300 font-normal">·</span>
+                                <span className="flex items-center gap-1.5">
+                                  <Users className="h-3.5 w-3.5 text-gray-400" />
+                                  {booking.guests} {booking.guests === 1 ? 'Viajero' : 'Viajeros'}
+                                </span>
+                              </div>
+
+                              {/* Financial Details (single line horizontal) */}
+                              <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between text-[11px] font-bold text-gray-500 gap-2">
+                                <div>
+                                  <span className="text-[8px] text-gray-400 uppercase block leading-none mb-0.5">Total</span>
+                                  <span className="text-brand-navy font-black text-xs">${booking.totalAmount}</span>
+                                </div>
+                                <div className="h-6 w-px bg-gray-200/80" />
+                                <div>
+                                  <span className="text-[8px] text-brand-gold uppercase block leading-none mb-0.5">Garantía (20%)</span>
+                                  <span className="text-brand-gold font-black text-xs">${(booking.totalAmount * 0.2).toFixed(2)}</span>
+                                </div>
+                                <div className="h-6 w-px bg-gray-200/80" />
+                                <div>
+                                  <span className="text-[8px] text-gray-400 uppercase block leading-none mb-0.5">Saldo en Check-In (80%)</span>
+                                  <span className="text-brand-navy font-black text-xs">${(booking.totalAmount * 0.8).toFixed(2)}</span>
+                                </div>
+                              </div>
+
+                              {/* Subir comprobante payment container */}
+                              {booking.status === 'PENDING_PAYMENT' && verifyingId === booking.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-4 mb-4"
+                                >
+                                  <div
+                                    onClick={() => document.getElementById(`receipt-upload-${booking.id}`)?.click()}
+                                    className="group border-2 border-dashed border-gray-200 hover:border-brand-500 rounded-2xl p-4 text-center cursor-pointer transition-all bg-white flex flex-col items-center justify-center"
                                   >
-                                    {/* Zona de Arrastre/Pegado de Comprobante */}
-                                    <div
-                                      onClick={() => document.getElementById('modal-receipt-upload')?.click()}
-                                      className="group border-2 border-dashed border-gray-200 hover:border-brand-500 rounded-2xl p-6 text-center cursor-pointer transition-all bg-white relative overflow-hidden flex flex-col items-center justify-center"
+                                    <input
+                                      id={`receipt-upload-${booking.id}`}
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleFileUpload}
+                                      className="hidden"
+                                    />
+                                    {previewUrl ? (
+                                      <div className="relative h-20 w-20 overflow-hidden rounded-xl border border-gray-100">
+                                        <img src={previewUrl} className="h-full w-full object-cover" alt="Receipt preview" />
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-1">
+                                        <Upload className="h-4 w-4 mx-auto text-brand-500" />
+                                        <p className="text-[9px] font-black uppercase text-gray-500">Subir Comprobante</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <input
+                                      type="text"
+                                      value={paymentRef}
+                                      onChange={(e) => setPaymentRef(e.target.value)}
+                                      placeholder="Referencia"
+                                      className="focus:border-brand-500 flex-grow rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold focus:outline-none"
+                                    />
+                                    <button
+                                      disabled={submitting || !paymentRef || !file}
+                                      onClick={() => handlePaymentSubmit(booking.id)}
+                                      className="bg-brand-500 text-brand-navy rounded-xl px-4 py-1.5 text-[9px] font-black uppercase shadow-md"
                                     >
-                                      <input
-                                        id="modal-receipt-upload"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleFileUpload}
-                                        className="hidden"
-                                      />
-                                      {previewUrl ? (
-                                        <div className="relative h-28 w-28 overflow-hidden rounded-xl border border-gray-100">
-                                          <img
-                                            src={previewUrl}
-                                            className="h-full w-full object-cover"
-                                            alt="Receipt preview"
-                                          />
-                                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Upload className="h-5 w-5 text-white" />
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <div className="space-y-2">
-                                          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-brand-500/10 text-brand-500">
-                                            <Upload className="h-5 w-5" />
-                                          </div>
-                                          <p className="text-[10px] font-black tracking-wider uppercase text-gray-500">
-                                            Subir Comprobante
-                                          </p>
-                                          <p className="text-[9px] text-gray-400">
-                                            Haz clic para seleccionar o presiona Ctrl+V para pegar captura
-                                          </p>
-                                        </div>
-                                      )}
-                                    </div>
+                                      Enviar
+                                    </button>
+                                  </div>
+                                </motion.div>
+                              )}
 
-                                    {/* Input de Referencia */}
-                                    <div className="space-y-2">
-                                      <div className="flex items-center space-x-2">
-                                        <Hash className="text-brand-500 h-3 w-3" />
-                                        <span className="text-brand-navy/60 text-[10px] font-black tracking-widest uppercase">
-                                          Referencia de Transferencia
-                                        </span>
-                                      </div>
-                                      <div className="flex gap-2">
-                                        <input
-                                          type="text"
-                                          value={paymentRef}
-                                          onChange={(e) => setPaymentRef(e.target.value)}
-                                          placeholder="Ej: 12345678"
-                                          className="focus:border-brand-500 flex-grow rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold focus:outline-none"
-                                        />
-                                        <button
-                                          disabled={submitting || !paymentRef || !file}
-                                          onClick={() => handlePaymentSubmit(booking.id)}
-                                          className="bg-brand-500 text-brand-navy hover:bg-brand-400 rounded-xl px-4 py-2 text-[10px] font-black tracking-widest uppercase shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
-                                        >
-                                          {submitting ? (
-                                            <div className="border-brand-navy h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-                                          ) : (
-                                            <>
-                                              Enviar
-                                              <ChevronRight className="h-4 w-4" />
-                                            </>
-                                          )}
-                                        </button>
-                                      </div>
-                                    </div>
-
-                                    <div className="flex justify-between items-center pt-2">
+                              {/* Action Buttons */}
+                              <div className="flex items-center justify-between gap-3 mt-4">
+                                <div className="flex-1">
+                                  {booking.status === 'PENDING_PAYMENT' ? (
+                                    <div className="flex gap-2">
                                       <button
-                                        onClick={() => {
-                                          setVerifyingId(null);
-                                          setFile(null);
-                                          setPreviewUrl(null);
-                                          setPaymentRef('');
-                                        }}
-                                        className="hover:text-brand-navy text-[10px] font-black tracking-widest text-gray-400 uppercase transition-colors"
+                                        onClick={() => setVerifyingId(verifyingId === booking.id ? null : booking.id)}
+                                        className="flex-1 bg-brand-navy text-white hover:bg-brand-navy/90 rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
                                       >
-                                        Cancelar
+                                        {verifyingId === booking.id ? 'Cancelar' : 'Subir Pago'}
                                       </button>
                                       <button
                                         onClick={() => navigate(`/checkout/${booking.id}`)}
-                                        className="text-brand-500 text-[10px] font-black tracking-widest uppercase hover:underline"
+                                        className="flex-1 border border-gray-200 hover:bg-gray-50 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
                                       >
-                                        Ver Resumen Completo
+                                        Detalles
                                       </button>
                                     </div>
-                                  </motion.div>
-                                ) : (
-                                  <div className="flex flex-col gap-3">
-                                    <motion.button
-                                      initial={{ opacity: 0 }}
-                                      animate={{ opacity: 1 }}
-                                      onClick={() => setVerifyingId(booking.id)}
-                                      className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy w-full transform rounded-2xl py-4.5 text-[10px] font-black tracking-widest text-white uppercase shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
-                                    >
-                                      <Upload className="h-4 w-4" />
-                                      Subir Comprobante Rápido
-                                    </motion.button>
+                                  ) : (
                                     <button
                                       onClick={() => navigate(`/checkout/${booking.id}`)}
-                                      className="text-brand-navy w-full rounded-2xl border-2 border-gray-100 bg-white py-4 text-[10px] font-black tracking-widest uppercase transition-all hover:bg-gray-50"
+                                      className="w-full bg-gray-100 hover:bg-gray-200 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
                                     >
-                                      Ver Detalles y Pagar
+                                      Ver Resumen
                                     </button>
-                                  </div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="mx-auto max-w-md py-12 text-center">
-                  <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-gray-100 bg-gray-50 mx-auto">
-                    <MapPin className="h-8 w-8 text-gray-200" />
-                  </div>
-                  <h3 className="text-brand-navy mb-2 text-xl font-black">
-                    No tienes viajes activos
-                  </h3>
-                  <p className="mx-auto max-w-xs text-sm text-gray-500">
-                    Explora nuestras propiedades exclusivas y comienza a planificar tu próxima estancia en Venezuela.
-                  </p>
-                  <button
-                    onClick={onClose}
-                    className="bg-brand-navy hover:bg-brand-500 hover:text-brand-navy mt-6 rounded-2xl px-8 py-4 text-[10px] font-black tracking-widest text-white uppercase shadow-xl transition-all"
-                  >
-                    Explorar Propiedades
-                  </button>
-                </div>
-              )}
-
-              {/* --- HISTORIAL DE VIAJES COLAPSABLE --- */}
-              {pastBookings.length > 0 && (
-                <div className="border-t border-gray-100 pt-6">
-                  <button
-                    onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                    className="flex w-full items-center justify-between rounded-2xl bg-gray-50 hover:bg-gray-100/80 p-4 transition-all"
-                  >
-                    <span className="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      Historial de Viajes ({pastBookings.length})
-                    </span>
-                    {isHistoryExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
-
-                  <AnimatePresence>
-                    {isHistoryExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2 overflow-hidden"
-                      >
-                        {pastBookings.map((booking) => {
-                          const statusInfo = getStatusDisplay(booking.status);
-                          return (
-                            <div
-                              key={booking.id}
-                              className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300"
-                            >
-                              <div className="relative z-10 space-y-4">
-                                <div className="flex items-center justify-between">
-                                  <div
-                                    className={cn(
-                                      'flex items-center space-x-1.5 rounded-full border px-2.5 py-1 text-[9px] font-black tracking-wider uppercase',
-                                      statusInfo.color
-                                    )}
-                                  >
-                                    {statusInfo.icon}
-                                    <span>{statusInfo.label}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[9px] font-bold text-gray-300">
-                                      {booking.id.slice(0, 8)}
-                                    </span>
-                                  </div>
+                                  )}
                                 </div>
 
-                                <div>
-                                  <h5 className="text-brand-navy text-sm font-black tracking-tight leading-tight">
-                                    {booking.listingTitle}
-                                  </h5>
-                                  <p className="text-[10px] text-gray-400 font-bold mt-1">
-                                    {booking.startDate &&
-                                    !isNaN(new Date(booking.startDate).getTime()) &&
-                                    booking.endDate &&
-                                    !isNaN(new Date(booking.endDate).getTime())
-                                      ? `${format(new Date(booking.startDate), 'dd MMM', { locale: es })} - ${format(new Date(booking.endDate), 'dd MMM yyyy', { locale: es })}`
-                                      : 'Fechas inválidas'}
-                                  </p>
-                                </div>
-
-                                {booking.status === 'REJECTED' && (booking.rejectionReason || booking.hostResponseNote) && (
-                                  <div className="bg-red-50/50 border border-red-100 rounded-xl p-3 text-[10px] text-red-700 font-bold leading-normal select-none">
-                                    <span className="block text-[8px] font-black text-red-500 tracking-wider uppercase mb-0.5">Motivo del Rechazo:</span>
-                                    "{booking.rejectionReason || booking.hostResponseNote}"
-                                  </div>
-                                )}
-
-                                <div className="flex items-center justify-between pt-2 border-t border-dashed border-gray-100 text-xs font-bold text-gray-500">
-                                  <span>Total</span>
-                                  <span className="text-brand-navy font-black">${booking.totalAmount}</span>
-                                </div>
+                                <button
+                                  onClick={() => {
+                                    setActiveChatId(booking.id);
+                                    setActiveChatBooking(booking);
+                                    if (window.innerWidth < 1024) {
+                                      setMobileTab('chat');
+                                    }
+                                  }}
+                                  className={cn(
+                                    "flex items-center gap-1.5 px-4 py-2 rounded-xl text-[9px] font-black tracking-wider uppercase border transition-all duration-300",
+                                    activeChatId === booking.id
+                                      ? "bg-brand-navy text-white border-brand-navy"
+                                      : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                                  )}
+                                >
+                                  <MessageSquare className="h-3 w-3" />
+                                  Chat
+                                </button>
                               </div>
                             </div>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Embedded Chat */}
-        {verifyingId && activeChatId === verifyingId && activeChatBooking && (
-          <div className="hidden md:flex flex-col w-[400px] lg:w-[450px] shrink-0 border-l border-gray-100 bg-gray-50/50">
-            <div className="flex flex-col h-full bg-white rounded-tl-3xl shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.1)] overflow-hidden">
-              <div className="bg-brand-navy p-4 text-white shrink-0 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-brand-gold" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black tracking-tight leading-tight">Soporte y Anfitrión</h3>
-                  <p className="text-[10px] text-brand-500 tracking-wider font-bold uppercase">Ref: {activeChatBooking.id.slice(0, 8)}</p>
-                </div>
+                          </motion.div>
+                        );
+                      })}
+                    </AnimatePresence>
+                  </div>
+                )}
               </div>
-              <div className="flex-grow overflow-hidden relative chat-embedded-container">
-                <Chat
-                  bookingId={activeChatId}
-                  senderId={user?.uid || ''}
-                  senderName={user?.displayName || 'Huésped'}
-                  recipientId={activeChatBooking.ownerId}
-                />
-              </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Mobile Floating Chat */}
-      <div className="md:hidden">
-        {verifyingId && activeChatId === verifyingId && (
-          <FloatingChat
-            isOpen={!!activeChatId}
-            onClose={() => {
-              setActiveChatId(null);
-              setActiveChatBooking(null);
-            }}
-            bookingId={activeChatId}
-            listingTitle={activeChatBooking?.listingTitle || ''}
-            senderId={user?.uid || ''}
-            senderName={user?.displayName || 'Huésped'}
-            recipientName="Soporte VeneStay"
-            recipientId={activeChatBooking?.ownerId}
-          />
-        )}
+          {/* Right Column: Embedded Chat */}
+          <div className={cn(
+            "w-[380px] shrink-0 border-l border-gray-100 bg-gray-50/50 h-full flex-col overflow-hidden",
+            mobileTab === 'chat' ? 'flex w-full lg:w-[380px]' : 'hidden lg:flex'
+          )}>
+            {activeChatBooking ? (
+              <div className="flex flex-col h-full bg-white overflow-hidden">
+                <div className="bg-brand-navy p-4 text-white shrink-0 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-brand-gold/20">
+                      <MessageSquare className="h-5 w-5 text-brand-gold" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black tracking-tight leading-tight">Chat con Anfitrión</h3>
+                      <p className="text-[10px] text-brand-500 tracking-wider font-bold uppercase">Ref: {activeChatBooking.id.slice(0, 8)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-[8px] font-black tracking-widest text-emerald-400 uppercase bg-emerald-500/10 px-2 py-1 rounded-lg">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Seguro
+                  </div>
+                </div>
+                <div className="flex-grow overflow-hidden relative chat-embedded-container">
+                  <Chat
+                    bookingId={activeChatBooking.id}
+                    senderId={user?.uid || ''}
+                    senderName={user?.displayName || 'Huésped'}
+                    recipientId={activeChatBooking.ownerId}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col h-full items-center justify-center p-8 text-center bg-gray-50/50">
+                <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 mb-4 text-gray-300">
+                  <MessageSquare className="h-8 w-8" />
+                </div>
+                <h4 className="text-brand-navy font-black text-xs mb-1 uppercase tracking-wider">Sin Conversación Activa</h4>
+                <p className="text-[10px] text-gray-400 font-semibold max-w-xs leading-relaxed">
+                  Selecciona una reserva para ver la conversación con el anfitrión.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
     </div>
   );
 };

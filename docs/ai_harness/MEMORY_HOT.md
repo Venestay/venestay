@@ -3,7 +3,7 @@ _Sprint: S04 — KYC & Identity Verification · Actualizado: 2026-06-04_
 
 ## Estado ahora
 SPRINT    : S04 — KYC & Identity Verification
-QA_GATE   : PARCIAL (Fix P0 aplicado, QA Gate pendiente lint/tsc)
+QA_GATE   : PASS (G1/G2 Verificaciones TypeScript y Lint limpias)
 BLOQUEANTE: ninguno
 
 ## Módulos del Sprint S04 (En progreso)
@@ -16,17 +16,20 @@ BLOQUEANTE: ninguno
 | Fase 3: Integración Checkout | src/features/bookings/components/checkout/CheckoutPage.tsx | PENDIENTE | 0/3 |
 | Preparación Sprint 7: Análisis Tarifa de Limpieza | docs/plans/informe_tarifa_limpieza.md | COMPLETADO | 0/3 |
 | Implementación SPEC-PRICING-CLEANINGFEE-01 | src/features/dashboard/types/dashboard.schema.ts, src/features/dashboard/components/form-steps/StepGeneral.tsx, src/constants/index.tsx | COMPLETADO | 0/3 |
-| **SPEC-BOOKINGS-STATETRANSITION-FIX (P0)** | src/features/bookings/components/MyTrips.tsx | **EN QA** | 1/3 |
+| **SPEC-BOOKINGS-STATETRANSITION-FIX (P0)** | src/features/bookings/components/MyTrips.tsx | **COMPLETADO** | 1/3 |
+| **SPEC-BOOKINGS-CHAT-LAYOUT-FIX (P1)** | src/features/bookings/components/MyTrips.tsx | **COMPLETADO** | 1/3 |
+| **SPEC-BOOKINGS-UX-REDESIGN (P1)** | src/features/bookings/components/MyTrips.tsx, src/components/Chat.tsx | **COMPLETADO** | 1/3 |
 
 ## Notas de Integración / Estado de Emuladores
 *   **Java JDK Configurado:** Java se localizó en `C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin`.
 *   **Emuladores Locales:** Firestore y Storage emulados correctamente en puertos `8080` y `9199`.
 *   **Deploy Exitoso:** Reglas de seguridad (`firestore.rules` y `storage.rules`) desplegadas con éxito en el proyecto `gen-lang-client-0727178605`.
-*   **Resultados QA:** TypeScript compila con éxito. Eslint sin errores en código nuevo (0 errores).
+*   **Resultados QA:** TypeScript compila con éxito (0 errores). ESLint sin errores en código nuevo (0 errores, solo warnings históricos heredados).
 *   **Fix P0 aplicado (2026-06-04):** Corregido bug crítico en MyTrips.tsx donde reservas rechazadas desaparecían de la vista activa y el huésped veía otra reserva como "Confirmada". Ahora las reservas terminales recientes (<48h) permanecen visibles en la sección principal con fondo rojo. Eliminado slice(0,1). Auto-expansión de historial cuando no hay activos.
+*   **Fix P1 aplicado (2026-06-04):** Corregido ReferenceError `raw` -> `updatedRaw` que ocultaba el historial de viajes. Añadido chat persistente de escritorio en el lado derecho y un alternador de chat ("Ver Chat") en las tarjetas de reservas activas.
+*   **Rediseño UX aplicado (2026-06-04):** Completado el rediseño completo de Mis Viajes según PROMPT_UX_MIS_VIAJES.md. Implementado layout de dos columnas fluidas al 100% en desktop, diseño de tarjetas compactas BookingCard unificando fechas/viajeros y desglose financiero en una línea, y sistema de pestañas de navegación móvil (Reservas/Chat). En Chat.tsx, se agregó el formateador estructurado de mensajes de sistema de VeneStay.
 
 ## Próxima acción requerida
-1. Confirmar QA Gate del Fix P0 (lint + tsc limpios) y hacer commit del parche.
-2. Unificar ramas en `main` según el plan de unificación aprobado.
-3. Retomar la Fase 2 del Sprint S04 (Panel Admin KYC) o continuar con el desarrollo completo del Sprint 7 de precios.
+1. Unificar ramas en `main` según el plan de unificación aprobado.
+2. Retomar la Fase 2 del Sprint S04 (Panel Admin KYC) o continuar con el desarrollo completo del Sprint 7 de precios.
 
