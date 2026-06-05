@@ -58,6 +58,7 @@ export const createUserProfile = async (firebaseUser: FirebaseUser, role: 'user'
     photoURL: firebaseUser.photoURL || 'https://i.pravatar.cc/150?u=' + firebaseUser.uid,
     createdAt: serverTimestamp(),
     role: role,
+    kycStatus: 'UNVERIFIED',
   };
   await setDoc(userDocRef, newProfile);
   return newProfile;

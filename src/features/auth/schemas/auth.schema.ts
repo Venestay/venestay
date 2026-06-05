@@ -55,3 +55,25 @@ export type RegisterData = z.infer<typeof registerSchema>;
 export type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordData = z.infer<typeof resetPasswordSchema>;
 
+export const passportDraftSchema = z.object({
+  displayName: z
+    .string()
+    .min(3, 'El nombre debe tener al menos 3 caracteres')
+    .max(50, 'El nombre no puede tener más de 50 caracteres'),
+  bio: z
+    .string()
+    .max(300, 'La biografía no puede superar los 300 caracteres')
+    .optional()
+    .default(''),
+  currency: z.enum(['USD', 'VES']),
+  selectedInterests: z.array(z.enum(['Playa', 'Mascotas', 'Trabajo', 'Lujo', 'Aventura', 'Ciudad'])),
+  languages: z.array(z.string()),
+  notifications: z.object({
+    email: z.boolean(),
+    whatsapp: z.boolean(),
+    push: z.boolean(),
+  }),
+});
+
+export type PassportDraftData = z.infer<typeof passportDraftSchema>;
+

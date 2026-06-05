@@ -6,7 +6,7 @@ import imageCompression from 'browser-image-compression';
  * Proactive Image Compression Options
  * Targeted for <500KB and maximum 1920px width for Premium quality on high-density screens.
  */
-const compressionOptions = {
+export const compressionOptions = {
   maxSizeMB: 0.5,
   maxWidthOrHeight: 1920,
   useWebWorker: true,

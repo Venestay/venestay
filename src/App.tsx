@@ -13,6 +13,7 @@ import { useBookingManager } from '@/features/bookings/hooks/use-booking-manager
 import { useDatabaseSeeder } from '@/lib/hooks/use-database-seeder';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ChatNotificationProvider } from '@/features/bookings/hooks/useChatNotifications';
+import AuthGuard from '@/features/auth/components/AuthGuard';
 
 // 🚀 CODE SPLITTING: Lazy Load de componentes pesados
 const AdminDashboard = lazy(
@@ -34,13 +35,6 @@ const ScrollToTop = () => {
   }, [pathname]);
 
   return null;
-};
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  if (loading) return null;
-  if (!user) return <Navigate to="/" replace />;
-  return <>{children}</>;
 };
 
 const App: React.FC = () => {
@@ -65,33 +59,33 @@ const App: React.FC = () => {
           <Route
             path="/publicar-espacio"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route
             path="/admin/nueva-propiedad"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route
             path="/admin/mis-propiedades"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route path="/listing/:id" element={<ListingDetail />} />
@@ -100,17 +94,17 @@ const App: React.FC = () => {
           <Route
             path="/mi-pasaporte"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <ProfileSettings />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route
             path="/mis-viajes"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <MyTrips />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
         </Routes>

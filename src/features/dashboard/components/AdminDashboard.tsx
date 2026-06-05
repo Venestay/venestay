@@ -45,6 +45,8 @@ import GuestRequestVerificationDrawer from './GuestRequestVerificationDrawer';
 
 // Rule: bundle-dynamic-imports
 const ListingForm = React.lazy(() => import('./ListingForm'));
+const KYCAuditPanel = React.lazy(() => import('./KYCAuditPanel'));
+
 
 const AdminDashboard: React.FC = () => {
   const { user, isAdmin, profileData } = useAuth();
@@ -82,6 +84,8 @@ const AdminDashboard: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
   const [isSyncConfirmOpen, setIsSyncConfirmOpen] = useState(false);
+  const [kycPendingCount, setKycPendingCount] = useState(0);
+
 
   const location = useLocation();
   const initialListing = location.state?.initialListing;
@@ -145,6 +149,25 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     cleanupExpiredBookings();
   }, []);
+
+  // Suscribirse en tiempo real al conteo de KYC pendientes
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const q = query(
+      collection(db, 'users'),
+      where('kycStatus', '==', 'PENDING_REVIEW')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setKycPendingCount(snapshot.size);
+    }, (error) => {
+      console.error('Admin: Error listening to pending KYC:', error);
+    });
+
+    return () => unsubscribe();
+  }, [isAdmin]);
+
 
   // v2.2 Persistencia: Recuperar borrador y reabrir formulario al refrescar
   useEffect(() => {
@@ -467,7 +490,9 @@ const AdminDashboard: React.FC = () => {
           setActiveTab={setActiveTab}
           isAdmin={isAdmin || false}
           isHost={isHost}
+          kycPendingCount={kycPendingCount}
         />
+
 
         {activeTab === 'bookings' && (
           <div className="px-6 pt-6">
@@ -625,6 +650,25 @@ const AdminDashboard: React.FC = () => {
                   }}
                   user={user}
                 />
+              </motion.div>
+            ) : activeTab === 'kyc_audit' ? (
+              <motion.div
+                key="kyc_audit"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Suspense fallback={
+                  <div className="flex justify-center items-center py-20">
+                    <div className="text-center space-y-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500 mx-auto"></div>
+                      <p className="text-xs text-gray-500 font-bold">Cargando panel de auditoría...</p>
+                    </div>
+                  </div>
+                }>
+                  <KYCAuditPanel />
+                </Suspense>
               </motion.div>
             ) : (
               <motion.div

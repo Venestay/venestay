@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db, functions } from '@/lib/firebase';
-import { httpsCallable } from 'firebase/functions';
 import { Booking } from '../types';
-import { Listing } from '@/features/listings/types';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { 
   X, 
@@ -23,6 +19,7 @@ import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Skeleton from '@/components/ui/Skeleton';
 import { HOUSE_RULES_ICONS } from '@/features/listings/utils/amenities-icons';
+import { useBookingSummary } from '../hooks/useBookingSummary';
 
 interface BookingSummaryModalProps {
   booking: Booking | null;
@@ -37,14 +34,16 @@ export const BookingSummaryModal: React.FC<BookingSummaryModalProps> = ({
   onClose,
   onContactHost
 }) => {
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showFullReceipt, setShowFullReceipt] = useState(false);
   const [showPrintInstructions, setShowPrintInstructions] = useState(false);
 
-  const [proofSignedUrl, setProofSignedUrl] = useState<string | null>(null);
-  const [proofLoading, setProofLoading] = useState(false);
+  const {
+    listing,
+    loading,
+    error,
+    proofSignedUrl,
+    proofLoading,
+  } = useBookingSummary(booking, isOpen);
 
   const modalRef = useRef<HTMLDivElement>(null);
   useFocusTrap(modalRef, isOpen);
@@ -63,63 +62,6 @@ export const BookingSummaryModal: React.FC<BookingSummaryModalProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
-
-  // Load listing details
-  useEffect(() => {
-    if (!booking || !booking.listingId) {
-      setListing(null);
-      return;
-    }
-
-    const fetchListing = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const docRef = doc(db, 'listings', booking.listingId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setListing({ id: docSnap.id, ...docSnap.data() } as Listing);
-        } else {
-          setError('No se pudo encontrar la propiedad vinculada.');
-        }
-      } catch (err) {
-        console.error('Error fetching listing details:', err);
-        setError('Error al cargar los detalles de la propiedad.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchListing();
-  }, [booking]);
-
-  // Load signed proof url
-  useEffect(() => {
-    if (!booking?.id || !booking?.proofUrl) {
-      setProofSignedUrl(null);
-      return;
-    }
-
-    setProofLoading(true);
-    const getSignedUrlFn = httpsCallable(functions, 'getProofSignedURL');
-    
-    getSignedUrlFn({ bookingId: booking.id })
-      .then((result) => {
-        const data = result.data as { signedUrl?: string };
-        if (data?.signedUrl) {
-          setProofSignedUrl(data.signedUrl);
-        } else {
-          setProofSignedUrl(null);
-        }
-      })
-      .catch((err) => {
-        console.error('Error fetching signed URL for payment proof:', err);
-        setProofSignedUrl(null);
-      })
-      .finally(() => {
-        setProofLoading(false);
-      });
-  }, [booking?.id, booking?.proofUrl]);
 
   if (!isOpen || !booking) return null;
 
@@ -157,7 +99,6 @@ export const BookingSummaryModal: React.FC<BookingSummaryModalProps> = ({
   };
 
   const isConfirmed = booking.status === 'CONFIRMED';
-  const isAwaitingVerification = booking.status === 'AWAITING_VERIFICATION';
 
   const handlePrint = () => {
     setShowPrintInstructions(true);
