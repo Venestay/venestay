@@ -62,6 +62,7 @@ export interface Booking {
   hostSelectedPaymentMethod?: PaymentMethod;
   createdAt: string | Date | FieldValue;
   updatedAt: string | Date | FieldValue;
+  confirmationEmailSentAt?: string | Date | FieldValue;
   seasonalAdjustmentFee?: number;
   proposedStartDate?: string;
   proposedEndDate?: string;
