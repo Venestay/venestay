@@ -14,7 +14,7 @@
     "validate:json": "node scripts/run-validation.cjs --json",
     "validate:pre-demo": "node scripts/run-validation.cjs --trigger pre-demo",
     "validate:sprint-close": "node scripts/run-validation.cjs --trigger sprint-close",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
