@@ -1,9 +1,9 @@
 # MEMORY_HOT — VeneStay Agent
-_Sprint: S04 — KYC & Identity Verification · Actualizado: 2026-06-05_
+_Sprint: S04 — KYC & Identity Verification · Actualizado: 2026-06-06_
 
 ## Estado ahora
 SPRINT    : S04 — KYC & Identity Verification (Fase 3: Optimización Módulo 4 - Auth completado)
-QA_GATE   : PASS (0 errores de compilación tsc, 0 errores de ESLint en la suite del proyecto)
+QA_GATE   : PASS (G10/G10 passed) | 2026-06-06
 BLOQUEANTE: ninguno
 
 ## Módulos del Sprint S04 (En progreso)
@@ -45,5 +45,6 @@ BLOQUEANTE: ninguno
 *   **Merge FF/No-FF realizado:** Se fusionaron de forma segura las ramas de desarrollo en `main`. Se eliminaron las ramas locales ya integradas.
 
 ## Próxima acción requerida
-1. Iniciar la optimización del **Módulo 4 — `auth/`** (Evitar parpadeos FOUC mediante skeleton en AuthGuard y excluir campos KYC de LocalStorage en `usePassportForm.ts`).
-2. Pruebas de regresión local de punta a punta.
+1. **Ejecutar Script de Claims (P0)**: Ejecutar el script `scripts/set-qa-claim.cjs` usando la terminal alternativa del usuario que tiene instalado Firebase CLI y habilitado el MCP para asignar el claim `qa: true` a las cuentas de prueba (ej. `huespedvenestay@gmail.com`).
+2. **Módulo 2 — `listings/` (Planificación)**: Iniciar la planificación y especificación atómica de la refactorización de listings una vez solventado el error de permisos.
+3. **Mantener validaciones**: Garantizar que toda la suite de validación `run-validation.cjs` (G1-G10) siga pasando en verde.

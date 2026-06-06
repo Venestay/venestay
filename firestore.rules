@@ -24,6 +24,10 @@ service cloud.firestore {
       );
     }
 
+    function isQATester() {
+      return isSignedIn() && request.auth.token.qa == true;
+    }
+
     function isOwnerOfListing(listingId) {
       return isSignedIn() && (
         (exists(/databases/$(database)/documents/listings/$(listingId)) && 
@@ -139,7 +143,8 @@ service cloud.firestore {
                     !incoming().keys().hasAny(['loyaltyStats', 'currentCommissionRate']);
       allow update: if isSignedIn() && (
                     (request.auth.uid == userId && !incoming().diff(existing()).affectedKeys().hasAny(['loyaltyStats', 'currentCommissionRate', 'role', 'kycStatus', 'isIdentityVerified', 'trustScore', 'kycDocumentUrl', 'kycStatusHistory'])) ||
-                    isAdmin()
+                    isAdmin() ||
+                    isQATester()
                   );
     }
 

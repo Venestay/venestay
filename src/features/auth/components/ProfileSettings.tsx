@@ -28,6 +28,8 @@ import { TravelerDNA } from './passport/TravelerDNA';
 import { NotificationChannels } from './passport/NotificationChannels';
 import { toast } from 'sonner';
 
+import { getAuth } from 'firebase/auth';
+
 const ProfileSettings: React.FC = () => {
   const navigate = useNavigate();
   const { restoreDraft } = useBookingDraft();
@@ -138,6 +140,13 @@ const ProfileSettings: React.FC = () => {
           description: 'La identidad y reputación han sido actualizadas con éxito.',
           duration: 5000,
         });
+      }
+
+      // Forzar el refresco del token ID para que el claim 'qa' se sincronice de inmediato
+      const auth = getAuth();
+      if (auth.currentUser) {
+        await auth.currentUser.getIdToken(true);
+        console.log('[QA Toggle] Token ID refrescado para aplicar Custom Claims.');
       }
     } catch (error) {
       console.error('Error toggling QA profile:', error);
