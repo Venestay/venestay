@@ -85,9 +85,26 @@ export const usePassportForm = (): UsePassportFormReturn => {
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Resetear inicialización cuando cambia el ID de usuario
+  // Resetear inicialización cuando cambia el ID de usuario y limpiar claves de localStorage residuales/sensibles
   useEffect(() => {
     setIsInitialized(false);
+    if (profile?.uid) {
+      try {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.toLowerCase().includes('kyc') || key.toLowerCase().includes('document') || key.toLowerCase().includes('sensitive'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(k => {
+          localStorage.removeItem(k);
+          console.log(`[Security] Removida clave de localStorage potencialmente sensible: ${k}`);
+        });
+      } catch (e) {
+        console.warn('Error al limpiar claves de localStorage:', e);
+      }
+    }
   }, [profile?.uid]);
 
   // ── Sincronización desde Firestore y Borrador Local ────────────────────────

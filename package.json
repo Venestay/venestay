@@ -13,7 +13,8 @@
     "validate": "node scripts/run-validation.cjs",
     "validate:json": "node scripts/run-validation.cjs --json",
     "validate:pre-demo": "node scripts/run-validation.cjs --trigger pre-demo",
-    "validate:sprint-close": "node scripts/run-validation.cjs --trigger sprint-close"
+    "validate:sprint-close": "node scripts/run-validation.cjs --trigger sprint-close",
+    "prepare": "husky"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -49,6 +50,9 @@
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.59.1",
     "vite": "^6.2.0"
+  },
+  "overrides": {
+    "ws": "^8.17.1"
   },
   "engines": {
     "node": ">=24"
