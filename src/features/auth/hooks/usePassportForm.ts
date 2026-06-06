@@ -1,26 +1,8 @@
-/**
- * usePassportForm — Custom hook del Pasaporte VeneStay
- *
- * Sprint 1 — Arquitectura
- * skill: vercel-react-best-practices → rerender-no-inline-components, rerender-derived-state-no-effect
- * skill: typescript-advanced-types → tipado estricto de entradas/salidas
- * AGENTS.md §1.1 → "Toda lógica de negocio/UI state debe vivir en custom hooks"
- *
- * Responsabilidades:
- *  - Gestiona los 6 campos del formulario Pasaporte
- *  - Sincroniza el estado inicial desde el perfil Firestore
- *  - Expone acciones: toggleInterest, toggleLanguage, toggleNotification
- *  - Valida y persiste vía useUserProfile.updateProfile
- *  - Detecta cambios no guardados (isDirty)
- *
- * NO gestiona: estados de modales (VerificationModal, PaymentMethodModal)
- * — esos permanecen en el componente orquestador ProfileSettings.
- */
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useUserProfile } from './useUserProfile';
 import { TravelInterest, CurrencyPreference, UserProfile } from '../types';
 import { toast } from 'sonner';
+import { passportDraftSchema } from '../schemas/auth.schema';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -32,6 +14,7 @@ export interface NotificationPreferences {
 
 export interface PassportFormErrors {
   displayName?: string;
+  bio?: string;
 }
 
 export interface UsePassportFormReturn {
@@ -102,9 +85,26 @@ export const usePassportForm = (): UsePassportFormReturn => {
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Resetear inicialización cuando cambia el ID de usuario
+  // Resetear inicialización cuando cambia el ID de usuario y limpiar claves de localStorage residuales/sensibles
   useEffect(() => {
     setIsInitialized(false);
+    if (profile?.uid) {
+      try {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.toLowerCase().includes('kyc') || key.toLowerCase().includes('document') || key.toLowerCase().includes('sensitive'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(k => {
+          localStorage.removeItem(k);
+          console.log(`[Security] Removida clave de localStorage potencialmente sensible: ${k}`);
+        });
+      } catch (e) {
+        console.warn('Error al limpiar claves de localStorage:', e);
+      }
+    }
   }, [profile?.uid]);
 
   // ── Sincronización desde Firestore y Borrador Local ────────────────────────
@@ -115,13 +115,29 @@ export const usePassportForm = (): UsePassportFormReturn => {
     const savedDraft = localStorage.getItem(`venestay_passport_draft_${profile.uid}`);
     if (savedDraft) {
       try {
-        const draft = JSON.parse(savedDraft);
-        setDisplayName(draft.displayName !== undefined ? draft.displayName : (profile.displayName || ''));
-        setBio(draft.bio !== undefined ? draft.bio : (profile.bio || ''));
-        setCurrency(draft.currency !== undefined ? draft.currency : (profile.currency || 'USD'));
-        setSelectedInterests(draft.selectedInterests !== undefined ? draft.selectedInterests : ((profile.selectedInterests as TravelInterest[]) || []));
-        setLanguages(draft.languages !== undefined ? draft.languages : (profile.languages || ['Español']));
-        setNotifications(draft.notifications !== undefined ? draft.notifications : ((profile.notifications as NotificationPreferences) || DEFAULT_NOTIFICATIONS));
+        const parsedDraft = JSON.parse(savedDraft);
+        // Validar y sanitizar con Zod
+        const result = passportDraftSchema.safeParse(parsedDraft);
+        if (result.success) {
+          const draft = result.data;
+          setDisplayName(draft.displayName);
+          setBio(draft.bio || '');
+          setCurrency(draft.currency);
+          setSelectedInterests(draft.selectedInterests);
+          setLanguages(draft.languages);
+          setNotifications(draft.notifications);
+        } else {
+          console.warn('[Passport] El borrador no cumple el esquema de validación:', result.error);
+          // Fallback a Firestore
+          setDisplayName(profile.displayName || '');
+          setBio(profile.bio || '');
+          setCurrency(profile.currency || 'USD');
+          setSelectedInterests((profile.selectedInterests as TravelInterest[]) || []);
+          setLanguages(profile.languages || ['Español']);
+          if (profile.notifications) {
+            setNotifications(profile.notifications as NotificationPreferences);
+          }
+        }
       } catch (e) {
         console.warn('[Passport] Error al parsear el borrador local:', e);
         setDisplayName(profile.displayName || '');
@@ -171,6 +187,8 @@ export const usePassportForm = (): UsePassportFormReturn => {
     if (!profile?.uid || !isInitialized) return;
 
     if (isDirty) {
+      // Sanitizamos explícitamente: SOLO se guardan campos públicos y permitidos.
+      // Quedan completamente fuera de aquí KYC y otros metadatos sensibles.
       const draft = {
         displayName,
         bio,
@@ -179,11 +197,16 @@ export const usePassportForm = (): UsePassportFormReturn => {
         languages,
         notifications,
       };
-      localStorage.setItem(`venestay_passport_draft_${profile.uid}`, JSON.stringify(draft));
+      
+      const validation = passportDraftSchema.safeParse(draft);
+      if (validation.success) {
+        localStorage.setItem(`venestay_passport_draft_${profile.uid}`, JSON.stringify(validation.data));
+      }
     } else {
       localStorage.removeItem(`venestay_passport_draft_${profile.uid}`);
     }
   }, [isInitialized, isDirty, displayName, bio, currency, selectedInterests, languages, notifications, profile?.uid]);
+
 
   // ── Acciones de formulario ─────────────────────────────────────────────────
 
@@ -275,17 +298,31 @@ export const usePassportForm = (): UsePassportFormReturn => {
 
   // ── Validación ─────────────────────────────────────────────────────────────
   const validate = (): boolean => {
-    const newErrors: PassportFormErrors = {};
+    const draft = {
+      displayName,
+      bio,
+      currency,
+      selectedInterests,
+      languages,
+      notifications,
+    };
 
-    if (displayName.length > 0 && displayName.length < 3) {
-      newErrors.displayName = 'Tu nombre público debe ser descriptivo (mín. 3 caracteres)';
+    const result = passportDraftSchema.safeParse(draft);
+    if (result.success) {
+      setErrors({});
+      return true;
     }
-    if (displayName.length > 50) {
-      newErrors.displayName = 'El nombre es demasiado largo (máx. 50 caracteres)';
-    }
+
+    const newErrors: PassportFormErrors = {};
+    result.error.issues.forEach(err => {
+      const path = err.path[0] as keyof PassportFormErrors;
+      if (path) {
+        newErrors[path] = err.message;
+      }
+    });
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return false;
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
@@ -293,7 +330,7 @@ export const usePassportForm = (): UsePassportFormReturn => {
     e.preventDefault();
 
     if (!validate()) {
-      toast.error('Revisa los campos marcados en rojo');
+      toast.error('Revisa los campos marcados con error');
       return;
     }
 
@@ -310,6 +347,7 @@ export const usePassportForm = (): UsePassportFormReturn => {
       localStorage.removeItem(`venestay_passport_draft_${profile.uid}`);
     }
   };
+
 
   return {
     // Perfil

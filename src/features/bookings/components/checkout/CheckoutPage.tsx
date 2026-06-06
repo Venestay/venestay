@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { format, differenceInDays, isWithinInterval, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   ArrowLeft,
@@ -12,7 +12,6 @@ import {
   Users,
   Globe,
   ShieldAlert,
-  CreditCard,
   Upload,
   Loader2,
   CheckCircle2,
@@ -20,41 +19,18 @@ import {
   X,
   Copy,
   Check,
-  ChevronRight,
   Smartphone,
   Landmark,
   Sparkles,
   Info,
+  Calendar as CalendarIcon,
   PlusCircle,
   QrCode,
+  ChevronRight,
 } from 'lucide-react';
-import {
-  Listing,
-  Booking,
-  BookingDetails,
-  BookingStatus,
-  PaymentMethod,
-  ExchangeRates,
-  UCPTransactionPayload,
-} from '@/types';
-import { CommissionTier } from '@/lib/commission';
-import { useAuth } from '@/features/auth/hooks/AuthContext';
-import { getExchangeRates, HIDE_BCV_PRICES } from '@/services/exchange-service';
-import { db, storage } from '@/lib/firebase';
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  collection,
-  addDoc,
-  serverTimestamp,
-  onSnapshot,
-} from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { cn, safeFormat, calculatePaymentBreakdown, parseLocalDate } from '@/lib/utils';
+import { cn, parseLocalDate, calculatePaymentBreakdown } from '@/lib/utils';
+import { HIDE_BCV_PRICES } from '@/services/exchange-service';
 import Chat from '@/components/Chat';
-import { calculateTrustScore } from '@/services/user-service';
-import * as bookingService from '@/services/booking-service';
 import Skeleton from '@/components/ui/Skeleton';
 import AuthModal from '@/features/auth/components/AuthModal';
 import KYCRequiredModal from '@/features/auth/components/KYCRequiredModal';
@@ -63,517 +39,66 @@ import PaymentBanner from '@/features/bookings/components/checkout/PaymentBanner
 import { calculateCancellationDeadline } from '@/features/bookings/hooks/useCancellationDeadline';
 import { CANCELLATION_POLICIES } from '@/features/listings/utils/cancellationPolicies';
 import { CancellationPolicyType } from '@/features/listings/types';
-import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { useCheckout } from '../../hooks/useCheckout';
 
 const CheckoutPage: React.FC = () => {
   const { bookingId: urlBookingId } = useParams<{ bookingId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user, profileData, loading: authLoading } = useAuth();
 
-  const [booking, setBooking] = useState<Booking | null>(null);
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [reference, setReference] = useState('');
-  const [isCopied, setIsCopied] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isMyTripsOpen, setIsMyTripsOpen] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showKYCModal, setShowKYCModal] = useState(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isGuestsEditorOpen, setIsGuestsEditorOpen] = useState(false);
-  const [hasConsentedPolicy, setHasConsentedPolicy] = useState(false);
-  const [guestMessage, setGuestMessage] = useState('');
-
-  const isDraft = booking?.isDraft || !booking?.id;
-  const isPaymentPhase = !isDraft && booking?.status === 'PENDING_PAYMENT';
-  const isRequestPhase = listing?.bookingMode === 'request' && !isPaymentPhase;
-
-  useEffect(() => {
-    if (listing && !guestMessage) {
-      setGuestMessage(`Hola ${listing.hostName || 'Anfitrión'}, me encantaría solicitar una reserva en tu propiedad para mis próximas fechas.`);
-    }
-  }, [listing, guestMessage]);
-
-  const { saveDraft, clearDraft } = useBookingDraft();
-
-  const [reservedDates, setReservedDates] = useState<{ start: Date; end: Date }[]>([]);
-  const [softReservedDates, setSoftReservedDates] = useState<{ start: Date; end: Date }[]>([]);
-
-  const calendarRef = useRef<HTMLDivElement>(null);
-  const guestsRef = useRef<HTMLDivElement>(null);
-  const stayTriggerRef = useRef<HTMLButtonElement>(null);
-  const guestsTriggerRef = useRef<HTMLButtonElement>(null);
-
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(
-    null
-  );
-  const [hostPaymentMethods, setHostPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [rates, setRates] = useState<ExchangeRates | null>(null);
-
-  const availablePaymentMethods = useMemo(() => {
-    const listMethods = listing?.paymentMethods || [];
-    const hMethods = hostPaymentMethods || [];
-
-    if (listMethods.length === 0 && hMethods.length === 0) return [];
-
-    const primaryMethods = listMethods.length > 0 ? listMethods : hMethods;
-
-    return primaryMethods.map(method => {
-      if (!method.data?.accountHolder) {
-        const matchingHostMethod = hMethods.find(hm => hm.type === method.type);
-        if (matchingHostMethod?.data?.accountHolder) {
-          return {
-            ...method,
-            data: {
-              ...method.data,
-              accountHolder: matchingHostMethod.data.accountHolder
-            }
-          };
-        }
-      }
-      return method;
-    });
-  }, [listing?.paymentMethods, hostPaymentMethods]);
-
-  const trustScore = useMemo(() => {
-    if (!profileData) return 0;
-    return calculateTrustScore(profileData);
-  }, [profileData]);
-
-  const isBlockedByTrust = useMemo(() => {
-    return trustScore < 40;
-  }, [trustScore]);
-
-  const isKycVerified = useMemo(() => {
-    const kycStatus = profileData?.kycStatus;
-    return kycStatus === 'VERIFIED' || profileData?.isIdentityVerified === true;
-  }, [profileData]);
-
-  const isFormDisabled = useMemo(() => {
-    if (isSubmitting) return true;
-    
-    // FASE 1: Usuario No Autenticado -> Totalmente habilitado para capturar el clic y abrir el AuthModal
-    if (!user) return false;
-    
-    // FASE 2: Usuario Autenticado sin KYC -> Totalmente habilitado para capturar el clic y guiar a verificación
-    if (!isKycVerified) return false;
-    
-    // FASE 3: Usuario Autenticado y Verificado -> Exigir validaciones estrictas de pasarela de pago
-    if (isBlockedByTrust) return true;
-    if (!hasConsentedPolicy) return true;
-    
-    // Si estamos en fase de solicitud (Request), no exigimos comprobante ni referencia
-    if (isRequestPhase) return false;
-    
-    return !reference.trim() || !file;
-  }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file, isRequestPhase]);
-
-  useEffect(() => {
-    const fetchDraftData = async () => {
-      const state = location.state as { bookingData: unknown } | null;
-      const params = new URLSearchParams(location.search);
-
-      const listingId =
-        (state?.bookingData as { listingId?: string })?.listingId || params.get('listingId');
-      const start = (state?.bookingData as { startDate?: string })?.startDate || params.get('startDate');
-      const end = (state?.bookingData as { endDate?: string })?.endDate || params.get('endDate');
-      const guests = (state?.bookingData as { guests?: string })?.guests || params.get('guests');
-
-      if (!listingId || !start || !end) {
-        setError(
-          'Información de reserva incompleta o sesión expirada. Regresa a la propiedad.'
-        );
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const listingSnap = await getDoc(doc(db, 'listings', listingId));
-        if (listingSnap.exists()) {
-          const lData = {
-            id: listingSnap.id,
-            ...listingSnap.data(),
-          } as Listing;
-          setListing(lData);
-
-          // v2.2 Host Audit for Commission Tier (Resilient Mode)
-          let hostTier: CommissionTier = 12;
-          let hMethods: PaymentMethod[] = [];
-          if (lData.hostId) {
-            try {
-              const hostSnap = await getDoc(doc(db, 'users', lData.hostId));
-              if (hostSnap.exists()) {
-                const hData = hostSnap.data();
-                const { getCommissionTier } = await import('@/lib/commission');
-                hostTier = getCommissionTier(
-                  hData.isVerified || false,
-                  hData.completedBookings || 0
-                );
-                if (hData.paymentMethods && Array.isArray(hData.paymentMethods)) {
-                  hMethods = hData.paymentMethods as PaymentMethod[];
-                  setHostPaymentMethods(hData.paymentMethods as PaymentMethod[]);
-                }
-              }
-            } catch (tierError) {
-              console.warn(
-                'Checkout: Fallo al obtener métricas del anfitrión. Usando Tier base (12%).',
-                tierError
-              );
-            }
-          }
-
-          const sDate = new Date(start);
-          const eDate = new Date(end);
-          const nights =
-            !isNaN(sDate.getTime()) && !isNaN(eDate.getTime())
-              ? Math.max(0, differenceInDays(eDate, sDate))
-              : 0;
-          const total = nights * lData.pricePerNight;
-
-          const { calculateCommission } = await import('@/lib/commission');
-          const financials = calculateCommission(total, hostTier);
-
-          setBooking({
-            listingId,
-            startDate: start,
-            endDate: end,
-            guests: parseInt(guests || '2'),
-            totalAmount: total,
-            financials, // Persist current financial law
-            status: 'PENDING_PAYMENT' as BookingStatus,
-            isDraft: true,
-          } as Booking);
-
-          const listMethods = lData.paymentMethods || [];
-          const finalMethods = listMethods.length > 0 ? listMethods : hMethods;
-          const enrichedMethods = finalMethods.map(method => {
-            if (!method.data?.accountHolder) {
-              const matchingHostMethod = hMethods.find(hm => hm.type === method.type);
-              if (matchingHostMethod?.data?.accountHolder) {
-                return {
-                  ...method,
-                  data: {
-                    ...method.data,
-                    accountHolder: matchingHostMethod.data.accountHolder
-                  }
-                };
-              }
-            }
-            return method;
-          });
-
-          if (enrichedMethods.length > 0) {
-            setSelectedMethod(enrichedMethods[0]);
-          }
-        } else {
-          setError('Propiedad no encontrada.');
-        }
-      } catch (err) {
-        console.error('Error fetching draft data:', err);
-        setError('Error al cargar datos del borrador.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (urlBookingId) {
-      const unsubscribe = onSnapshot(
-        doc(db, 'bookings', urlBookingId),
-        async (docSnap) => {
-          if (docSnap.exists()) {
-            const bookingData = docSnap.data();
-            setBooking({ id: docSnap.id, ...bookingData } as Booking);
-
-            if (!listing) {
-              const listingSnap = await getDoc(
-                doc(db, 'listings', bookingData.listingId)
-              );
-              if (listingSnap.exists()) {
-                const data = listingSnap.data() as Listing;
-                setListing({ id: listingSnap.id, ...data });
-
-                let hMethods: PaymentMethod[] = [];
-                if (data.hostId) {
-                  try {
-                    const hostSnap = await getDoc(doc(db, 'users', data.hostId));
-                    if (hostSnap.exists()) {
-                      const hData = hostSnap.data();
-                      if (hData && hData.paymentMethods && Array.isArray(hData.paymentMethods)) {
-                        hMethods = hData.paymentMethods as PaymentMethod[];
-                        setHostPaymentMethods(hData.paymentMethods as PaymentMethod[]);
-                      }
-                    }
-                  } catch (hostError) {
-                    console.warn('Checkout: Fallo al obtener métodos del anfitrión.', hostError);
-                  }
-                }
-
-                const listMethods = data.paymentMethods || [];
-                const finalMethods = listMethods.length > 0 ? listMethods : hMethods;
-                const enrichedMethods = (finalMethods as PaymentMethod[]).map((method: PaymentMethod) => {
-                  if (!method.data?.accountHolder) {
-                    const matchingHostMethod = hMethods.find(hm => hm.type === method.type) as PaymentMethod | undefined;
-                    if (matchingHostMethod && matchingHostMethod.data && matchingHostMethod.data.accountHolder) {
-                      return {
-                        ...method,
-                        data: {
-                          ...method.data,
-                          accountHolder: matchingHostMethod.data.accountHolder as string
-                        }
-                      };
-                    }
-                  }
-                  return method;
-                });
-
-                if (enrichedMethods.length > 0) {
-                  setSelectedMethod(enrichedMethods[0]);
-                }
-              }
-            }
-            setLoading(false);
-          } else {
-            setError('Reserva no encontrada.');
-            setLoading(false);
-          }
-        },
-        (error) => {
-          console.error('Checkout: Error in booking sync:', error);
-          setError('Error al sincronizar datos de la reserva.');
-          setLoading(false);
-        }
-      );
-      return () => unsubscribe();
-    } else {
-      fetchDraftData();
-    }
-  }, [urlBookingId, location.search, location.state]);
-
-  useEffect(() => {
-    // Fetch exchange rates
-    const fetchRates = async () => {
-      try {
-        const realRates = await getExchangeRates();
-        setRates(realRates);
-      } catch (err) {
-        console.error('Error fetching rates:', err);
-      }
-    };
-    fetchRates();
-  }, []);
-
-  useEffect(() => {
-    if (!listing?.id) return;
-    const fetchReserved = async () => {
-      try {
-        const ranges = await bookingService.getReservedDates(listing.id);
-        const confirmed = ranges.filter(r => r.type === 'confirmed').map(r => ({ start: r.start, end: r.end }));
-        const pending = ranges.filter(r => r.type === 'pending').map(r => ({ start: r.start, end: r.end }));
-        
-        if (listing.blockedDates && listing.blockedDates.length > 0) {
-          const { parseISO } = await import('date-fns');
-          listing.blockedDates.forEach((dateStr) => {
-            const date = parseISO(dateStr);
-            confirmed.push({ start: date, end: date });
-          });
-        }
-        
-        setReservedDates(confirmed);
-        setSoftReservedDates(pending);
-      } catch (err) {
-        console.error('Error fetching reserved dates:', err);
-      }
-    };
-    fetchReserved();
-  }, [listing?.id]);
-
-  const convertedAmount = useMemo(() => {
-    if (!booking || !rates || !selectedMethod) return null;
-    if (
-      selectedMethod.type === 'PagoMovil' ||
-      selectedMethod.type === 'Transferencia'
-    ) {
-      return booking.totalAmount * rates.bcv;
-    }
-    return null;
-  }, [booking, rates, selectedMethod]);
-
-  const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setIsCopied(key);
-    setTimeout(() => setIsCopied(null), 2000);
-  };
-
-  const handleGuestsChange = async (newGuests: number) => {
-    if (newGuests < 1 || !listing || newGuests > listing.maxGuests) return;
-
-    const newBooking = {
-      ...booking,
-      guests: newGuests,
-    };
-
-    setBooking(newBooking);
-
-    // Update Firestore if not draft
-    if (!booking.isDraft && booking.id) {
-      try {
-        await updateDoc(doc(db, 'bookings', booking.id), {
-          guests: newGuests,
-          updatedAt: serverTimestamp(),
-        });
-      } catch (err) {
-        console.error('Error updating guests:', err);
-      }
-    }
-  };
-
-  const handleDateChange = async (start: Date | null, end: Date | null) => {
-    if (!listing) return;
-
-    // Create new booking state with available dates
-    const newBooking = {
-      ...booking,
-      startDate: start ? format(start, 'yyyy-MM-dd') : booking.startDate,
-      endDate: end ? format(end, 'yyyy-MM-dd') : start ? '' : booking.endDate,
-    };
-
-    if (start && end) {
-      const nights = differenceInDays(end, start);
-      const total = nights * listing.pricePerNight;
-      newBooking.totalAmount = total;
-
-      // Recalculate financials with the same tier
-      const currentTier = booking.financials?.commissionTier || 12;
-      const { calculateCommission } = await import('@/lib/commission');
-      newBooking.financials = calculateCommission(total, currentTier);
-
-      setBooking(newBooking);
-      setIsCalendarOpen(false);
-
-      // If NOT a draft, update Firestore
-      if (!booking.isDraft && booking.id) {
-        try {
-          await updateDoc(doc(db, 'bookings', booking.id), {
-            startDate: format(start, 'yyyy-MM-dd'),
-            endDate: format(end, 'yyyy-MM-dd'),
-            totalAmount: total,
-            financials: newBooking.financials,
-            updatedAt: serverTimestamp(),
-            statusHistory: [
-              ...(booking.statusHistory || []),
-              {
-                status: booking.status,
-                timestamp: new Date().toISOString(),
-                actorId: user?.uid || 'guest',
-                actorName: user?.displayName || 'Huésped',
-                note: 'Fechas modificadas desde el checkout',
-              },
-            ],
-          });
-        } catch (err) {
-          console.error('Error updating dates:', err);
-        }
-      }
-    } else if (start) {
-      // Just update start date selection state
-      setBooking(newBooking);
-    }
-  };
-
-  const ensureBooking = async () => {
-    if (!booking || !listing || !user || !booking.isDraft) return booking?.id;
-
-    setIsSubmitting(true);
-    try {
-      const bookingData = {
-        listingId: listing.id,
-        listingTitle: listing.title,
-        guestId: user.uid,
-        guestName: user.displayName || 'Huésped',
-        ownerId: listing.hostId || 'admin',
-        startDate: booking.startDate,
-        endDate: booking.endDate,
-        totalAmount: booking.totalAmount,
-        financials: booking.financials || null,
-        agreedPercentage: 20,
-        status: 'PENDING_PAYMENT' as BookingStatus,
-        paymentInstructions: listing.paymentInstructions || '',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        guests: booking.guests,
-        cancellationPolicySnapshot: listing.cancellationPolicy ?? 'non_refundable_reschedulable',
-        statusHistory: [
-          {
-            status: 'PENDING_PAYMENT' as BookingStatus,
-            timestamp: new Date().toISOString(),
-            actorId: user.uid,
-            actorName: user.displayName || 'Huésped',
-            note: 'Reserva creada automáticamente al entrar al checkout',
-          },
-        ],
-      };
-
-      const docRef = await addDoc(collection(db, 'bookings'), bookingData);
-      setBooking({ id: docRef.id, ...bookingData, isDraft: false } as Booking);
-      navigate(`/checkout/${docRef.id}`, { replace: true });
-      return docRef.id;
-    } catch (err) {
-      console.error('Error creating booking:', err);
-      return null;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Auto-create booking if user is logged in — NEVER auto-create for request mode.
-  // In request mode the booking must only be created/updated when the guest explicitly submits.
-  useEffect(() => {
-    const isRequestMode = listing?.bookingMode === 'request';
-    if (user && booking?.isDraft && listing && !loading && !isSubmitting && !isRequestMode) {
-      ensureBooking();
-    }
-  }, [user, booking?.isDraft, listing, loading]);
-
-  // Click outside logic to close menus
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-
-      // Close calendar if click is outside
-      if (
-        isCalendarOpen &&
-        calendarRef.current &&
-        !calendarRef.current.contains(target) &&
-        stayTriggerRef.current &&
-        !stayTriggerRef.current.contains(target)
-      ) {
-        setIsCalendarOpen(false);
-      }
-
-      // Close guests editor if click is outside
-      if (
-        isGuestsEditorOpen &&
-        guestsRef.current &&
-        !guestsRef.current.contains(target) &&
-        guestsTriggerRef.current &&
-        !guestsTriggerRef.current.contains(target)
-      ) {
-        setIsGuestsEditorOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isCalendarOpen, isGuestsEditorOpen]);
+  const {
+    booking,
+    listing,
+    loading,
+    error,
+    previewUrl,
+    reference,
+    setReference,
+    isCopied,
+    isSubmitting,
+    uploadSuccess,
+    isChatOpen,
+    setIsChatOpen,
+    showAuthModal,
+    setShowAuthModal,
+    showKYCModal,
+    setShowKYCModal,
+    isCalendarOpen,
+    setIsCalendarOpen,
+    isGuestsEditorOpen,
+    setIsGuestsEditorOpen,
+    hasConsentedPolicy,
+    setHasConsentedPolicy,
+    guestMessage,
+    setGuestMessage,
+    isPaymentPhase,
+    isRequestPhase,
+    reservedDates,
+    softReservedDates,
+    calendarRef,
+    guestsRef,
+    stayTriggerRef,
+    guestsTriggerRef,
+    selectedMethod,
+    setSelectedMethod,
+    rates,
+    availablePaymentMethods,
+    convertedAmount,
+    totalNights,
+    hasSoftBlockConflict,
+    handleSubmitPayment,
+    handleGuestsChange,
+    handleDateChange,
+    handleCopy,
+    handleGoToPassport,
+    processAndSetFile,
+    authLoading,
+    isBlockedByTrust,
+    trustScore,
+    user,
+    isKycVerified,
+    isFormDisabled,
+    profileData,
+  } = useCheckout(urlBookingId);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -582,337 +107,14 @@ const CheckoutPage: React.FC = () => {
     }
   };
 
-  const processAndSetFile = async (selectedFile: File) => {
-    if (!selectedFile.type.startsWith('image/')) {
-      setError('Por favor sube una imagen válida (JPG, PNG).');
-      return;
-    }
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      const imageCompression = (await import('browser-image-compression')).default;
-      const options = {
-        maxSizeMB: 0.75,
-        maxWidthOrHeight: 1600,
-        useWebWorker: true,
-        initialQuality: 0.8,
-      };
-      const compressed = await imageCompression(selectedFile, options);
-      setFile(compressed);
-      setPreviewUrl(URL.createObjectURL(compressed));
-    } catch (err) {
-      console.warn('Error comprimiendo comprobante client-side, usando archivo original:', err);
-      setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  useEffect(() => {
-    const handleGlobalPaste = (event: ClipboardEvent) => {
-      if (isRequestPhase) return;
-      const items = event.clipboardData?.items;
-      if (!items) return;
-
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const fileBlob = items[i].getAsFile();
-          if (fileBlob) {
-            processAndSetFile(fileBlob);
-            break;
-          }
-        }
-      }
-    };
-
-    document.addEventListener('paste', handleGlobalPaste);
-    return () => document.removeEventListener('paste', handleGlobalPaste);
-  }, [isRequestPhase]);
-
-  /**
-   * Persiste el borrador de reserva en localStorage (TTL 4h) para que el
-   * usuario pueda reanudar el checkout tras completar Auth o KYC.
-   */
-  const persistDraftAndReturn = () => {
-    if (!booking || !listing) return;
-    saveDraft({
-      listingId: listing.id,
-      startDate: booking.startDate,
-      endDate: booking.endDate,
-      guests: booking.guests ?? 2,
-      returnUrl: window.location.pathname + window.location.search,
-    });
-  };
-
-  /** Guarda el draft y navega al pasaporte para completar KYC */
-  const handleGoToPassport = () => {
-    persistDraftAndReturn();
-    setShowKYCModal(false);
-    navigate('/mi-pasaporte');
-  };
-
-  const handleSubmitPayment = async () => {
-    // 1. Verificar autenticación primero
-    if (!user) {
-      persistDraftAndReturn();
-      setShowAuthModal(true);
-      return;
-    }
-
-    if (!booking || !listing) return;
-
-    // 2. Verificar KYC — bloquear UNVERIFIED y REJECTED, avisar PENDING_REVIEW
-    const kycStatus = profileData?.kycStatus;
-    const isKycVerified =
-      kycStatus === 'VERIFIED' || profileData?.isIdentityVerified === true;
-
-    if (!isKycVerified && kycStatus !== 'PENDING_REVIEW') {
-      // UNVERIFIED o REJECTED → abrir modal de KYC
-      persistDraftAndReturn();
-      setShowKYCModal(true);
-      return;
-    }
-
-    const isRequestMode = isRequestPhase;
-
-    // 3. Check Input (solo si no es modo solicitud de reserva)
-    if (!isRequestMode) {
-      if (!file || !reference.trim()) {
-        setError(
-          'Por favor sube tu comprobante de pago y escribe el número de referencia.'
-        );
-        return;
-      }
-    }
-
-    // 4. Check Trust Score Gatekeeper (VeneStay Passport)
-    if (isBlockedByTrust) {
-      setError(
-        `Tu nivel de confianza (${trustScore}%) es insuficiente para reservar. El mínimo requerido es 40%.`
-      );
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      let currentBookingId = urlBookingId;
-
-      // STEP 1: Create or update the booking document.
-      if (booking.isDraft) {
-        // Draft path: booking not yet in Firestore — create it via atomic transaction.
-        const initialStatus = isRequestMode ? 'PENDING_APPROVAL' : 'PENDING_PAYMENT';
-        const expiresAtVal = isRequestMode
-          ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-          : undefined;
-
-        const bookingData: Partial<Booking> = {
-          listingId: listing.id,
-          listingTitle: listing.title,
-          guestId: user.uid,
-          guestName: user.displayName || 'Huésped',
-          ownerId: listing.hostId || 'admin',
-          startDate: booking.startDate,
-          endDate: booking.endDate,
-          totalAmount: booking.totalAmount,
-          agreedPercentage: 20,
-          status: initialStatus as BookingStatus,
-          bookingMode: listing.bookingMode,
-          guestMessage: isRequestMode ? guestMessage : undefined,
-          expiresAt: expiresAtVal,
-          paymentInstructions: listing.paymentInstructions || '',
-          guests: booking.guests,
-          cancellationPolicySnapshot: listing.cancellationPolicy ?? 'non_refundable_reschedulable',
-          statusHistory: [
-            {
-              status: initialStatus as BookingStatus,
-              timestamp: new Date().toISOString(),
-              actorId: user.uid,
-              actorName: user.displayName || 'Huésped',
-              note: isRequestMode
-                ? 'Solicitud de reserva enviada para aprobación del anfitrión'
-                : 'Reserva creada desde el proceso de checkout (flujo frictionless)',
-            },
-          ],
-        };
-
-        currentBookingId = await bookingService.createBookingWithTransaction(
-          bookingData,
-          isRequestMode ? guestMessage : undefined
-        );
-      } else if (isRequestMode && currentBookingId) {
-        // Fix B — Non-draft request booking: ensureBooking already created the doc with
-        // PENDING_PAYMENT (wrong status). Patch it now with the correct values.
-        const expiresAtVal = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-        const historyEntry = {
-          status: 'PENDING_APPROVAL' as BookingStatus,
-          timestamp: new Date().toISOString(),
-          actorId: user.uid,
-          actorName: user.displayName || 'Huésped',
-          note: 'Solicitud de reserva enviada para aprobación del anfitrión',
-        };
-
-        await updateDoc(doc(db, 'bookings', currentBookingId), {
-          status: 'PENDING_APPROVAL',
-          guestMessage: guestMessage || '',
-          bookingMode: 'request',
-          expiresAt: expiresAtVal,
-          updatedAt: serverTimestamp(),
-          statusHistory: [...(booking.statusHistory || []), historyEntry],
-        });
-
-        // Save guest message to root /messages collection so FloatingChat can read it.
-        if (guestMessage?.trim()) {
-          await addDoc(collection(db, 'messages'), {
-            bookingId: currentBookingId,
-            senderId: user.uid,
-            senderName: user.displayName || 'Huésped',
-            text: guestMessage,
-            type: 'text',
-            status: 'sent',
-            createdAt: serverTimestamp(),
-          });
-        }
-      }
-
-      if (!currentBookingId) throw new Error('No booking ID available');
-
-      // STEP 2: If request mode with no proof, the submission is complete here.
-      if (isRequestMode && (!file || !reference.trim())) {
-        setUploadSuccess(true);
-        clearDraft();
-        return;
-      }
-
-      // 4. Use already compressed file (or original fallback)
-      const compressedFile = file!;
-
-      // 5. Upload to Storage
-      const fileName = `${Date.now()}_receipt.jpg`;
-      const storageRef = ref(
-        storage,
-        `bookings/${currentBookingId}/payments/${fileName}`
-      );
-      const metadata = {
-        contentType: 'image/jpeg',
-        cacheControl: 'public,max-age=31536000',
-      };
-
-      let proofUrl = '';
-      try {
-        await uploadBytes(storageRef, compressedFile, metadata);
-        proofUrl = await getDownloadURL(storageRef);
-      } catch (uploadError: unknown) {
-        if (
-          (uploadError as { code?: string }).code === 'storage/unauthorized' ||
-          (uploadError as Error).message?.includes('storage/unauthorized') ||
-          (uploadError as Error).message?.includes('does not have permission')
-        ) {
-          // Fallback to a dummy URL so testing can proceed if storage rules are locked
-          proofUrl =
-            'https://placehold.co/600x400/2a3b5c/ffffff?text=Comprobante+(Storage+Bloqueado)';
-          console.warn(
-            'Storage is unauthorized. Using fallback URL. Please update Firebase Storage rules in the console.'
-          );
-        } else {
-          throw uploadError;
-        }
-      }
-
-      // 6. Create Payment record adhering to UCP structure
-      const ucpPayload: UCPTransactionPayload = {
-        transactionId: currentBookingId,
-        intent: 'escrow_deposit',
-        currency:
-          selectedMethod?.type === 'PagoMovil' ||
-          selectedMethod?.type === 'Transferencia'
-            ? 'VES'
-            : 'USD',
-        amounts: {
-          total: booking.totalAmount,
-          depositRequired: calculatePaymentBreakdown(booking.totalAmount, 12, listing.cleaningFee || 0).depositAmount,
-          offlineBalance: calculatePaymentBreakdown(booking.totalAmount, 12, listing.cleaningFee || 0).remainingBalance,
-        },
-        metadata: { agenticReady: true },
-      };
-
-      await addDoc(collection(db, `bookings/${currentBookingId}/payments`), {
-        ...ucpPayload,
-        reference,
-        proofUrl,
-        method: selectedMethod?.type || 'P2P',
-        methodLabel: selectedMethod?.label || 'Manual',
-        status: 'PENDING',
-        createdAt: serverTimestamp(),
-      });
-
-      // 7. Update Booking status (PENDING_APPROVAL si es request, AWAITING_VERIFICATION si es instant)
-      const bookingRef = doc(db, 'bookings', currentBookingId);
-      await updateDoc(bookingRef, {
-        status: isRequestMode ? 'PENDING_APPROVAL' : 'AWAITING_VERIFICATION',
-        proofUrl,
-        paymentReference: reference,
-        financials: booking.financials || null,
-        updatedAt: serverTimestamp(),
-        statusHistory: [
-          ...(booking.statusHistory || []),
-          {
-            status: isRequestMode ? 'PENDING_APPROVAL' : 'AWAITING_VERIFICATION',
-            timestamp: new Date().toISOString(),
-            actorId: user.uid,
-            actorName: user.displayName || 'Huésped',
-            note: isRequestMode 
-              ? 'Solicitud enviada adjuntando comprobante de pago preliminar'
-              : 'Comprobante de pago subido desde página de checkout',
-          },
-        ],
-      });
-
-      setUploadSuccess(true);
-      clearDraft(); // Limpiar draft al completar
-      if (booking.isDraft) {
-        navigate(`/checkout/${currentBookingId}`, { replace: true });
-      }
-    } catch (err) {
-      console.error('Error submitting payment:', err);
-      setError((err as Error).message || 'Error al procesar el pago. Por favor intenta de nuevo.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const totalNights = useMemo(() => {
-    if (!booking?.startDate || !booking?.endDate) return 0;
-    const start = parseLocalDate(booking.startDate);
-    const end = parseLocalDate(booking.endDate);
-    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
-    return Math.max(0, differenceInDays(end, start));
-  }, [booking]);
-
-  const hasSoftBlockConflict = useMemo(() => {
-    if (!booking?.startDate || !booking?.endDate) return false;
-    const start = parseLocalDate(booking.startDate);
-    const end = parseLocalDate(booking.endDate);
-    if (!start || !end) return false;
-    
-    
-    return softReservedDates.some((range) => {
-      // Check if any day in the softReserved range falls inside our booking range
-      // or if any day in our booking range falls inside the softReserved range
-      const rangeStart = startOfDay(range.start);
-      const rangeEnd = startOfDay(range.end);
-      const bStart = startOfDay(start);
-      const bEnd = startOfDay(end);
-      
-      return (
-        isWithinInterval(rangeStart, { start: bStart, end: bEnd }) ||
-        isWithinInterval(rangeEnd, { start: bStart, end: bEnd }) ||
-        isWithinInterval(bStart, { start: rangeStart, end: rangeEnd })
-      );
-    });
-  }, [booking, softReservedDates]);
+  const breakdown = React.useMemo(() => {
+    if (!booking || !listing) return { depositAmount: 0, remainingBalance: 0 };
+    return calculatePaymentBreakdown(
+      booking.totalAmount,
+      12,
+      listing.cleaningFee || 0
+    );
+  }, [booking?.totalAmount, listing?.cleaningFee]);
 
   if (loading || authLoading) {
     return (
@@ -1334,11 +536,7 @@ const CheckoutPage: React.FC = () => {
                         className="text-4xl font-extrabold tracking-tight text-white"
                       >
                         $
-                        {calculatePaymentBreakdown(
-                          booking.totalAmount,
-                          12,
-                          listing.cleaningFee || 0
-                        ).depositAmount.toFixed(2)}
+                        {breakdown.depositAmount.toFixed(2)}
                       </p>
                       {!HIDE_BCV_PRICES && convertedAmount && rates && (
                         <motion.p
@@ -1349,8 +547,7 @@ const CheckoutPage: React.FC = () => {
                         >
                           Bs.{' '}
                           {(
-                            calculatePaymentBreakdown(booking.totalAmount, 12, listing.cleaningFee || 0)
-                              .depositAmount * rates.bcv
+                            breakdown.depositAmount * rates.bcv
                           ).toLocaleString('es-VE', {
                             maximumFractionDigits: 0,
                           })}
@@ -1364,11 +561,7 @@ const CheckoutPage: React.FC = () => {
                       El saldo restante o <span className="text-emerald-400">Saldo Protegido</span> de{' '}
                       <strong aria-label="offline-balance-amount">
                         $
-                        {calculatePaymentBreakdown(
-                          booking.totalAmount,
-                          12,
-                          listing.cleaningFee || 0
-                        ).remainingBalance.toFixed(2)}
+                        {breakdown.remainingBalance.toFixed(2)}
                       </strong>{' '}
                       se liquida directamente con tu anfitrión al momento del Check-in.
                     </p>

@@ -44,6 +44,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { cleanupExpiredBookings } from '@/services/booking-service';
 import { RescheduleRequestModal } from './RescheduleRequestModal';
+import { BookingSummaryModal } from './BookingSummaryModal';
 
 interface MyTripsProps {
   isOpen?: boolean;
@@ -107,6 +108,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   );
   const [mobileTab, setMobileTab] = useState<'reservas' | 'chat'>('reservas');
   const [rescheduleBookingId, setRescheduleBookingId] = useState<string | null>(null);
+  const [summaryBooking, setSummaryBooking] = useState<Booking | null>(null);
   const navigate = useNavigate();
 
   // Stable snapshot of "now" for the 48-hour threshold comparison.
@@ -718,7 +720,13 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                   ) : (
                                     <div className="flex gap-2">
                                       <button
-                                        onClick={() => navigate(`/checkout/${booking.id}`)}
+                                        onClick={() => {
+                                          if (booking.status === 'CONFIRMED' || booking.status === 'AWAITING_VERIFICATION') {
+                                            setSummaryBooking(booking);
+                                          } else {
+                                            navigate(`/checkout/${booking.id}`);
+                                          }
+                                        }}
                                         className="flex-1 bg-gray-100 hover:bg-gray-200 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
                                       >
                                         Ver Resumen
@@ -814,6 +822,18 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         isOpen={!!rescheduleBookingId}
         onClose={() => setRescheduleBookingId(null)}
         bookingId={rescheduleBookingId || ''}
+      />
+      <BookingSummaryModal
+        booking={summaryBooking}
+        isOpen={!!summaryBooking}
+        onClose={() => setSummaryBooking(null)}
+        onContactHost={summaryBooking ? () => {
+          setActiveChatId(summaryBooking.id);
+          setActiveChatBooking(summaryBooking);
+          if (window.innerWidth < 1024) {
+            setMobileTab('chat');
+          }
+        } : undefined}
       />
     </div>
   );

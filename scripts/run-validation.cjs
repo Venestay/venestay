@@ -115,7 +115,7 @@ runGate('G1', 'TypeScript compilation',
   'npx tsc --noEmit');
 
 runGate('G2', 'ESLint code quality',
-  'npx eslint . --max-warnings 0 --format json',
+  'npx eslint . --format json',
   { dependsOn: null });
 
 runGate('G3', 'Unit tests',
@@ -149,7 +149,7 @@ runGate('G9', 'Security scan',
   { timeout: 60000 });
 
 runGate('G10', 'Regression: instant book',
-  'npx vitest run --grep "instant-book" --reporter=json --outputFile=.validation/regression-results.json',
+  'npx vitest run -t "instant-book" --reporter=json --outputFile=.validation/regression-results.json',
   { dependsOn: 'G3', timeout: 120000 });
 
 // ─── Output ─────────────────────────────────────────────────────

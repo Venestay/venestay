@@ -4,13 +4,14 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useChatNotifications } from '@/features/bookings/hooks/useChatNotifications';
 
-export type DashboardTab = 'bookings' | 'listings' | 'profile';
+export type DashboardTab = 'bookings' | 'listings' | 'profile' | 'kyc_audit';
 
 interface DashboardHeaderProps {
   activeTab: DashboardTab;
   setActiveTab: (tab: DashboardTab) => void;
   isAdmin: boolean;
   isHost: boolean;
+  kycPendingCount?: number;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -18,6 +19,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   setActiveTab,
   isAdmin,
   isHost,
+  kycPendingCount = 0,
 }) => {
   const navigate = useNavigate();
   const { unreadCount } = useChatNotifications();
@@ -76,6 +78,24 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             )}
           >
             {isAdmin ? 'Propiedades' : 'Mis Propiedades'}
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            onClick={() => setActiveTab('kyc_audit')}
+            className={cn(
+              'relative rounded-xl px-6 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all',
+              activeTab === 'kyc_audit'
+                ? 'bg-brand-500 text-brand-navy shadow-lg'
+                : 'text-white/60 hover:text-white'
+            )}
+          >
+            Auditoría KYC
+            {kycPendingCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-brand-navy animate-pulse">
+                {kycPendingCount}
+              </span>
+            )}
           </button>
         )}
         <button

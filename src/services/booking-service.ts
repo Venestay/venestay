@@ -15,6 +15,8 @@ import { db } from '@/lib/firebase';
 import { Booking, BookingStatus } from '@/types';
 import { parseISO } from 'date-fns';
 
+import { withRetry } from './firestore-retry';
+
 export const getReservedDates = async (listingId: string): Promise<{ start: Date; end: Date; type: 'confirmed' | 'pending' }[]> => {
   const q = query(
     collection(db, 'bookings'),
@@ -33,12 +35,14 @@ export const getReservedDates = async (listingId: string): Promise<{ start: Date
 };
 
 export const createBooking = async (bookingData: Partial<Booking>) => {
-  const docRef = await addDoc(collection(db, 'bookings'), {
-    ...bookingData,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  return withRetry(async () => {
+    const docRef = await addDoc(collection(db, 'bookings'), {
+      ...bookingData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return docRef.id;
   });
-  return docRef.id;
 };
 
 export const subscribeToUserBookings = (
@@ -67,52 +71,54 @@ export const createBookingWithTransaction = async (
   bookingData: Partial<Booking>,
   initialMessage?: string
 ): Promise<string> => {
-  const docId = await runTransaction(db, async (transaction) => {
-    const listingId = bookingData.listingId;
-    if (!listingId) throw new Error('Falta el ID del alojamiento.');
+  const docId = await withRetry(async () => {
+    return runTransaction(db, async (transaction) => {
+      const listingId = bookingData.listingId;
+      if (!listingId) throw new Error('Falta el ID del alojamiento.');
 
-    // AVAILABILITY CONFLICT CHECK: Solo estados "hard block" (confirmados o en verificación o pago pendiente).
-    // PENDING_APPROVAL queda excluido intencionalmente para permitir múltiples solicitudes.
-    const bookingsQuery = query(
-      collection(db, 'bookings'),
-      where('listingId', '==', listingId),
-      where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_PAYMENT'])
-    );
-    const querySnapshot = await getDocs(bookingsQuery);
-    
-    const startStr = bookingData.startDate;
-    const endStr = bookingData.endDate;
-    if (!startStr || !endStr) throw new Error('Faltan fechas de reserva.');
+      // AVAILABILITY CONFLICT CHECK: Solo estados "hard block" (confirmados o en verificación o pago pendiente).
+      // PENDING_APPROVAL queda excluido intencionalmente para permitir múltiples solicitudes.
+      const bookingsQuery = query(
+        collection(db, 'bookings'),
+        where('listingId', '==', listingId),
+        where('status', 'in', ['CONFIRMED', 'AWAITING_VERIFICATION', 'PENDING_PAYMENT'])
+      );
+      const querySnapshot = await getDocs(bookingsQuery);
+      
+      const startStr = bookingData.startDate;
+      const endStr = bookingData.endDate;
+      if (!startStr || !endStr) throw new Error('Faltan fechas de reserva.');
 
-    const requestedStart = parseISO(startStr).getTime();
-    const requestedEnd = parseISO(endStr).getTime();
+      const requestedStart = parseISO(startStr).getTime();
+      const requestedEnd = parseISO(endStr).getTime();
 
-    for (const d of querySnapshot.docs) {
-      const data = d.data();
-      const existingStart = parseISO(data.startDate).getTime();
-      const existingEnd = parseISO(data.endDate).getTime();
+      for (const d of querySnapshot.docs) {
+        const data = d.data();
+        const existingStart = parseISO(data.startDate).getTime();
+        const existingEnd = parseISO(data.endDate).getTime();
 
-      const overlaps = (requestedStart < existingEnd && requestedEnd > existingStart);
-      if (overlaps) {
-        throw new Error('Lo sentimos, las fechas solicitadas ya se encuentran reservadas.');
+        const overlaps = (requestedStart < existingEnd && requestedEnd > existingStart);
+        if (overlaps) {
+          throw new Error('Lo sentimos, las fechas solicitadas ya se encuentran reservadas.');
+        }
       }
-    }
 
-    const bookingsColRef = collection(db, 'bookings');
-    const newBookingDocRef = doc(bookingsColRef);
-    const docId = newBookingDocRef.id;
+      const bookingsColRef = collection(db, 'bookings');
+      const newBookingDocRef = doc(bookingsColRef);
+      const docId = newBookingDocRef.id;
 
-    const finalBookingData = {
-      ...bookingData,
-      guestMessage: initialMessage || '',
-      id: docId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
+      const finalBookingData = {
+        ...bookingData,
+        guestMessage: initialMessage || '',
+        id: docId,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
 
-    transaction.set(newBookingDocRef, finalBookingData);
+      transaction.set(newBookingDocRef, finalBookingData);
 
-    return docId;
+      return docId;
+    });
   });
 
   // Post-commit: Create the message document since the booking doc now exists.

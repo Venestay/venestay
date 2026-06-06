@@ -3,16 +3,15 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  Navigate,
   useLocation,
 } from 'react-router-dom';
-import { useAuth } from '@/features/auth/hooks/AuthContext';
 import Home from '@/pages/Home';
 import { Toaster } from 'sonner';
 import { useBookingManager } from '@/features/bookings/hooks/use-booking-manager';
 import { useDatabaseSeeder } from '@/lib/hooks/use-database-seeder';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ChatNotificationProvider } from '@/features/bookings/hooks/useChatNotifications';
+import AuthGuard from '@/features/auth/components/AuthGuard';
 
 // 🚀 CODE SPLITTING: Lazy Load de componentes pesados
 const AdminDashboard = lazy(
@@ -36,13 +35,6 @@ const ScrollToTop = () => {
   return null;
 };
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  if (loading) return null;
-  if (!user) return <Navigate to="/" replace />;
-  return <>{children}</>;
-};
-
 const App: React.FC = () => {
   useBookingManager();
   useDatabaseSeeder();
@@ -54,8 +46,11 @@ const App: React.FC = () => {
         <ScrollToTop />
       <Suspense
         fallback={
-          <div className="flex min-h-screen items-center justify-center bg-gray-50">
-            <div className="border-brand-500 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent"></div>
+          <div className="flex min-h-screen flex-col items-center justify-center bg-brand-navy p-6 text-center">
+            <div className="relative mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 border border-brand-500/10 shadow-inner">
+              <div className="absolute inset-0 rounded-2xl border border-brand-500/20 animate-ping opacity-75"></div>
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
+            </div>
           </div>
         }
       >
@@ -65,33 +60,33 @@ const App: React.FC = () => {
           <Route
             path="/publicar-espacio"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route
             path="/admin/nueva-propiedad"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route
             path="/admin/mis-propiedades"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route path="/listing/:id" element={<ListingDetail />} />
@@ -100,17 +95,17 @@ const App: React.FC = () => {
           <Route
             path="/mi-pasaporte"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <ProfileSettings />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
           <Route
             path="/mis-viajes"
             element={
-              <ProtectedRoute>
+              <AuthGuard>
                 <MyTrips />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
         </Routes>

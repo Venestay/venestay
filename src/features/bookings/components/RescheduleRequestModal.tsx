@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useRescheduleRequest } from '../hooks/useRescheduleRequest';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Calendar, AlertTriangle, AlertCircle, Loader2 } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface RescheduleRequestModalProps {
   isOpen: boolean;
@@ -29,6 +30,9 @@ export const RescheduleRequestModal: React.FC<RescheduleRequestModalProps> = ({
     onClose();
   });
 
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, isOpen);
+
   const handleClose = () => {
     reset();
     onClose();
@@ -49,6 +53,7 @@ export const RescheduleRequestModal: React.FC<RescheduleRequestModalProps> = ({
 
           {/* Modal Container */}
           <motion.div
+            ref={modalRef}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}

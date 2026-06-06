@@ -72,9 +72,12 @@ service firebase.storage {
         && request.resource.size < 5 * 1024 * 1024
         && (request.resource.contentType.matches('image/.*')
             || request.resource.contentType == 'application/pdf')
-        // Solo permitir si el estado actual es NOT_SUBMITTED o REJECTED o UNVERIFIED
-        && firestore.get(/databases/(default)/documents/users/$(userId))
-                   .data.kycStatus in ['NOT_SUBMITTED', 'REJECTED', 'UNVERIFIED'];
+        // Permitir si no existe el documento de usuario, si no está definido kycStatus, o si está en los estados permitidos
+        && (
+          !firestore.exists(/databases/(default)/documents/users/$(userId))
+          || !('kycStatus' in firestore.get(/databases/(default)/documents/users/$(userId)).data)
+          || firestore.get(/databases/(default)/documents/users/$(userId)).data.kycStatus in ['NOT_SUBMITTED', 'REJECTED', 'UNVERIFIED']
+        );
 
       // NADIE puede leer directamente — solo Cloud Functions via Admin SDK o URLs firmadas
       allow read: if false;

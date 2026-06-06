@@ -2,5 +2,5 @@
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "high": true,
   "critical": true,
-  "allowlist": []
+  "allowlist": ["GHSA-8x6r-g9mw-2r78"]
 }

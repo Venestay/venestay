@@ -29,3 +29,30 @@ export async function uploadAndSubmitKYCDocument(
   const submitFn = httpsCallable(functions, 'submitKYCDocument');
   await submitFn({ documentType, storageFileName: fileName });
 }
+
+/**
+ * Obtiene la URL firmada temporal para visualizar el documento KYC de un usuario.
+ * Solo ejecutable por administradores.
+ */
+export async function getKYCSignedUrl(targetUserId: string): Promise<string> {
+  const getUrlFn = httpsCallable<{ targetUserId: string }, { signedUrl: string }>(functions, 'getKYCDocumentSignedURL');
+  const result = await getUrlFn({ targetUserId });
+  return result.data.signedUrl;
+}
+
+/**
+ * Aprueba el documento KYC del usuario (cambia a VERIFIED, +40 trustScore).
+ */
+export async function approveKYC(targetUserId: string): Promise<void> {
+  const approveFn = httpsCallable<{ targetUserId: string }, { success: boolean }>(functions, 'approveKYC');
+  await approveFn({ targetUserId });
+}
+
+/**
+ * Rechaza el documento KYC del usuario con un motivo (cambia a REJECTED, elimina archivo).
+ */
+export async function rejectKYC(targetUserId: string, note: string): Promise<void> {
+  const rejectFn = httpsCallable<{ targetUserId: string; note: string }, { success: boolean }>(functions, 'rejectKYC');
+  await rejectFn({ targetUserId, note });
+}
+

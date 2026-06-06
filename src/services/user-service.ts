@@ -55,8 +55,10 @@ export const subscribeToUserProfile = (
   });
 };
 
+import { withRetry } from './firestore-retry';
+
 export const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-  try {
+  return withRetry(async () => {
     const userDocRef = doc(db, 'users', uid);
     
     // Recalculate trust score if relevant fields changed
@@ -72,8 +74,5 @@ export const updateUserProfile = async (uid: string, data: Partial<UserProfile>)
 
     await updateDoc(userDocRef, updateData);
     return updateData;
-  } catch (error) {
-    console.error('Error updating user profile:', error);
-    throw error;
-  }
+  });
 };
