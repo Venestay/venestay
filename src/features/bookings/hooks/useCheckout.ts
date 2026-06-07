@@ -34,7 +34,7 @@ import {
 export const useCheckout = (urlBookingId: string | undefined) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, profileData, loading: authLoading } = useAuth();
+  const { user, profileData, loading: authLoading, emailVerified } = useAuth();
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [listing, setListing] = useState<Listing | null>(null);
@@ -503,6 +503,11 @@ export const useCheckout = (urlBookingId: string | undefined) => {
 
     if (!booking || !listing) return;
 
+    if (!emailVerified) {
+      setError('Debes verificar tu correo electrónico antes de reservar. Revisa tu bandeja o haz clic en reenviar desde tu sesión.');
+      return;
+    }
+
     const kycStatus = profileData?.kycStatus;
     const isKycVerified =
       kycStatus === 'VERIFIED' || profileData?.isIdentityVerified === true;
@@ -554,7 +559,7 @@ export const useCheckout = (urlBookingId: string | undefined) => {
           totalAmount: booking.totalAmount,
           agreedPercentage: 20,
           status: initialStatus as BookingStatus,
-          bookingMode: listing.bookingMode,
+          bookingMode: listing.bookingMode || 'instant',
           guestMessage: isRequestMode ? guestMessage : undefined,
           expiresAt: expiresAtVal,
           paymentInstructions: listing.paymentInstructions || '',
@@ -795,5 +800,6 @@ export const useCheckout = (urlBookingId: string | undefined) => {
     authLoading,
     user,
     profileData,
+    emailVerified,
   };
 };

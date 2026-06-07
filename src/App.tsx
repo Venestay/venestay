@@ -12,6 +12,7 @@ import { useDatabaseSeeder } from '@/lib/hooks/use-database-seeder';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ChatNotificationProvider } from '@/features/bookings/hooks/useChatNotifications';
 import AuthGuard from '@/features/auth/components/AuthGuard';
+import { useAnalytics } from '@/shared/hooks/useAnalytics';
 
 // 🚀 CODE SPLITTING: Lazy Load de componentes pesados
 const AdminDashboard = lazy(
@@ -38,6 +39,7 @@ const ScrollToTop = () => {
 const App: React.FC = () => {
   useBookingManager();
   useDatabaseSeeder();
+  useAnalytics();
 
   return (
     <ErrorBoundary>

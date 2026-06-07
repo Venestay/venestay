@@ -9,6 +9,7 @@ interface AuthContextType {
   profileData: UserProfile | null;
   loading: boolean;
   isAdmin: boolean;
+  emailVerified: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -20,6 +21,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profileData, setProfileData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
@@ -27,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
+        setEmailVerified(firebaseUser.emailVerified);
 
         const adminEmails = [
           'rodriguezzcarlose@gmail.com',
@@ -68,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
         setProfileData(null);
         setIsAdmin(false);
+        setEmailVerified(false);
         if (unsubscribeProfile) {
           unsubscribeProfile();
           unsubscribeProfile = null;
@@ -94,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, profileData, loading, isAdmin, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profileData, loading, isAdmin, emailVerified, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

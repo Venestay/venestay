@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/hooks/AuthContext';
 import AuthModal from '@/features/auth/components/AuthModal';
 import InfoModal, { InfoKey } from '@/components/ui/InfoModal';
 import PasswordReset from '@/features/auth/components/PasswordReset';
+import { CONTACT_CONFIG } from '@/shared/config/contact';
 
 // 🚀 CODE SPLITTING: Lazy Load de componentes pesados que no son la vista principal
 const ListingDetail = lazy(
@@ -392,18 +393,25 @@ const Home: React.FC = () => {
                       : 'Únete a nuestra exclusiva red de anfitriones y empieza a recibir huéspedes verificados.'}
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    if (isAdmin) {
-                      navigate('/dashboard');
-                    } else {
-                      navigate('/host-guide');
-                    }
-                  }}
-                  className="bg-brand-navy relative z-10 rounded-2xl px-10 py-5 text-sm font-black tracking-widest text-white uppercase shadow-xl transition-all hover:scale-105 active:scale-95"
-                >
-                  {isAdmin ? 'Gestionar mis propiedades' : 'Ser Anfitrión'}
-                </button>
+                {isAdmin ? (
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className="bg-brand-navy relative z-10 rounded-2xl px-10 py-5 text-sm font-black tracking-widest text-white uppercase shadow-xl transition-all hover:scale-105 active:scale-95"
+                  >
+                    Gestionar mis propiedades
+                  </button>
+                ) : (
+                  <a
+                    href={CONTACT_CONFIG.whatsapp.hostRegister.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={CONTACT_CONFIG.whatsapp.hostRegister.ariaLabel}
+                    data-analytics="footer_whatsapp_host_register"
+                    className="bg-brand-navy relative z-10 inline-block rounded-2xl px-10 py-5 text-sm font-black tracking-widest text-white uppercase shadow-xl transition-all hover:scale-105 active:scale-95"
+                  >
+                    Registrar Propiedad
+                  </a>
+                )}
               </div>
             </div>
 
@@ -526,11 +534,23 @@ const Home: React.FC = () => {
                     </button>
                   </li>
                   <li>
+                    <a
+                      href={CONTACT_CONFIG.whatsapp.support.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={CONTACT_CONFIG.whatsapp.support.ariaLabel}
+                      data-analytics="footer_whatsapp_support"
+                      className="hover:text-brand-500 text-left text-sm font-bold text-white/30 transition-colors"
+                    >
+                      Soporte WhatsApp
+                    </a>
+                  </li>
+                  <li>
                     <button
                       onClick={() => openInfo('contact')}
                       className="hover:text-brand-500 text-left text-sm font-bold text-white/30 transition-colors"
                     >
-                      Contacto
+                      Información de Contacto
                     </button>
                   </li>
                 </ul>

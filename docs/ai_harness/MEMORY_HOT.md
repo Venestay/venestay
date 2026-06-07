@@ -1,14 +1,16 @@
 # MEMORY_HOT — VeneStay Agent
-_Sprint: S04 — KYC & Identity Verification · Actualizado: 2026-06-06_
+_Sprint: S04 — KYC & Identity Verification · Actualizado: 2026-06-07_
 
 ## Estado ahora
-SPRINT    : S04 — KYC & Identity Verification (Fase 3: Optimización Módulo 4 - Auth completado)
-QA_GATE   : PASS (G10/G10 passed) | 2026-06-06
+SPRINT    : S04 — KYC & Identity Verification (Fase 4: Notificaciones por Email y Flujo Asegurar mi Estadía completados)
+QA_GATE   : PASS (G10/G10 passed) | 2026-06-07
 BLOQUEANTE: ninguno
 
 ## Módulos del Sprint S04 (En progreso)
 | Módulo | Archivo Objetivo | Estado | Iteraciones QA |
 |:---|:---|:---|:---|
+| **Fix Host Email Notification (P0)** | functions/package.json, functions/tsconfig.json, firebase.json, functions/src/booking.functions.ts | **PLANIFICACIÓN (Esperando Aprobación)** | 0/3 |
+| **Email Notifications & Secure Stay Flow (P0)** | functions/src/booking.functions.ts, functions/src/kyc.functions.ts, functions/src/templates/, src/features/bookings/hooks/useCheckout.ts, src/services/booking-service.ts | **COMPLETADO (Refactored, Decoupled & Undefined Checkout Crash Fixed)** | 1/3 |
 | **SPEC-AUTH-MODAL-OPTIMIZATION (P0)** | src/features/auth/components/AuthModal.tsx, src/features/auth/hooks/useAuthForm.ts, src/features/auth/schemas/auth.schema.ts, src/hooks/useFocusTrap.ts | **COMPLETADO** | 1/3 |
 | **SPEC-AUTH-PASSWORD-RESET-OPTIMIZATION (P0)** | src/features/auth/components/PasswordReset.tsx, src/features/auth/hooks/usePasswordReset.ts, src/features/auth/schemas/auth.schema.ts, src/hooks/useFocusTrap.ts | **COMPLETADO** | 1/3 |
 | **SPEC-DASHBOARD-AMENITIESICONS-01 (P1)** | src/features/dashboard/components/form-steps/StepGeneral.tsx, src/features/listings/components/ListingDetail.tsx, src/features/listings/utils/amenities-icons.ts | **COMPLETADO** | 1/3 |
