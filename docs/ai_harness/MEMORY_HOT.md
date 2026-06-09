@@ -9,7 +9,7 @@ BLOQUEANTE: ninguno
 ## Módulos del Sprint S04 (En progreso)
 | Módulo | Archivo Objetivo | Estado | Iteraciones QA |
 |:---|:---|:---|:---|
-| **Fix Host Email Notification (P0)** | functions/package.json, functions/tsconfig.json, firebase.json, functions/src/booking.functions.ts | **PLANIFICACIÓN (Esperando Aprobación)** | 0/3 |
+| **Fix Host Email Notification (P0)** | functions/package.json, functions/tsconfig.json, firebase.json, functions/src/booking.functions.ts | **COMPLETADO (Desplegado en Git Branch)** | 1/3 |
 | **Email Notifications & Secure Stay Flow (P0)** | functions/src/booking.functions.ts, functions/src/kyc.functions.ts, functions/src/templates/, src/features/bookings/hooks/useCheckout.ts, src/services/booking-service.ts | **COMPLETADO (Refactored, Decoupled & Undefined Checkout Crash Fixed)** | 1/3 |
 | **SPEC-AUTH-MODAL-OPTIMIZATION (P0)** | src/features/auth/components/AuthModal.tsx, src/features/auth/hooks/useAuthForm.ts, src/features/auth/schemas/auth.schema.ts, src/hooks/useFocusTrap.ts | **COMPLETADO** | 1/3 |
 | **SPEC-AUTH-PASSWORD-RESET-OPTIMIZATION (P0)** | src/features/auth/components/PasswordReset.tsx, src/features/auth/hooks/usePasswordReset.ts, src/features/auth/schemas/auth.schema.ts, src/hooks/useFocusTrap.ts | **COMPLETADO** | 1/3 |
