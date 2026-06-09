@@ -93,6 +93,7 @@
 | ID | Propuesta | Estado | Documento de Referencia |
 | :--- | :--- | :--- | :--- |
 | **V2.5-OPT** | Optimización Estratégica VeneStay (TTL, Trust Score, Antifraude) | Pendiente | [PROPUESTA_OPTIMIZACION_RESERVAS_V2.5.md](file:///c:/VeneStay/docs/PROPUESTA_OPTIMIZACION_RESERVAS_V2.5.md) |
+| **V2.6-COMM** | VeneStay Conversational Commerce (WhatsApp/Jelou) | Aprobado | [rfc_conversational_commerce.md](file:///c:/Users/carlos.zabala/Documents/VeneStay/docs/specs/rfc_conversational_commerce.md) |
 
 ## 🔐 Credenciales de Prueba (Autorizadas)
 - **Usuario Maestro:** `anfitrionvenestay@venestay.com` (Utilizado para flujos de Huésped, Anfitrión y Admin).
