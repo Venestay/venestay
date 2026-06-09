@@ -1,6 +1,7 @@
 import {
   signOut as firebaseSignOut,
   User as FirebaseUser,
+  sendEmailVerification as firebaseSendEmailVerification
 } from 'firebase/auth';
 import {
   doc,
@@ -19,6 +20,20 @@ export const signOut = async () => {
     console.error('Error signing out:', error);
     throw error;
   }
+};
+
+export const sendVerificationEmail = async (user: FirebaseUser): Promise<void> => {
+  try {
+    await firebaseSendEmailVerification(user);
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    throw error;
+  }
+};
+
+export const isEmailVerified = (user: FirebaseUser | null): boolean => {
+  if (!user) return false;
+  return user.emailVerified;
 };
 
 export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {

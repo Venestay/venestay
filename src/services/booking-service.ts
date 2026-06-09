@@ -115,7 +115,15 @@ export const createBookingWithTransaction = async (
         updatedAt: serverTimestamp(),
       };
 
-      transaction.set(newBookingDocRef, finalBookingData);
+      // Sanitize payload to strip out undefined keys that Firestore doesn't support
+      const cleanBookingData: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(finalBookingData)) {
+        if (value !== undefined) {
+          cleanBookingData[key] = value;
+        }
+      }
+
+      transaction.set(newBookingDocRef, cleanBookingData);
 
       return docId;
     });

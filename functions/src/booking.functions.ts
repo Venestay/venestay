@@ -1,134 +1,23 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import {
+  buildConfirmationEmailHTML,
+  buildBookingRequestEmailHTML,
+  buildPaymentInstructionsEmailHTML,
+  buildPaymentSubmittedEmailHTML,
+  buildRejectionEmailHTML
+} from './templates/booking-emails';
 
 const db = admin.firestore();
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '—';
-  try {
-    const d = new Date(dateStr);
-    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-  } catch {
-    return dateStr;
-  }
-}
 
-interface EmailBooking {
-  totalAmount?: number;
-  paymentReference?: string;
-  startDate?: string;
-  endDate?: string;
-  guests?: number;
-}
-
-interface EmailGuest {
-  displayName?: string;
-}
-
-interface EmailListing {
-  title?: string;
-  manualAddress?: string;
-  location?: string;
-  checkInTime?: string;
-  checkOutTime?: string;
-}
-
-function buildConfirmationEmailHTML(
-  booking: EmailBooking,
-  guest: EmailGuest,
-  listing: EmailListing
-): string {
-  const total = booking.totalAmount || 0;
-  const deposit = (total * 0.2).toFixed(2);
-  const remaining = (total * 0.8).toFixed(2);
-  
-  return `
-  <!DOCTYPE html>
-  <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-      body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
-      .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; }
-      .header { background: #0B1120; color: #ffffff; padding: 24px 32px; }
-      .header-logo { color: #C5A059; font-size: 20px; font-weight: bold; }
-      .header-sub { color: rgba(255,255,255,0.6); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
-      .body { padding: 32px; }
-      .title { font-size: 22px; font-weight: bold; color: #0B1120; margin-bottom: 4px; }
-      .subtitle { font-size: 14px; color: #666; margin-bottom: 24px; }
-      .section { border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
-      .section-label { font-size: 10px; font-weight: bold; letter-spacing: 0.1em; text-transform: uppercase; color: #999; margin-bottom: 8px; }
-      .row { display: flex; justify-content: space-between; font-size: 14px; color: #333; padding: 4px 0; }
-      .amount-highlight { color: #C5A059; font-weight: bold; }
-      .footer { background: #f9f9f9; padding: 20px 32px; font-size: 12px; color: #999; text-align: center; border-top: 1px solid #e5e5e5; }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <div class="header-logo">VeneStay</div>
-        <div class="header-sub">Alquileres Premium · Lechería</div>
-      </div>
-      <div class="body">
-        <div class="title">¡Tu estadía está confirmada! 🎉</div>
-        <div class="subtitle">Hola ${guest.displayName || 'Huésped'}, todo está listo para tu viaje.</div>
- 
-        <div class="section">
-          <div class="section-label">Propiedad</div>
-          <div class="row"><span><strong>${listing.title || 'Propiedad'}</strong></span></div>
-          <div class="row"><span>📍 ${listing.manualAddress || listing.location || 'Dirección no especificada'}</span></div>
-        </div>
- 
-        <div class="section">
-          <div class="section-label">Fechas</div>
-          <div class="row">
-            <span>Check-in</span>
-            <span>${formatDate(booking.startDate)} · ${listing.checkInTime || '14:00'}</span>
-          </div>
-          <div class="row">
-            <span>Check-out</span>
-            <span>${formatDate(booking.endDate)} · ${listing.checkOutTime || '11:00'}</span>
-          </div>
-          <div class="row">
-            <span>Huéspedes</span>
-            <span>${booking.guests || 1} viajero(s)</span>
-          </div>
-        </div>
- 
-        <div class="section">
-          <div class="section-label">Resumen de pago</div>
-          <div class="row">
-            <span>Garantía pagada (20%)</span>
-            <span class="amount-highlight">✓ $${deposit}</span>
-          </div>
-          <div class="row">
-            <span>Saldo al llegar (80%)</span>
-            <span>$${remaining}</span>
-          </div>
-          <div class="row">
-            <span>Ref. comprobante</span>
-            <span>${booking.paymentReference || '—'}</span>
-          </div>
-        </div>
-      </div>
-      <div class="footer">
-        VeneStay · Lechería, Venezuela · venestay.app<br>
-        Este correo es una confirmación automática. No respondas a este email.
-      </div>
-    </div>
-  </body>
-  </html>
-  `;
-}
 
 /**
  * CRON JOB: Mitigación del "Soft-Block Zombie"
  * Se ejecuta cada 15 minutos para buscar reservas en PENDING_PAYMENT
  * cuyo paymentExpiresAt haya pasado, y las cancela para liberar el calendario.
  */
-export const cronCancelExpiredBookings = functions.pubsub.schedule('every 15 minutes').onRun(async (_context) => {
+export const cronCancelExpiredBookings = functions.pubsub.schedule('every 15 minutes').onRun(async () => {
   const now = new Date().toISOString();
   
   const snapshot = await db.collection('bookings')
@@ -179,9 +68,43 @@ export const cronCancelExpiredBookings = functions.pubsub.schedule('every 15 min
 });
 
 /**
- * TRIGGER: Message Injection Segura
+ * TRIGGER: Nueva solicitud de reserva
+ * Envía un correo electrónico al anfitrión cuando se crea una reserva en PENDING_APPROVAL.
+ */
+export const onBookingCreated = functions.firestore
+  .document('bookings/{bookingId}')
+  .onCreate(async (snap, context) => {
+    const booking = snap.data();
+    const bookingId = context.params.bookingId;
+
+    if (booking.status === 'PENDING_APPROVAL') {
+      try {
+        const hostSnap = await db.collection('users').doc(booking.ownerId).get();
+        const host = hostSnap.data();
+
+        if (host && host.email) {
+          const listingSnap = await db.collection('listings').doc(booking.listingId).get();
+          const listing = listingSnap.data();
+
+          await db.collection('mail').add({
+            to: host.email,
+            message: {
+              subject: `Nueva solicitud de reserva para ${listing?.title || 'tu propiedad'} — VeneStay`,
+              html: buildBookingRequestEmailHTML(booking, host, listing || {}),
+            },
+          });
+          console.log(`Booking request email queued successfully for host of booking ${bookingId}`);
+        }
+      } catch (err) {
+        console.error('Error queueing booking request email:', err);
+      }
+    }
+  });
+
+/**
+ * TRIGGER: Message Injection Segura y Alertas de Correo
  * En este trigger escuchamos los cambios de estado en las reservas 
- * y generamos los mensajes automáticos correspondientes.
+ * y generamos los mensajes automáticos y notificaciones correspondientes.
  */
 export const onBookingStateChanged = functions.firestore
   .document('bookings/{bookingId}')
@@ -224,6 +147,79 @@ export const onBookingStateChanged = functions.firestore
       });
     }
 
+    // Correo automático al cambiar a PENDING_PAYMENT
+    if (after.status === 'PENDING_PAYMENT' && before.status !== 'PENDING_PAYMENT') {
+      if (!after.paymentInstructionsEmailSentAt) {
+        await change.after.ref.update({
+          paymentInstructionsEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        try {
+          const guestSnap = await db.collection('users').doc(after.guestId).get();
+          const guest = guestSnap.data();
+          if (guest && guest.email) {
+            const listingSnap = await db.collection('listings').doc(after.listingId).get();
+            const listing = listingSnap.data();
+            await db.collection('mail').add({
+              to: guest.email,
+              message: {
+                subject: `Tu solicitud para ${listing?.title || 'VeneStay'} fue aprobada — Procede al pago`,
+                html: buildPaymentInstructionsEmailHTML(after, guest, listing || {}),
+              },
+            });
+            console.log(`Payment instructions email queued successfully for booking ${bookingId}`);
+          }
+        } catch (err) {
+          console.error('Error queueing payment instructions email:', err);
+        }
+      }
+    }
+
+    // Correo automático al cambiar a AWAITING_VERIFICATION (Pago subido)
+    if (after.status === 'AWAITING_VERIFICATION' && before.status !== 'AWAITING_VERIFICATION') {
+      if (!after.paymentSubmittedEmailSentAt) {
+        await change.after.ref.update({
+          paymentSubmittedEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        try {
+          let hostEmail = '';
+          let hostDisplayName = 'Anfitrión';
+          const ownerId = after.ownerId;
+
+          if (ownerId && ownerId.includes('@')) {
+            hostEmail = ownerId;
+            hostDisplayName = ownerId.split('@')[0];
+          } else {
+            const hostSnap = await db.collection('users').doc(ownerId).get();
+            const host = hostSnap.data();
+            if (host && host.email) {
+              hostEmail = host.email;
+              hostDisplayName = host.displayName || 'Anfitrión';
+            }
+          }
+
+          if (!hostEmail) {
+            console.warn(`Host email not found for ownerId: ${ownerId}. Falling back to default test host email.`);
+            hostEmail = 'anfitrionvenestay@venestay.com';
+            hostDisplayName = 'Anfitrión VeneStay';
+          }
+
+          const listingSnap = await db.collection('listings').doc(after.listingId).get();
+          const listing = listingSnap.data();
+
+          await db.collection('mail').add({
+            to: hostEmail,
+            message: {
+              subject: `Pago subido por el huésped para ${listing?.title || 'VeneStay'} — Verificación requerida`,
+              html: buildPaymentSubmittedEmailHTML(after, { displayName: hostDisplayName, email: hostEmail }, listing || {}),
+            },
+          });
+          console.log(`Payment submitted email queued successfully for booking ${bookingId}`);
+        } catch (err) {
+          console.error('Error queueing payment submitted email:', err);
+        }
+      }
+    }
+
     // Correo automático al confirmar con guard de idempotencia
     if (after.status === 'CONFIRMED' && before.status !== 'CONFIRMED') {
       if (!after.confirmationEmailSentAt) {
@@ -254,6 +250,33 @@ export const onBookingStateChanged = functions.firestore
           }
         } catch (err) {
           console.error('Error queueing confirmation email:', err);
+        }
+      }
+    }
+
+    // Correo automático al cambiar a REJECTED
+    if (after.status === 'REJECTED' && before.status !== 'REJECTED') {
+      if (!after.rejectionEmailSentAt) {
+        await change.after.ref.update({
+          rejectionEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        try {
+          const guestSnap = await db.collection('users').doc(after.guestId).get();
+          const guest = guestSnap.data();
+          if (guest && guest.email) {
+            const listingSnap = await db.collection('listings').doc(after.listingId).get();
+            const listing = listingSnap.data();
+            await db.collection('mail').add({
+              to: guest.email,
+              message: {
+                subject: `Actualización de tu solicitud para ${listing?.title || 'VeneStay'}`,
+                html: buildRejectionEmailHTML(after, guest, listing || {}),
+              },
+            });
+            console.log(`Rejection email queued successfully for booking ${bookingId}`);
+          }
+        } catch (err) {
+          console.error('Error queueing rejection email:', err);
         }
       }
     }

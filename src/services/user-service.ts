@@ -61,14 +61,8 @@ export const updateUserProfile = async (uid: string, data: Partial<UserProfile>)
   return withRetry(async () => {
     const userDocRef = doc(db, 'users', uid);
     
-    // Recalculate trust score if relevant fields changed
-    const currentProfile = await getUserProfile(uid);
-    const mergedProfile = { ...currentProfile, ...data };
-    const newTrustScore = calculateTrustScore(mergedProfile);
-    
     const updateData = {
       ...data,
-      trustScore: newTrustScore,
       updatedAt: new Date().toISOString()
     };
 

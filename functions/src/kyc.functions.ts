@@ -1,5 +1,9 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import {
+  buildKYCApprovedEmailHTML,
+  buildKYCRejectedEmailHTML
+} from './templates/kyc-emails';
 
 const db = admin.firestore();
 
@@ -231,3 +235,72 @@ export const getKYCDocumentSignedURL = functions.https.onCall(
     }
   }
 );
+
+
+
+/**
+ * TRIGGER: Actualización de estado KYC
+ * Envía un correo electrónico al usuario cuando su KYC es verificado o rechazado.
+ */
+export const onKYCStatusChanged = functions.firestore
+  .document('users/{uid}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+    const uid = context.params.uid;
+
+    if (before.kycStatus === after.kycStatus) {
+      return null; // El estado de KYC no cambió
+    }
+
+    // Aprobado
+    if (after.kycStatus === 'VERIFIED' && before.kycStatus !== 'VERIFIED') {
+      if (!after.kycVerificationEmailSentAt) {
+        await change.after.ref.update({
+          kycVerificationEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        try {
+          if (after.email) {
+            await db.collection('mail').add({
+              to: after.email,
+              message: {
+                subject: '¡Tu Pasaporte VeneStay ha sido verificado! 🛡️ — VeneStay',
+                html: buildKYCApprovedEmailHTML(after),
+              },
+            });
+            console.log(`KYC verification approval email queued successfully for user ${uid}`);
+          }
+        } catch (err) {
+          console.error('Error queueing KYC verification email:', err);
+        }
+      }
+    }
+
+    // Rechazado
+    if (after.kycStatus === 'REJECTED' && before.kycStatus !== 'REJECTED') {
+      if (!after.kycRejectionEmailSentAt) {
+        await change.after.ref.update({
+          kycRejectionEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        try {
+          if (after.email) {
+            await db.collection('mail').add({
+              to: after.email,
+              message: {
+                subject: 'Actualización sobre tu verificación de identidad — VeneStay',
+                html: buildKYCRejectedEmailHTML(after, after.kycRejectionNote || 'El documento subido no es legible o es inválido.'),
+              },
+            });
+            console.log(`KYC rejection email queued successfully for user ${uid}`);
+          }
+        } catch (err) {
+          console.error('Error queueing KYC rejection email:', err);
+        }
+      }
+    }
+
+    return null;
+  });
+

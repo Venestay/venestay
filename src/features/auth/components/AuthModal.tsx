@@ -36,6 +36,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
     handleSubmit,
     toggleShowPassword,
     passwordStrength,
+    unverifiedEmailWarning,
+    handleResendVerification,
   } = useAuthForm(onClose, initialView);
 
   // Esc key closes the modal
@@ -139,7 +141,36 @@ const AuthModal: React.FC<AuthModalProps> = ({
               </div>
             )}
 
-            {mode === 'forgot-password' ? (
+            {unverifiedEmailWarning ? (
+              <div className="space-y-6 py-4 text-center">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-50">
+                  <Mail className="h-10 w-10 text-amber-500" aria-hidden="true" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-brand-navy text-xl font-black">
+                    Verifica tu correo
+                  </h3>
+                  <p className="text-xs font-medium text-gray-500">
+                    Tu correo ({email}) aún no ha sido verificado. Para poder reservar propiedades, por favor verifica tu cuenta.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={loading}
+                    className="bg-brand-navy hover:bg-brand-navy/90 flex w-full items-center justify-center rounded-xl py-4 font-sans text-xs font-bold tracking-widest text-white uppercase shadow-lg transition-all focus:ring-2 focus:ring-offset-2 focus:ring-brand-navy focus:outline-none disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Reenviar correo'}
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="text-gray-500 hover:text-gray-700 font-bold text-xs uppercase tracking-widest w-full py-4 transition-colors"
+                  >
+                    Entrar de todas formas
+                  </button>
+                </div>
+              </div>
+            ) : mode === 'forgot-password' ? (
               <div className="space-y-6">
                 {resetEmailSent ? (
                   <div className="space-y-6 py-4 text-center">

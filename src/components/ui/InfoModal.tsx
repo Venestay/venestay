@@ -12,6 +12,7 @@ import {
   StepForward,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CONTACT_CONFIG } from '@/shared/config/contact';
 
 export type InfoKey =
   | 'zones'
@@ -404,7 +405,17 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
                 Teléfono / WhatsApp
               </span>
               <p className="text-brand-navy text-sm font-bold">
-                +58 212-VENE-STAY
+                <a
+                  href={CONTACT_CONFIG.whatsapp.support.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={CONTACT_CONFIG.whatsapp.support.ariaLabel}
+                  data-analytics="footer_whatsapp_support"
+                  className="hover:text-brand-500 transition-colors flex items-center gap-2"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  {CONTACT_CONFIG.whatsapp.support.display}
+                </a>
               </p>
             </div>
             <div className="space-y-1 md:col-span-2">
@@ -437,40 +448,44 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
       title: 'Políticas de Cancelación (Reserva Protegida 20/80)',
       icon: <Info className="text-brand-500 h-8 w-8" />,
       body: (
-        <div className="space-y-6">
-          <p className="text-sm leading-relaxed font-medium">
-            En VeneStay operamos bajo la <strong>Garantía de Reserva Protegida 20/80</strong>. Esto significa que nuestras políticas rigen exclusivamente sobre el <strong>depósito del 20%</strong> abonado hoy a la plataforma. El 80% restante lo abonas directamente a tu anfitrión al momento del check-in.
+        <div className="space-y-6" role="region" aria-labelledby="cancellation-policy-title">
+          <p id="cancellation-policy-title" className="text-sm leading-relaxed font-medium">
+            <strong>POLÍTICA OFICIAL: NO REEMBOLSABLE · REPROGRAMABLE</strong><br />
+            <span className="text-gray-500">Vigente desde: {CONTACT_CONFIG.policy.effectiveDate}</span>
           </p>
 
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-emerald-500" />
-                <h4 className="text-emerald-950 text-xs font-black uppercase">Cancelación Flexible</h4>
-              </div>
-              <p className="text-xs leading-relaxed text-emerald-800 font-bold">
-                Reembolso completo del depósito del 20% si cancelas hasta <strong>48 horas antes</strong> del check-in. Posterior a este plazo, el depósito no es reembolsable.
-              </p>
+          <div className="space-y-4 text-xs leading-relaxed text-gray-700">
+            <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-4 space-y-2">
+              <h4 className="text-brand-navy font-black uppercase">─── RESERVA PROTEGIDA 20/80 ───────────────────────</h4>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>Al confirmar una reserva, el 20% del monto total se retiene como depósito de reserva no reembolsable.</li>
+                <li>El 80% restante se libera al anfitrión tras el check-in.</li>
+              </ul>
             </div>
 
-            <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-amber-500" />
-                <h4 className="text-amber-950 text-xs font-black uppercase">Cancelación Moderada</h4>
-              </div>
-              <p className="text-xs leading-relaxed text-amber-800 font-bold">
-                Reembolso completo del depósito del 20% si cancelas hasta <strong>7 días antes</strong> de la fecha de llegada. Posterior a este plazo, el depósito no es reembolsable.
-              </p>
+            <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-4 space-y-2">
+              <h4 className="text-brand-navy font-black uppercase">─── REPROGRAMACIÓN ────────────────────────────────</h4>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>El huésped puede solicitar reprogramación hasta 7 días antes del check-in.</li>
+                <li>La reprogramación requiere aprobación del anfitrión y disponibilidad en las nuevas fechas.</li>
+                <li>Solo se permite una reprogramación por reserva.</li>
+              </ul>
             </div>
 
-            <div className="rounded-2xl border border-red-100 bg-red-50/50 p-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-red-500" />
-                <h4 className="text-red-950 text-xs font-black uppercase">Cancelación Estricta</h4>
-              </div>
-              <p className="text-xs leading-relaxed text-red-800 font-bold">
-                Reembolso completo del depósito del 20% hasta <strong>30 días antes</strong> del check-in. Reembolso del 50% del depósito si cancelas entre <strong>30 y 14 días antes</strong>. Sin reembolso en los últimos 14 días.
-              </p>
+            <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-4 space-y-2">
+              <h4 className="text-brand-navy font-black uppercase">─── CANCELACIÓN ───────────────────────────────────</h4>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>Cancelaciones confirmadas: el depósito del 20% no es reembolsable bajo ninguna circunstancia.</li>
+                <li>En caso de fuerza mayor documentada (desastre natural, emergencia médica certificada), el equipo de VeneStay evaluará cada caso de forma individual.</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-4 space-y-2">
+              <h4 className="text-brand-navy font-black uppercase">─── DISPUTAS ──────────────────────────────────────</h4>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>El huésped dispone de 24 horas tras el check-in para reportar inconformidades al equipo de VeneStay.</li>
+                <li>Pasado ese plazo, la reserva se considera completada satisfactoriamente.</li>
+              </ul>
             </div>
           </div>
 

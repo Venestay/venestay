@@ -98,6 +98,7 @@ const CheckoutPage: React.FC = () => {
     isKycVerified,
     isFormDisabled,
     profileData,
+    emailVerified,
   } = useCheckout(urlBookingId);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

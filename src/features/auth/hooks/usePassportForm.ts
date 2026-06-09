@@ -3,6 +3,7 @@ import { useUserProfile } from './useUserProfile';
 import { TravelInterest, CurrencyPreference, UserProfile } from '../types';
 import { toast } from 'sonner';
 import { passportDraftSchema } from '../schemas/auth.schema';
+import { calculateTrustScore } from '@/services/user-service';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -163,7 +164,7 @@ export const usePassportForm = (): UsePassportFormReturn => {
   }, [profile]);
 
   // ── Derived state ──────────────────────────────────────────────────────────
-  const trustScore = profile?.trustScore ?? 0;
+  const trustScore = useMemo(() => calculateTrustScore(profile || {}), [profile]);
 
   /**
    * isDirty: detecta si el usuario modificó algún campo respecto al perfil guardado.

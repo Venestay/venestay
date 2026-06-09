@@ -35,3 +35,9 @@ tools/
 
 # Validation outputs
 .validation/
+
+# AI Agent / Temporary work files (root level)
+implementation_plan.md
+push_report.txt
+walkthrough.md
+task.md
