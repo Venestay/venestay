@@ -14,10 +14,10 @@ El archivo `src/features/bookings/components/MyTrips.tsx` fue commiteado con enc
 ## Estado ahora
 ```
 SPRINT    : S04 — Branch Unification & QA Recovery
-QA_GATE   : BLOQUEADO — origin/qa tiene MyTrips.tsx con encoding corrupto (ENCODING-MYTRIPS-001)
-BLOQUEANTE: ENCODING-MYTRIPS-001 — MyTrips.tsx en origin/qa tiene caracteres UTF-8 rotos
-RAMA_LOCAL: qa (tracking origin/qa — Org: Venestay/venestay.git)
-RAMA_PROD : main (origin/main — NO TOCADA, está INTACTA)
+QA_GATE   : OK — origin/qa sano (commit 42ac75d)
+BLOQUEANTE: ninguno
+RAMA_LOCAL: qa (tracking origin/qa — sincronizada · 42ac75d)
+RAMA_PROD : main (origin/main — NO TOCADA, está INTACTA · d72b6b3)
 ```
 
 ---
@@ -167,6 +167,19 @@ El usuario autorizó eliminar las 18 ramas antiguas mergeadas de la org, pero es
 
 ---
 
+## 🧪 Pruebas Manuales y QA (Ejecutar Próxima Sesión)
+Se ha generado un **Plan Maestro de Pruebas Manuales** detallado que cubre todos los flujos críticos de la rama `qa` (Huésped, Anfitrión, Auth, Navegación y Pagos).
+
+**Artefacto con el plan completo:**
+[qa_manual_testing_plan.md](file:///C:/Users/rodri/.gemini/antigravity-ide/brain/43d5cd42-ff28-401a-a37e-e92f293fccce/qa_manual_testing_plan.md)
+
+**Mandato para el próximo agente:** 
+1. Leer el plan de pruebas en el artefacto enlazado.
+2. Comentar con el usuario cuáles pruebas se han realizado con éxito.
+3. Marcar explícitamente en la memoria cuando la rama `qa` pase exitosamente estas pruebas manuales antes de fusionar a `main`.
+
+---
+
 ## Notas de Integración
 
 - **Java JDK:** `C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin`
@@ -179,8 +192,6 @@ El usuario autorizó eliminar las 18 ramas antiguas mergeadas de la org, pero es
 
 ## Próxima acción requerida (en orden de prioridad)
 
-1. **[P0 — INMEDIATO]** Ejecutar Plan de Recuperación (Pasos 1-5 arriba) para sanar `origin/qa`
-2. **[P1]** Verificación manual completa de `/mis-viajes` en browser con el usuario
-3. **[P1]** Con `qa` validado: preguntar al usuario para eliminar 18 ramas antiguas de la org
-4. **[P2]** Implementar checklist de merge como proceso obligatorio del equipo (SPEC-PROCESS-MERGE-01)
-5. **[P3]** Planificar SPEC-TEST-ROUTES-01 — smoke test de rutas para el próximo sprint
+1. **[P0 — QA MANUAL]** Leer el artefacto `qa_manual_testing_plan.md` enlazado arriba y coordinar con el usuario la validación visual y funcional en el browser (`npm run dev`).
+2. **[P1]** Con las pruebas de `qa` validadas: proceder con la eliminación de las 18 ramas antiguas de la org.
+3. **[P2]** Implementar checklist de merge como proceso obligatorio del equipo (SPEC-PROCESS-MERGE-01).
