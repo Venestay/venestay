@@ -59,7 +59,7 @@ import Skeleton from '@/components/ui/Skeleton';
 import AuthModal from '@/features/auth/components/AuthModal';
 import KYCRequiredModal from '@/features/auth/components/KYCRequiredModal';
 import Calendar from '@/features/bookings/components/Calendar';
-import MyTrips from '@/features/bookings/components/MyTrips';
+
 import PaymentBanner from '@/features/bookings/components/checkout/PaymentBanner';
 import { calculateCancellationDeadline } from '@/features/bookings/hooks/useCancellationDeadline';
 import { CANCELLATION_POLICIES } from '@/features/listings/utils/cancellationPolicies';
@@ -85,7 +85,7 @@ const CheckoutPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isMyTripsOpen, setIsMyTripsOpen] = useState(false);
+
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -1036,7 +1036,7 @@ const CheckoutPage: React.FC = () => {
               </p>
               <div className="flex flex-col justify-center items-center gap-4 pt-4 sm:flex-row">
                 <button
-                  onClick={() => setIsMyTripsOpen(true)}
+                  onClick={() => navigate('/mis-viajes')}
                   className="bg-brand-500 hover:bg-brand-400 text-brand-navy rounded-2xl px-10 py-4 text-xs font-black tracking-widest uppercase transition-all shadow-lg shadow-brand-500/10 flex items-center gap-2"
                 >
                   <CalendarIcon className="h-4 w-4" />
@@ -2228,10 +2228,7 @@ const CheckoutPage: React.FC = () => {
         onGoToPassport={handleGoToPassport}
       />
 
-      <MyTrips
-        isOpen={isMyTripsOpen}
-        onClose={() => setIsMyTripsOpen(false)}
-      />
+
     </div>
   );
 };

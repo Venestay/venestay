@@ -46,10 +46,7 @@ import { cleanupExpiredBookings } from '@/services/booking-service';
 import { RescheduleRequestModal } from './RescheduleRequestModal';
 import { BookingSummaryModal } from './BookingSummaryModal';
 
-interface MyTripsProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-}
+
 
 const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
   const [timeLeft, setTimeLeft] = useState<string>('');
@@ -92,7 +89,7 @@ const RECENT_TERMINAL_HOURS = 48;
 const TERMINAL_STATUSES = ['CANCELLED', 'REJECTED', 'EXPIRED', 'CANCELLED_BY_GUEST'] as const;
 type TerminalStatus = typeof TERMINAL_STATUSES[number];
 
-const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
+const MyTrips: React.FC = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,18 +112,14 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   // useState(Date.now) calls Date.now once at mount (lazy initializer — not in render).
   const [nowMs] = useState<number>(Date.now);
 
-  const activeOpen = isOpen !== undefined ? isOpen : true;
+
 
   const handleClose = () => {
-    if (onClose) {
-      onClose();
-    } else {
-      navigate('/');
-    }
+    navigate('/');
   };
 
   useEffect(() => {
-    if (!activeOpen || !user) {
+    if (!user) {
       setBookings([]);
       return;
     }
@@ -203,7 +196,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     );
 
     return () => unsubscribe();
-  }, [activeOpen, user, activeChatId]);
+  }, [user, activeChatId]);
 
 
   const { unreadPerBooking } = useChatNotifications();
@@ -260,7 +253,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     const handleGlobalPaste = (event: ClipboardEvent) => {
-      if (!isOpen || !verifyingId) return;
+      if (!verifyingId) return;
       const items = event.clipboardData?.items;
       if (!items) return;
 
@@ -277,7 +270,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
     document.addEventListener('paste', handleGlobalPaste);
     return () => document.removeEventListener('paste', handleGlobalPaste);
-  }, [isOpen, verifyingId]);
+  }, [verifyingId]);
 
   const handlePaymentSubmit = async (bookingId: string) => {
     if (!paymentRef.trim() || !file) {
@@ -371,7 +364,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!activeOpen) return null;
+
 
   const getStatusDisplay = (status: string) => {
     switch (status) {

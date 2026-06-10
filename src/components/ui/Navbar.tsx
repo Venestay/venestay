@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/hooks/AuthContext';
 import { useChatNotifications } from '@/features/bookings/hooks/useChatNotifications';
 import AuthModal from '@/features/auth/components/AuthModal';
 import CalendarComponent from '@/features/bookings/components/Calendar';
-import MyTrips from '@/features/bookings/components/MyTrips';
+
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   Search,
@@ -64,7 +64,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const location = useLocation();
   const { user, signOut, isAdmin, profileData } = useAuth();
   const { unreadCount } = useChatNotifications();
-  const [isMyTripsOpen, setIsMyTripsOpen] = useState(false);
+
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -378,6 +378,8 @@ const Navbar: React.FC<NavbarProps> = ({
                           <div className="py-2">
                             <Link
                               to="/mi-pasaporte"
+                              target="_blank"
+                              rel="noopener noreferrer"
                               onClick={() => setIsUserMenuOpen(false)}
                               className="text-brand-navy hover:bg-brand-500/10 flex w-full items-center space-x-3 px-5 py-2.5 text-sm font-bold transition-colors"
                             >
@@ -386,7 +388,7 @@ const Navbar: React.FC<NavbarProps> = ({
                             </Link>
                             <button
                               onClick={() => {
-                                setIsMyTripsOpen(true);
+                                navigate('/mis-viajes');
                                 setIsUserMenuOpen(false);
                               }}
                               className="flex w-full items-center justify-between px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
@@ -533,7 +535,7 @@ const Navbar: React.FC<NavbarProps> = ({
         )}
       </div>
 
-      <MyTrips isOpen={isMyTripsOpen} onClose={() => setIsMyTripsOpen(false)} />
+
     </nav>
   );
 };

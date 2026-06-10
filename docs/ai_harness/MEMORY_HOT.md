@@ -14,7 +14,7 @@ El archivo `src/features/bookings/components/MyTrips.tsx` fue commiteado con enc
 ## Estado ahora
 ```
 SPRINT    : S04 — Branch Unification & QA Recovery
-QA_GATE   : BLOQUEADO — origin/qa tiene MyTrips.tsx con encoding corrupto
+QA_GATE   : BLOQUEADO — origin/qa tiene MyTrips.tsx con encoding corrupto (ENCODING-MYTRIPS-001)
 BLOQUEANTE: ENCODING-MYTRIPS-001 — MyTrips.tsx en origin/qa tiene caracteres UTF-8 rotos
 RAMA_LOCAL: qa (tracking origin/qa — Org: Venestay/venestay.git)
 RAMA_PROD : main (origin/main — NO TOCADA, está INTACTA)
