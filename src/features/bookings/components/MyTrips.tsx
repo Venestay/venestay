@@ -42,9 +42,50 @@ import FloatingChat from '@/components/FloatingChat';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
+// --- Helpers puros fuera del componente (React Compiler compliance) ---
+
+const generateReceiptPath = (bookingId: string) =>
+  `bookings/${bookingId}/payments/${Date.now()}_receipt.jpg`;
+
+const getStatusDisplay = (status: string) => {
+  switch (status) {
+    case 'PENDING_PAYMENT':
+      return {
+        label: 'Pago Pendiente',
+        icon: <Clock className="h-3 w-3" />,
+        color: 'text-amber-500 bg-amber-50 border-amber-100',
+      };
+    case 'AWAITING_VERIFICATION':
+      return {
+        label: 'Verificando Pago',
+        icon: <CreditCard className="h-3 w-3" />,
+        color: 'text-blue-500 bg-blue-50 border-blue-100',
+      };
+    case 'CONFIRMED':
+      return {
+        label: 'Confirmada',
+        icon: <CheckCircle2 className="h-3 w-3" />,
+        color: 'text-emerald-500 bg-emerald-50 border-emerald-100',
+      };
+    case 'REJECTED':
+    case 'CANCELLED':
+      return {
+        label: 'Cancelada',
+        icon: <AlertCircle className="h-3 w-3" />,
+        color: 'text-red-500 bg-red-50 border-red-100',
+      };
+    default:
+      return {
+        label: status,
+        icon: <Clock className="h-3 w-3" />,
+        color: 'text-gray-500 bg-gray-50 border-gray-100',
+      };
+  }
+};
+
 interface MyTripsProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
@@ -84,6 +125,7 @@ const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
 };
 
 const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
+  const activeOpen = isOpen !== undefined ? isOpen : true;
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +142,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isOpen || !user) {
+    if (!activeOpen || !user) {
       setBookings([]);
       return;
     }
@@ -215,7 +257,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
     document.addEventListener('paste', handleGlobalPaste);
     return () => document.removeEventListener('paste', handleGlobalPaste);
-  }, [isOpen, verifyingId]);
+  }, [activeOpen, verifyingId]);
 
   const handlePaymentSubmit = async (bookingId: string) => {
     if (!paymentRef.trim()) {
@@ -232,11 +274,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
       // Upload file if exists
       if (file) {
-        const fileName = `${Date.now()}_receipt.jpg`;
-        const storageRef = ref(
-          storage,
-          `bookings/${bookingId}/payments/${fileName}`
-        );
+        const storageRef = ref(storage, generateReceiptPath(bookingId));
         const metadata = {
           contentType: 'image/jpeg',
           cacheControl: 'public,max-age=31536000',
@@ -292,43 +330,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!isOpen) return null;
-
-  const getStatusDisplay = (status: string) => {
-    switch (status) {
-      case 'PENDING_PAYMENT':
-        return {
-          label: 'Pago Pendiente',
-          icon: <Clock className="h-3 w-3" />,
-          color: 'text-amber-500 bg-amber-50 border-amber-100',
-        };
-      case 'AWAITING_VERIFICATION':
-        return {
-          label: 'Verificando Pago',
-          icon: <CreditCard className="h-3 w-3" />,
-          color: 'text-blue-500 bg-blue-50 border-blue-100',
-        };
-      case 'CONFIRMED':
-        return {
-          label: 'Confirmada',
-          icon: <CheckCircle2 className="h-3 w-3" />,
-          color: 'text-emerald-500 bg-emerald-50 border-emerald-100',
-        };
-      case 'REJECTED':
-      case 'CANCELLED':
-        return {
-          label: 'Cancelada',
-          icon: <AlertCircle className="h-3 w-3" />,
-          color: 'text-red-500 bg-red-50 border-red-100',
-        };
-      default:
-        return {
-          label: status,
-          icon: <Clock className="h-3 w-3" />,
-          color: 'text-gray-500 bg-gray-50 border-gray-100',
-        };
-    }
-  };
+  if (!activeOpen) return null;
 
   return (
     <div className="bg-brand-navy/60 animate-fade-in fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto p-4 backdrop-blur-md">
