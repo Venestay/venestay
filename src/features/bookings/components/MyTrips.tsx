@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   doc,
   updateDoc,
@@ -112,7 +112,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   // Stable snapshot of "now" for the 48-hour threshold comparison.
-  // useState(Date.now) calls Date.now once at mount (lazy initializer ÔÇö not in render).
+  // useState(Date.now) calls Date.now once at mount (lazy initializer — not in render).
   const [nowMs] = useState<number>(Date.now);
 
   const activeOpen = isOpen !== undefined ? isOpen : true;
@@ -227,7 +227,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
   const processAndSetFile = async (selectedFile: File) => {
     if (!selectedFile.type.startsWith('image/')) {
-      toast.error('Por favor sube una imagen v├ílida (JPG, PNG).');
+      toast.error('Por favor sube una imagen válida (JPG, PNG).');
       return;
     }
     setSubmitting(true);
@@ -281,7 +281,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
 
   const handlePaymentSubmit = async (bookingId: string) => {
     if (!paymentRef.trim() || !file) {
-      toast.error('Debes incluir el n├║mero de referencia y la imagen del comprobante.');
+      toast.error('Debes incluir el número de referencia y la imagen del comprobante.');
       return;
     }
     setSubmitting(true);
@@ -328,7 +328,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         status: 'AWAITING_VERIFICATION' as const,
         timestamp: new Date().toISOString(),
         actorId: user.uid,
-        actorName: user.displayName || 'Hu├®sped',
+        actorName: user.displayName || 'Huésped',
         note: `Comprobante enviado desde Mis Viajes. Ref: ${paymentRef}`,
       };
 
@@ -341,15 +341,15 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         statusHistory: [...(booking.statusHistory || []), historyEntry],
       });
 
-      // Registrar transacci├│n en subcolecci├│n para UCP
+      // Registrar transacción en subcolección para UCP
       try {
         const ucpPayload = {
           bookingId,
-          amount: booking.totalAmount * 0.20, // 20% se├▒a UCP
+          amount: booking.totalAmount * 0.20, // 20% seña UCP
           reference: paymentRef,
           proofUrl,
           method: booking.hostSelectedPaymentMethod?.type || 'P2P',
-          methodLabel: booking.hostSelectedPaymentMethod?.label || 'Pago M├│vil / Transferencia',
+          methodLabel: booking.hostSelectedPaymentMethod?.label || 'Pago Móvil / Transferencia',
           status: 'PENDING',
           createdAt: serverTimestamp(),
         };
@@ -362,10 +362,10 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
       setPaymentRef('');
       setFile(null);
       setPreviewUrl(null);
-      toast.success('┬íComprobante de pago enviado con ├®xito!');
+      toast.success('¡Comprobante de pago enviado con éxito!');
     } catch (error) {
       console.error('Error updating payment info:', error);
-      toast.error('Hubo un error al subir el comprobante. Int├®ntalo de nuevo.');
+      toast.error('Hubo un error al subir el comprobante. Inténtalo de nuevo.');
     } finally {
       setSubmitting(false);
     }
@@ -383,7 +383,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         };
       case 'PENDING_APPROVAL':
         return {
-          label: 'Esperando Aprobaci├│n',
+          label: 'Esperando Aprobación',
           icon: <Clock className="h-3 w-3 animate-pulse" />,
           color: 'text-[#b08f23] bg-brand-gold/[0.05] border-brand-gold/20',
         };
@@ -395,7 +395,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         };
       case 'CANCELLED_BY_GUEST':
         return {
-          label: 'Cancelada por Hu├®sped',
+          label: 'Cancelada por Huésped',
           icon: <X className="h-3 w-3" />,
           color: 'text-slate-400 bg-slate-50 border-slate-200',
         };
@@ -425,13 +425,13 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         };
       case 'RESCHEDULE_REQUESTED':
         return {
-          label: 'Reprogramaci├│n Solicitada',
+          label: 'Reprogramación Solicitada',
           icon: <Clock className="h-3 w-3" />,
           color: 'text-amber-600 bg-amber-50 border-amber-100',
         };
       case 'RESCHEDULE_PENDING':
         return {
-          label: 'Reprogramaci├│n: Pago Ajuste',
+          label: 'Reprogramación: Pago Ajuste',
           icon: <CreditCard className="h-3 w-3" />,
           color: 'text-blue-600 bg-blue-50 border-blue-100',
         };
@@ -458,7 +458,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                 Mis Viajes
               </h2>
               <p className="text-brand-500 mt-0.5 text-[10px] font-black tracking-[0.2em] uppercase">
-                Gesti├│n de Reservas VeneStay
+                Gestión de Reservas VeneStay
               </p>
             </div>
           </div>
@@ -520,10 +520,10 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                   <MapPin className="h-8 w-8 text-gray-200" />
                 </div>
                 <h3 className="text-brand-navy mb-2 text-xl font-black">
-                  A├║n no tienes viajes
+                  Aún no tienes viajes
                 </h3>
                 <p className="mx-auto max-w-xs text-sm text-gray-500">
-                  Explora nuestras propiedades exclusivas y comienza a planificar tu pr├│xima estancia en Venezuela.
+                  Explora nuestras propiedades exclusivas y comienza a planificar tu próxima estancia en Venezuela.
                 </p>
                 <button
                   onClick={handleClose}
@@ -551,7 +551,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                     <p className="text-xs text-gray-400 font-black tracking-widest uppercase">
                       {activeTab === 'activos'
                         ? 'No tienes reservas activas en este momento.'
-                        : 'Tu historial de reservas aparecer├í aqu├¡.'}
+                        : 'Tu historial de reservas aparecerá aquí.'}
                     </p>
                   </div>
                 ) : (
@@ -603,7 +603,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                               {booking.status === 'REJECTED' && booking.rejectionReason && (
                                 <div className="bg-red-50/40 border border-red-100/50 rounded-xl p-3 mb-4 select-none">
                                   <label className="text-red-500 block text-[8px] font-black tracking-[0.2em] uppercase mb-1">
-                                    Nota del anfitri├│n
+                                    Nota del anfitrión
                                   </label>
                                   <p className="text-red-700 text-[10px] leading-relaxed font-bold">
                                     "{booking.rejectionReason}"
@@ -623,10 +623,10 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                 <span className="flex items-center gap-1.5">
                                   <Calendar className="h-3.5 w-3.5 text-gray-400" />
                                   {booking.startDate && booking.endDate
-                                    ? `${format(new Date(booking.startDate), 'dd MMM', { locale: es })} ÔåÆ ${format(new Date(booking.endDate), 'dd MMM yyyy', { locale: es })}`
+                                    ? `${format(new Date(booking.startDate), 'dd MMM', { locale: es })} → ${format(new Date(booking.endDate), 'dd MMM yyyy', { locale: es })}`
                                     : 'Fechas por definir'}
                                 </span>
-                                <span className="text-gray-300 font-normal">┬À</span>
+                                <span className="text-gray-300 font-normal">·</span>
                                 <span className="flex items-center gap-1.5">
                                   <Users className="h-3.5 w-3.5 text-gray-400" />
                                   {booking.guests} {booking.guests === 1 ? 'Viajero' : 'Viajeros'}
@@ -641,7 +641,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                 </div>
                                 <div className="h-6 w-px bg-gray-200/80" />
                                 <div>
-                                  <span className="text-[8px] text-brand-gold uppercase block leading-none mb-0.5">Garant├¡a (20%)</span>
+                                  <span className="text-[8px] text-brand-gold uppercase block leading-none mb-0.5">Garantía (20%)</span>
                                   <span className="text-brand-gold font-black text-xs">${(booking.totalAmount * 0.2).toFixed(2)}</span>
                                 </div>
                                 <div className="h-6 w-px bg-gray-200/80" />
@@ -786,7 +786,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                       <MessageSquare className="h-5 w-5 text-brand-gold" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-black tracking-tight leading-tight">Chat con Anfitri├│n</h3>
+                      <h3 className="text-sm font-black tracking-tight leading-tight">Chat con Anfitrión</h3>
                       <p className="text-[10px] text-brand-500 tracking-wider font-bold uppercase">Ref: {activeChatBooking.id.slice(0, 8)}</p>
                     </div>
                   </div>
@@ -799,7 +799,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                   <Chat
                     bookingId={activeChatBooking.id}
                     senderId={user?.uid || ''}
-                    senderName={user?.displayName || 'Hu├®sped'}
+                    senderName={user?.displayName || 'Huésped'}
                     recipientId={activeChatBooking.ownerId}
                   />
                 </div>
@@ -809,9 +809,9 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                 <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 mb-4 text-gray-300">
                   <MessageSquare className="h-8 w-8" />
                 </div>
-                <h4 className="text-brand-navy font-black text-xs mb-1 uppercase tracking-wider">Sin Conversaci├│n Activa</h4>
+                <h4 className="text-brand-navy font-black text-xs mb-1 uppercase tracking-wider">Sin Conversación Activa</h4>
                 <p className="text-[10px] text-gray-400 font-semibold max-w-xs leading-relaxed">
-                  Selecciona una reserva para ver la conversaci├│n con el anfitri├│n.
+                  Selecciona una reserva para ver la conversación con el anfitrión.
                 </p>
               </div>
             )}
