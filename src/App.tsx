@@ -24,6 +24,7 @@ const CheckoutPage = lazy(
 const HostGuide = lazy(() => import('@/pages/HostGuide'));
 const ListingDetail = lazy(() => import('@/features/listings/components/ListingDetail'));
 const ProfileSettings = lazy(() => import('@/features/auth/components/ProfileSettings'));
+const MyTrips = lazy(() => import('@/features/bookings/components/MyTrips'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -96,6 +97,14 @@ const App: React.FC = () => {
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
+          <Route
+            path="/mis-viajes"
+            element={
+              <ProtectedRoute>
+                <MyTrips />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/mi-pasaporte"
             element={
