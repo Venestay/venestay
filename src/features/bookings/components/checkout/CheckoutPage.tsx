@@ -987,7 +987,13 @@ const CheckoutPage: React.FC = () => {
           <div className="max-w-5xl mx-auto flex items-center justify-between">
             <div className="flex items-center space-x-6">
               <button
-                onClick={() => navigate(`/listing/${listing.id}`)}
+                onClick={() => {
+                  if (booking.isDraft) {
+                    navigate(`/listing/${listing.id}`);
+                  } else {
+                    navigate('/mis-viajes');
+                  }
+                }}
                 className="group rounded-2xl p-3 transition-all hover:bg-gray-100"
               >
                 <ArrowLeft className="text-brand-navy h-5 w-5 transition-transform group-hover:-translate-x-1" />
@@ -1015,6 +1021,18 @@ const CheckoutPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Tarea 3 — Guardia: acuerdo cerrado, no editable */}
+        {!isDraft && (
+          <div className="sticky top-[73px] z-10 border-b border-amber-100 bg-amber-50 px-4 py-2.5 md:px-12">
+            <div className="max-w-5xl mx-auto flex items-center gap-2.5">
+              <Info className="h-4 w-4 text-amber-600 shrink-0" />
+              <p className="text-[10px] font-black tracking-wide text-amber-800 uppercase">
+                Este acuerdo está cerrado. Los términos fueron pactados con el anfitrión. Si necesitas un cambio, usa el chat.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="mx-auto max-w-5xl space-y-12 px-6 py-10 md:px-12">
           {uploadSuccess ? (

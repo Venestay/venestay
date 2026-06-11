@@ -1,0 +1,121 @@
+
+Desarrollo > es mi entorno local 
+-->QA integraremos todos los commits y ramas en una sola en esta rama que se llamara QA/testing
+    --Main que seria producción. 
+
+Crear una rama que parta de main y movemos los cambios allí para integrarlos y tener un punto de partida unificado.
+
+Se debe verificar el estado del proyecto esta funcional sin errores. 
+
+La idea es limpiar y tener un workflow mas ordenado. 
+
+Ambientes DEV-QA-PRD 
+
+Tener una una sola rama dentro en el repositorio que seria QA.
+
+Error al verificar identidad. KYC
+
+Access to fetch at 'https://us-central1-gen-lang-client-0727178605.cloudfunctions.net/submitKYCDocument' from origin 'http://localhost:3000' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+kyc-service.ts:30  POST https://us-central1-gen-lang-client-0727178605.cloudfunctions.net/submitKYCDocument net::ERR_FAILED
+fetchImpl @ firebase_functions.js?v=f07235f6:266
+postJSON @ firebase_functions.js?v=f07235f6:337
+callAtURL @ firebase_functions.js?v=f07235f6:384
+await in callAtURL
+call @ firebase_functions.js?v=f07235f6:375
+callable @ firebase_functions.js?v=f07235f6:314
+(anonymous) @ kyc-service.ts:30
+await in (anonymous)
+(anonymous) @ VerificationModal.tsx:53
+executeDispatch @ react-dom_client.js?v=f07235f6:13622
+runWithFiberInDEV @ react-dom_client.js?v=f07235f6:997
+processDispatchQueue @ react-dom_client.js?v=f07235f6:13658
+(anonymous) @ react-dom_client.js?v=f07235f6:14071
+batchedUpdates$1 @ react-dom_client.js?v=f07235f6:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=f07235f6:13763
+dispatchEvent @ react-dom_client.js?v=f07235f6:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=f07235f6:16765
+VerificationModal.tsx:68 Error uploading document: FirebaseError: internal
+
+
+Error de firebase al generar el 100%
+Error updating profile: FirebaseError: Missing or insufficient permissions.
+(anonymous) @ useUserProfile.ts:30
+firebase_firestore.js?v=f07235f6:2072  POST https://firestore.googleapis.com/google.firestore.v1.Firestore/Write/channel?VER=8&database=projects%2Fgen-lang-client-0727178605%2Fdatabases%2Fai-studio-58b68c99-e33b-41f2-9d14-cb5d47474d97&gsessionid=7xDeHvSyDRCmpdL--flmcSW25OUmS5n20aGxH-WBsK0Ztf7HEDH5Vg&SID=zWScMhJ6UmIxQFSQ0HoxoQ&RID=59887&TYPE=terminate&zx=ekxogt7w5f1o net::ERR_BLOCKED_BY_CLIENT
+cc @ firebase_firestore.js?v=f07235f6:2072
+Y2.close @ firebase_firestore.js?v=f07235f6:2427
+(anonymous) @ firebase_firestore.js?v=f07235f6:12671
+(anonymous) @ firebase_firestore.js?v=f07235f6:12526
+Va @ firebase_firestore.js?v=f07235f6:919
+D2 @ firebase_firestore.js?v=f07235f6:887
+Z2.qa @ firebase_firestore.js?v=f07235f6:2476
+Lb @ firebase_firestore.js?v=f07235f6:1386
+N2.Y @ firebase_firestore.js?v=f07235f6:1237
+N2.ba @ firebase_firestore.js?v=f07235f6:1188
+Va @ firebase_firestore.js?v=f07235f6:919
+D2 @ firebase_firestore.js?v=f07235f6:887
+Qc @ firebase_firestore.js?v=f07235f6:1884
+h.Xa @ firebase_firestore.js?v=f07235f6:1879
+h.Ca @ firebase_firestore.js?v=f07235f6:1876
+Gc @ firebase_firestore.js?v=f07235f6:1777
+h.Ma @ firebase_firestore.js?v=f07235f6:1744
+Promise.then
+Ic @ firebase_firestore.js?v=f07235f6:1735
+h.Ma @ firebase_firestore.js?v=f07235f6:1745
+Promise.then
+Ic @ firebase_firestore.js?v=f07235f6:1735
+h.Pa @ firebase_firestore.js?v=f07235f6:1731
+Promise.then
+h.send @ firebase_firestore.js?v=f07235f6:1711
+h.ea @ firebase_firestore.js?v=f07235f6:1852
+Eb @ firebase_firestore.js?v=f07235f6:1181
+$c @ firebase_firestore.js?v=f07235f6:2277
+h.Da @ firebase_firestore.js?v=f07235f6:2244
+sa @ firebase_firestore.js?v=f07235f6:623
+Promise.then
+u @ firebase_firestore.js?v=f07235f6:617
+ac @ firebase_firestore.js?v=f07235f6:2230
+Qb @ firebase_firestore.js?v=f07235f6:2302
+N2.Y @ firebase_firestore.js?v=f07235f6:1254
+N2.ba @ firebase_firestore.js?v=f07235f6:1188
+Va @ firebase_firestore.js?v=f07235f6:919
+D2 @ firebase_firestore.js?v=f07235f6:887
+Qc @ firebase_firestore.js?v=f07235f6:1884
+h.Xa @ firebase_firestore.js?v=f07235f6:1879
+h.Ca @ firebase_firestore.js?v=f07235f6:1876
+Gc @ firebase_firestore.js?v=f07235f6:1777
+Hc @ firebase_firestore.js?v=f07235f6:1762
+h.Ma @ firebase_firestore.js?v=f07235f6:1744
+Promise.then
+Ic @ firebase_firestore.js?v=f07235f6:1735
+h.Ma @ firebase_firestore.js?v=f07235f6:1745
+Promise.then
+Ic @ firebase_firestore.js?v=f07235f6:1735
+h.Pa @ firebase_firestore.js?v=f07235f6:1731
+Promise.then
+h.send @ firebase_firestore.js?v=f07235f6:1711
+h.ea @ firebase_firestore.js?v=f07235f6:1852
+Eb @ firebase_firestore.js?v=f07235f6:1181
+$c @ firebase_firestore.js?v=f07235f6:2277
+h.Da @ firebase_firestore.js?v=f07235f6:2244
+sa @ firebase_firestore.js?v=f07235f6:623
+Promise.then
+u @ firebase_firestore.js?v=f07235f6:617
+ac @ firebase_firestore.js?v=f07235f6:2230
+Lb @ firebase_firestore.js?v=f07235f6:1383
+N2.Y @ firebase_firestore.js?v=f07235f6:1237
+N2.ba @ firebase_firestore.js?v=f07235f6:1188
+Va @ firebase_firestore.js?v=f07235f6:919
+D2 @ firebase_firestore.js?v=f07235f6:887
+Qc @ firebase_firestore.js?v=f07235f6:1884
+h.Xa @ firebase_firestore.js?v=f07235f6:1879
+h.Ca @ firebase_firestore.js?v=f07235f6:1876
+Gc @ firebase_firestore.js?v=f07235f6:1777
+h.Ma @ firebase_firestore.js?v=f07235f6:1744
+Promise.then
+Ic @ firebase_firestore.js?v=f07235f6:1735
+h.Pa @ firebase_firestore.js?v=f07235f6:1731
+ProfileSettings.tsx:149 [QA Toggle] Token ID refrescado para aplicar Custom Claims.
+ProfileSettings.tsx:148  POST https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fgen-lang-client-0727178605%2Fdatabases%2Fai-studio-58b68c99-e33b-41f2-9d14-cb5d47474d97&gsessionid=g2pPg4sCj0RKsRYLujvfSWMptDrjHwQ57azYn7pYjblxrcyfeGLnCA&SID=Ic51jcbY-OmXuA3gqFnHeQ&RID=14698&TYPE=terminate&zx=5hzm1hxiwfns net::ERR_BLOCKED_BY_CLIENT
+
+/ruta-falsa
+o routes matched location "/ruta-falsa

@@ -127,9 +127,19 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
     try {
       setIsSubmitting(true);
       const selectedPayment = listingPaymentMethods[selectedPaymentDataIdx];
-      const paymentInstructions = selectedPayment 
-        ? `${selectedPayment.label} - ${selectedPayment.type}\nDetalles adicionales provistos por el anfitrión en su perfil.`
-        : 'Pago Móvil (o método predeterminado).';
+      let paymentInstructions = 'Pago Móvil (o método predeterminado).';
+      
+      if (selectedPayment) {
+        paymentInstructions = `Método de Pago: ${selectedPayment.label} (${selectedPayment.type})\n`;
+        if (selectedPayment.data.bankName) paymentInstructions += `Banco: ${selectedPayment.data.bankName}\n`;
+        if (selectedPayment.data.accountHolder) paymentInstructions += `Titular: ${selectedPayment.data.accountHolder}\n`;
+        if (selectedPayment.data.idNumber) paymentInstructions += `CI/RIF: ${selectedPayment.data.idNumber}\n`;
+        if (selectedPayment.data.phoneNumber) paymentInstructions += `Teléfono: ${selectedPayment.data.phoneNumber}\n`;
+        if (selectedPayment.data.accountNumber) paymentInstructions += `Cuenta: ${selectedPayment.data.accountNumber}\n`;
+        if (selectedPayment.data.email) paymentInstructions += `Correo: ${selectedPayment.data.email}\n`;
+        if (selectedPayment.data.binanceId) paymentInstructions += `Binance ID: ${selectedPayment.data.binanceId}\n`;
+        if (selectedPayment.data.otherDetails) paymentInstructions += `Detalles: ${selectedPayment.data.otherDetails}\n`;
+      }
         
       await approveBookingRequestWithDetails(booking.id, hostNote, paymentInstructions, booking.ownerId, selectedPayment);
       toast.success('Solicitud de reserva aprobada con éxito');
