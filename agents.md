@@ -247,6 +247,17 @@ En cada PR o entrega interna incluir:
 - Checklist de aceptacion marcada.
 - Riesgos o deuda tecnica detectada.
 
+### 8.1 Checklist Obligatorio de Merge & QA (SPEC-PROCESS-MERGE-01)
+
+Antes de hacer push a `qa` o realizar un merge a `main`, es de carácter OBLIGATORIO validar:
+
+- [ ] Se revisó manualmente cada archivo para asegurar que no hay rutas o imports perdidos (Especialmente al usar `git checkout --theirs`).
+- [ ] No se usó `Out-File -Encoding UTF8` en PowerShell para restaurar archivos (usar siempre `git checkout <commit> -- <file>`).
+- [ ] Se ejecutó `npm run lint` localmente sin advertencias ni errores.
+- [ ] Se ejecutó `npm run dev` y se verificó VISUALMENTE en el navegador que el código funciona.
+- [ ] Los conflictos en `App.tsx` u otros archivos críticos se resolvieron **manualmente**.
+- [ ] No se expuso ninguna API Key, token ni secreto en el código.
+
 ---
 
 Este `AGENTS.md` es intencionalmente basico. Si el proyecto crece, siguiente paso recomendado: agregar seccion de testing (unitario/e2e) y manejo formal de errores/telemetria.
