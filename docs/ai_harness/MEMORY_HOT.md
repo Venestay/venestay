@@ -26,7 +26,7 @@ Se implementó con éxito el código de la herramienta de "Limpieza de Reservas 
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PENDIENTE — Validar herramienta de Purga en local apuntando al backend real
+QA_GATE   : OK | 2026-06-12
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
 ```
@@ -95,3 +95,4 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
 |:------|:-------|:-------|:--------|:---------------|
 | 2026-06-12 | Mejora del Ecosistema de Agentes (IMPL-AGENTS-S05-01) | COMPLETADO | OK | Ninguna. Ecosistema de agentes y validaciones completamente operativo. |
+| 2026-06-12 | Corrección QA Gate (Dependencias G3, G8, G9) | COMPLETADO | OK | Proceder a integrar qa a main. |
