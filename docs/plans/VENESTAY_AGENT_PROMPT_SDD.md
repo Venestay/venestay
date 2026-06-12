@@ -414,6 +414,18 @@ Al activar cada nodo del pipeline, el agente adopta el rol y carga los skills de
 
 > **Nota:** Los agentes `product-feedback-synthesizer.md` (🔍), `product-behavioral-nudge-engine.md` (🧠) y `product-trend-researcher.md` (🔭) son agentes de soporte estratégico. No operan dentro del pipeline SDD de desarrollo. Se activan solo bajo petición explícita del usuario para análisis de mercado, síntesis de feedback externo o investigación de tendencias.
 
+#### Agentes adicionales (Nodo 4 — QA Gate)
+| Sub-agente | Ruta | Cuándo activar |
+|:---|:---|:---|
+| ♿ Accessibility Auditor | `.agents/temp_agency_agents/testing/testing-accessibility-auditor.md` | Cuando un componente interactivo nuevo se completa — auditoría WCAG 2.2 AA |
+| 📸 Evidence Collector | `.agents/temp_agency_agents/testing/testing-evidence-collector.md` | Al reportar un QA FALLO — capturar evidencia visual del error |
+| 🔍 Code Reviewer | `.agents/temp_agency_agents/engineering/engineering-code-reviewer.md` | Antes de hacer merge a `qa` — revisión de código según FSD-lite |
+
+#### Agentes adicionales (Nodo 3 — Técnico)
+| Sub-agente | Ruta | Cuándo activar |
+|:---|:---|:---|
+| 🔧 Minimal Change Engineer | `.agents/temp_agency_agents/engineering/engineering-minimal-change-engineer.md` | Para correcciones de bugs P0/P1 donde el riesgo de regresión es alto |
+
 **Regla de activación:** El agente anuncia el cambio de rol antes de operar en ese nodo: `"[Activando Nodo N — Nombre del Rol]"`. No cambia de rol sin anunciarlo.
 
 ---

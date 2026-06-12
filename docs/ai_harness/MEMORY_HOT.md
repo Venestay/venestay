@@ -84,3 +84,14 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 - **Emuladores:** Firestore:8080, Storage:9199, Functions: 5001 (Actualmente NO configurados explícitamente en el cliente app local).
 - **`npm run dev`:** Corre en `localhost:3000`
 - **Vercel:** Despliega automáticamente desde `origin/main` — NO desde `qa`
+
+---
+
+## Checkpoints de Cierre (registro por tarea)
+
+> El agente DEBE añadir una entrada aquí al cerrar cada tarea con código producido.
+> Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
+
+| Fecha | Módulo | Estado | QA Gate | Próxima acción |
+|:------|:-------|:-------|:--------|:---------------|
+| 2026-06-12 | Mejora del Ecosistema de Agentes (IMPL-AGENTS-S05-01) | COMPLETADO | OK | Ninguna. Ecosistema de agentes y validaciones completamente operativo. |

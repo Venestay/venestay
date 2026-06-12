@@ -146,7 +146,7 @@ const ProfileSettings: React.FC = () => {
       const auth = getAuth();
       if (auth.currentUser) {
         await auth.currentUser.getIdToken(true);
-        console.log('[QA Toggle] Token ID refrescado para aplicar Custom Claims.');
+        console.log('[QA Toggle] Credenciales refrescadas para aplicar Custom Claims.');
       }
     } catch (error) {
       console.error('Error toggling QA profile:', error);
