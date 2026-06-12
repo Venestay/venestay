@@ -6,6 +6,7 @@ import {
   getDoc,
   where,
   getDocs,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Listing } from '@/types';
@@ -40,3 +41,12 @@ export const getListingById = async (id: string): Promise<Listing | null> => {
   return null;
 };
 
+/**
+ * Limpia todas las fechas bloqueadas de una propiedad.
+ * USO EXCLUSIVO: administradores (verificar rol en el componente).
+ * NO borra reservas de la colección `bookings`.
+ */
+export const clearListingCalendar = async (listingId: string): Promise<void> => {
+  const docRef = doc(db, 'listings', listingId);
+  await updateDoc(docRef, { blockedDates: [] });
+};

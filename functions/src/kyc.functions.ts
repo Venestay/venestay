@@ -5,7 +5,7 @@ import {
   buildKYCRejectedEmailHTML
 } from './templates/kyc-emails';
 
-const db = admin.firestore();
+import { db } from './config/db';
 
 /**
  * Notificación a administradores

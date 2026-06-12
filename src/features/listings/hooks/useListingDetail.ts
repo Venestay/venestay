@@ -280,6 +280,7 @@ export function useListingDetail({
 
   return {
     currentListing,
+    setCurrentListing,
     isLoadingListing,
     user,
     profileData,

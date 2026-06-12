@@ -5,7 +5,7 @@
     "watch": "tsc -w"
   },
   "engines": {
-    "node": ">=24"
+    "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {

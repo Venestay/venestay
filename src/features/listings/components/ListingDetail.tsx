@@ -34,7 +34,9 @@ import { Listing, BookingDetails } from '@/types';
 import { CancellationPolicyType } from '../types';
 import { CANCELLATION_POLICIES } from '../utils/cancellationPolicies';
 import * as reviewService from '@/services/review-service';
-
+import { toast } from 'sonner';
+import { clearListingCalendar } from '@/services/listing-service';
+import { PurgeTestBookingsModal } from './PurgeTestBookingsModal';
 const ListingMap = lazy(() => import('./ListingMap'));
 
 const MapSkeleton = () => (
@@ -68,6 +70,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
 
   const {
     currentListing,
+    setCurrentListing,
     isLoadingListing,
     user,
     profileData,
@@ -111,6 +114,24 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
     handleDatesChange,
     onOpenAuth,
   } = useListingDetail(props);
+
+  const [isClearing, setIsClearing] = React.useState(false);
+  const [isPurgeModalOpen, setIsPurgeModalOpen] = React.useState(false);
+
+  const handleClearCalendar = async () => {
+    if (!currentListing?.id) return;
+    setIsClearing(true);
+    try {
+      await clearListingCalendar(currentListing.id);
+      setCurrentListing(prev => prev ? { ...prev, blockedDates: [] } : null);
+      toast.success('Calendario limpiado correctamente');
+    } catch (err) {
+      toast.error('Error al limpiar el calendario');
+      console.error('[Admin] clearListingCalendar:', err);
+    } finally {
+      setIsClearing(false);
+    }
+  };
 
   const SHOW_HOUSE_RULES_DETAIL = true;
 
@@ -242,6 +263,31 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
                           <span className="flex items-center rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[10px] font-black tracking-wider text-emerald-700 uppercase">
                             <PawPrint className="mr-1.5 h-3.5 w-3.5" /> Pet-friendly
                           </span>
+                        )}
+                        {profileData?.role === 'admin' && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              id="admin-clear-calendar-btn"
+                              onClick={handleClearCalendar}
+                              disabled={isClearing}
+                              aria-label="Limpiar fechas bloqueadas del calendario (solo admin)"
+                              className="flex items-center gap-2 rounded-2xl border border-red-900/20 bg-red-950/10 px-4 py-2 text-[10px] font-black tracking-widest text-red-800 uppercase transition-all hover:bg-red-950/20 active:scale-95 disabled:opacity-50"
+                            >
+                              {isClearing ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <CalendarDays className="h-3.5 w-3.5" />
+                              )}
+                              {isClearing ? 'Limpiando...' : 'Limpiar Calendario'}
+                            </button>
+                            <button
+                              id="admin-purge-test-bookings-btn"
+                              onClick={() => setIsPurgeModalOpen(true)}
+                              className="flex items-center gap-2 rounded-2xl border border-orange-900/20 bg-orange-950/10 px-4 py-2 text-[10px] font-black tracking-widest text-orange-800 uppercase transition-all hover:bg-orange-950/20 active:scale-95"
+                            >
+                              Purgar Pruebas
+                            </button>
+                          </div>
                         )}
                       </div>
                       <h1 className="text-brand-navy mb-4 text-3xl leading-[1.1] font-black tracking-tight md:text-5xl">
@@ -645,6 +691,12 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
               </div>
             </div>
           </div>
+
+          <PurgeTestBookingsModal
+            isOpen={isPurgeModalOpen}
+            onClose={() => setIsPurgeModalOpen(false)}
+            listingId={currentListing.id}
+          />
 
           {/* Fullscreen Photo Gallery Overlay */}
           <AnimatePresence>

@@ -521,6 +521,7 @@ const CheckoutPage: React.FC = () => {
             note: 'Reserva creada automáticamente al entrar al checkout',
           },
         ],
+        isTestBooking: (await user.getIdTokenResult()).claims.isDemo === true || (await user.getIdTokenResult()).claims.qa === true,
       };
 
       const docRef = await addDoc(collection(db, 'bookings'), bookingData);
@@ -737,6 +738,7 @@ const CheckoutPage: React.FC = () => {
                 : 'Reserva creada desde el proceso de checkout (flujo frictionless)',
             },
           ],
+          isTestBooking: (await user.getIdTokenResult()).claims.isDemo === true || (await user.getIdTokenResult()).claims.qa === true,
         };
 
         currentBookingId = await bookingService.createBookingWithTransaction(

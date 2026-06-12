@@ -6,3 +6,5 @@ admin.initializeApp();
 export * from './booking.functions';
 export * from './kyc.functions';
 export * from './auth.functions';
+export * from './previewTestBookings';
+export * from './purgeTestBookings';

@@ -13,6 +13,7 @@ export type BookingStatus =
   | 'PENDING_APPROVAL'
   | 'EXPIRED'
   | 'CANCELLED_BY_GUEST'
+  | 'CANCELLED_BY_ADMIN'
   | 'RESCHEDULE_REQUESTED'
   | 'RESCHEDULE_PENDING';
 
@@ -74,6 +75,9 @@ export interface Booking {
     actorName: string;
     note?: string;
   }[];
+  isTestBooking?: boolean;
+  cancelledAt?: string | Date | FieldValue;
+  cancelledBy?: string;
 }
 
 export interface BookingDetails {

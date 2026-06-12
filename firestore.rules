@@ -202,7 +202,9 @@ service cloud.firestore {
 
       allow update: if isSignedIn() && (
         // Admin Override
-        isAdmin() ||
+        (isAdmin() && (
+          incoming().status != 'CANCELLED_BY_ADMIN' || existing().isTestBooking == true
+        )) ||
         // Guest Actions
         (request.auth.uid == resource.data.guestId && (
           // Action: Modify Booking Details (Dates, Guests)
@@ -256,6 +258,12 @@ service cloud.firestore {
         (incoming().status == 'read' && incoming().diff(existing()).affectedKeys().hasOnly(['status'])) ||
         isAdmin()
       );
+    }
+
+    // Admin Actions Log
+    match /adminActions/{actionId} {
+      allow read: if isAdmin();
+      allow write: if false; // Solo se escribe mediante Cloud Functions (Admin SDK)
     }
   }
 }

@@ -8,7 +8,7 @@ import {
   buildRejectionEmailHTML
 } from './templates/booking-emails';
 
-const db = admin.firestore();
+import { db } from './config/db';
 
 
 
