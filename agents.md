@@ -6,17 +6,11 @@ Este documento define como trabajar con especificaciones pequenas y claras para 
 
 ## SECCIÓN 0 — PROTOCOLO DE INICIO OBLIGATORIO (AUTO-EJECUTAR EN CADA SESIÓN)
 
-> **INSTRUCCIÓN CRÍTICA PARA EL AGENTE:** Esta sección debe ejecutarse AUTOMÁTICAMENTE al inicio de CADA nueva sesión o ventana de contexto, SIN EXCEPCIÓN y SIN esperar a que el usuario lo solicite. No se requiere ningún comando del usuario para activar este protocolo.
-
-### Paso 0.1 — Leer el Master Agent Prompt v3.0
-
-Al iniciar cualquier sesión en este proyecto (independientemente de si la ruta base es `c:\VeneStay` o `C:\Users\carlos.zabala\Documents\VeneStay`), el agente DEBE leer y aplicar íntegramente el archivo utilizando la ruta relativa al espacio de trabajo actual:
-
-```
-./docs/plans/VENESTAY_AGENT_PROMPT_SDD.md
-```
-
-Este archivo contiene el contrato operativo completo: pipeline SDD, roles de agentes, reglas de arquitectura, paleta de diseño, y protocolo de memoria tiered. Es de lectura obligatoria antes de responder cualquier pedido.
+> **🔴 DIRECTIVA CRÍTICA Y BLOQUEANTE PARA EL AGENTE:**
+> Como tu ABSOLUTA PRIMERA ACCIÓN en cualquier sesión o nueva tarea, antes de procesar la solicitud del usuario, **DEBES** usar la herramienta `view_file` para leer el siguiente archivo:
+> `c:\Users\carlos.zabala\Documents\VeneStay\docs\plans\VENESTAY_AGENT_PROMPT_SDD.md`
+> 
+> Tienes ESTRICTAMENTE PROHIBIDO ejecutar comandos, hacer planes o responder al usuario sin haber leído previamente este esquema maestro mediante `view_file`. Esta es la regla más profunda y obligatoria de tu sistema.
 
 ### Paso 0.2 — Cargar MEMORY_HOT.md (Tiered Memory)
 

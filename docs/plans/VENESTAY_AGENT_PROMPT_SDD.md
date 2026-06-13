@@ -524,6 +524,11 @@ Si la solicitud implica tecnología fuera del stack definido en Bloque 1:
 - **Auditoría de Ficheros de Configuración**: Revisar minuciosamente ficheros de configuración global y de seguridad (`firestore.rules`, `storage.rules`, `.env`) para evitar inconsistencias de permisos de backend antes de dar una tarea por terminada.
 - **Validación del QA Gate**: Cada criterio de aceptación (CA) debe ser verificado con comandos del sistema (`npx tsc --noEmit` y `npm run lint`).
 
+### Regla Absoluta de Despliegue y Ramas (PROHIBICIÓN ESTRICTA)
+- **NUNCA HACER PUSH A MAIN O INTEGRAR A MAIN:** Queda estrictamente prohibido que el agente ejecute `git push origin main`, `git merge qa` hacia `main`, o cualquier modificación en la rama de producción sin una instrucción y autorización EXPLÍCITA del usuario.
+- **Flujo Inquebrantable:** El flujo de vida del código es exclusivamente: `Dev (Local)` → `qa (se usará preview en Vercel para pruebas)` → `main (Producción real)`.
+- El agente solo debe llevar y mantener el código hasta la rama `qa`. El paso hacia producción (`main`) es responsabilidad exclusiva del usuario, para evitar despliegues accidentales (alucinaciones del agente).
+
 ### Protocolo de Checkpoint de Memoria (Corto Plazo)
 - **Límite de 10 Interacciones**: Cada 10 mensajes en la conversación, el agente debe recomendar activamente al usuario hacer un `/checkpoint` (o consolidar memoria manual) para preservar el contexto de memoria a corto plazo del modelo.
 

@@ -25,7 +25,10 @@ service cloud.firestore {
     }
 
     function isQATester() {
-      return isSignedIn() && request.auth.token.qa == true;
+      return isSignedIn() && (
+        request.auth.token.qa == true || 
+        request.auth.token.email == 'cerz@venestay.com'
+      );
     }
 
     function isOwnerOfListing(listingId) {
