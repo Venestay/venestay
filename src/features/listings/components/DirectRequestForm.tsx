@@ -26,6 +26,7 @@ interface DirectRequestFormProps {
   onSuccess?: (bookingId: string) => void;
   reservedDates?: { start: Date; end: Date }[];
   softReservedDates?: { start: Date; end: Date }[];
+  onOpenAuth?: (view?: 'login' | 'register') => void;
 }
 
 export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
@@ -33,7 +34,8 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
   user,
   onSuccess,
   reservedDates = [],
-  softReservedDates = []
+  softReservedDates = [],
+  onOpenAuth
 }) => {
   const navigate = useNavigate();
   const { profileData } = useAuth();
@@ -64,12 +66,11 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
     e.preventDefault();
 
     if (!user) {
-      toast.error('Por favor, inicia sesión para solicitar tu reserva.');
-      return;
-    }
-
-    if (trustScore < 40) {
-      toast.error('Tu nivel de confianza (Trust Score) es menor a 40%. Completa tu perfil para realizar reservas directas.');
+      if (onOpenAuth) {
+        onOpenAuth('login');
+      } else {
+        toast.error('Por favor, inicia sesión para solicitar tu reserva.');
+      }
       return;
     }
 
@@ -319,26 +320,16 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
           </div>
         </div>
 
-        {/* TRUST GATE ALERT */}
-        {user && !isProfileLoading && trustScore < 40 && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
-            <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">
-              Perfil Incompleto
-            </p>
-            <p className="text-xs text-red-500 font-medium leading-relaxed">
-              Tu nivel de confianza actual ({trustScore}%) no cumple con el mínimo requerido (40%) para solicitar reservas. Por favor, verifica tu identidad o número de teléfono.
-            </p>
-          </div>
-        )}
+
 
         {/* BOTÓN DE ACCIÓN */}
         <div className="pt-2">
           <button
             type="submit"
-            disabled={isSubmitting || !isMessageValid || (user ? trustScore < 40 : false)}
+            disabled={isSubmitting || (user ? !isMessageValid : false)}
             className={cn(
               "w-full rounded-[24px] py-4.5 text-[11px] font-black tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2",
-              isSubmitting || !isMessageValid || (user ? trustScore < 40 : false)
+              isSubmitting || (user ? !isMessageValid : false)
                 ? "bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed"
                 : "bg-gradient-to-r from-brand-gold to-[#cfae69] text-brand-navy hover:shadow-lg active:scale-98 cursor-pointer"
             )}

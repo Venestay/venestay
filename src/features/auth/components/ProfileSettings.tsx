@@ -29,6 +29,8 @@ import { NotificationChannels } from './passport/NotificationChannels';
 import { toast } from 'sonner';
 
 import { getAuth } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const ProfileSettings: React.FC = () => {
   const navigate = useNavigate();
@@ -39,6 +41,7 @@ const ProfileSettings: React.FC = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isConfirmExitOpen, setIsConfirmExitOpen] = useState(false);
   const [isGeneratingQA, setIsGeneratingQA] = useState(false);
+  const [pendingBookingsCount, setPendingBookingsCount] = useState<number>(0);
 
   // Toda la lógica de negocio y estado del formulario viene del hook
   const {
@@ -75,6 +78,25 @@ const ProfileSettings: React.FC = () => {
   const isKycVerified = React.useMemo(() => {
     return profile?.kycStatus === 'VERIFIED' || profile?.isIdentityVerified === true;
   }, [profile]);
+
+  // Consultar reservas pendientes
+  React.useEffect(() => {
+    if (!profile?.uid) return;
+    const fetchPendingBookings = async () => {
+      try {
+        const q = query(
+          collection(db, 'bookings'),
+          where('guestId', '==', profile.uid),
+          where('status', '==', 'PENDING_PAYMENT')
+        );
+        const snap = await getDocs(q);
+        setPendingBookingsCount(snap.size);
+      } catch (err) {
+        console.error('Error fetching pending bookings:', err);
+      }
+    };
+    fetchPendingBookings();
+  }, [profile?.uid]);
 
   // Interceptar la recarga/cierre de la pestaña si el formulario tiene cambios
   React.useEffect(() => {
@@ -198,11 +220,17 @@ const ProfileSettings: React.FC = () => {
           isGeneratingQA={isGeneratingQA}
         />
 
-        {isKycVerified && draft && (
+        {trustScore >= 40 && (draft || pendingBookingsCount > 0) && (
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            onClick={() => navigate(draft.returnUrl)}
+            onClick={() => {
+              if (draft) {
+                navigate(draft.returnUrl);
+              } else {
+                navigate('/mis-viajes');
+              }
+            }}
             className="flex cursor-pointer items-center justify-between gap-4 rounded-3xl border border-emerald-100 bg-emerald-50/50 p-6 transition-all duration-300 hover:scale-[1.01] hover:border-emerald-200 hover:bg-emerald-50 shadow-sm"
           >
             <div className="flex items-center gap-4">
@@ -211,12 +239,12 @@ const ProfileSettings: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs font-black uppercase tracking-wider text-emerald-800">
-                  ¡Identidad Verificada!
+                  ¡Perfil Listo para Reservar!
                 </p>
                 <p className="mt-0.5 text-xs font-semibold text-slate-600 leading-normal">
-                  Tienes una reserva pendiente esperándote.
+                  Tienes {pendingBookingsCount > 0 ? (pendingBookingsCount === 1 ? 'una reserva esperando tu pago.' : `${pendingBookingsCount} reservas esperando tu pago.`) : 'una reserva pendiente esperándote.'}
                   <br />
-                  <span className="text-emerald-700 font-bold underline">Haz clic aquí para retomar tu última estadía ahora.</span>
+                  <span className="text-emerald-700 font-bold underline">Haz clic aquí para retomar tu estadía.</span>
                 </p>
               </div>
             </div>

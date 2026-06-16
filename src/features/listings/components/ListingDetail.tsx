@@ -37,6 +37,7 @@ import * as reviewService from '@/services/review-service';
 import { toast } from 'sonner';
 import { clearListingCalendar } from '@/services/listing-service';
 import { PurgeTestBookingsModal } from './PurgeTestBookingsModal';
+import AuthModal from '@/features/auth/components/AuthModal';
 const ListingMap = lazy(() => import('./ListingMap'));
 
 const MapSkeleton = () => (
@@ -112,8 +113,16 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
     handleClose,
     handleSearchSubmit,
     handleDatesChange,
-    onOpenAuth,
+    onOpenAuth: hookOnOpenAuth,
   } = useListingDetail(props);
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+  const [authModalView, setAuthModalView] = React.useState<'login' | 'register'>('login');
+
+  const handleOpenAuth = hookOnOpenAuth || ((view?: 'login' | 'register') => {
+    setAuthModalView(view || 'login');
+    setIsAuthModalOpen(true);
+  });
 
   const [isClearing, setIsClearing] = React.useState(false);
   const [isPurgeModalOpen, setIsPurgeModalOpen] = React.useState(false);
@@ -181,10 +190,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
                 endDate={endDate}
                 setDates={handleDatesChange}
                 onOpenAdmin={() => navigate('/dashboard')}
-                onOpenAuth={(view) => {
-                  if (onOpenAuth) onOpenAuth(view);
-                  else navigate('/');
-                }}
+                onOpenAuth={handleOpenAuth}
                 hideFilters={true}
                 onSearchSubmit={handleSearchSubmit}
                 onLogoClick={() => navigate('/')}
@@ -686,6 +692,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
                     isMobileRequestOpen={isMobileRequestOpen}
                     setIsMobileRequestOpen={setIsMobileRequestOpen}
                     navigate={navigate}
+                    onOpenAuth={handleOpenAuth}
                   />
                 </div>
               </div>
@@ -696,6 +703,12 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
             isOpen={isPurgeModalOpen}
             onClose={() => setIsPurgeModalOpen(false)}
             listingId={currentListing.id}
+          />
+
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            initialView={authModalView}
           />
 
           {/* Fullscreen Photo Gallery Overlay */}

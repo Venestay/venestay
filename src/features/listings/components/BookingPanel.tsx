@@ -44,6 +44,7 @@ interface BookingPanelProps {
   isMobileRequestOpen: boolean;
   setIsMobileRequestOpen: (open: boolean) => void;
   navigate: (path: string, options?: NavigateOptions) => void;
+  onOpenAuth?: (view?: 'login' | 'register') => void;
 }
 
 export const BookingPanel: React.FC<BookingPanelProps> = ({
@@ -69,6 +70,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
   isMobileRequestOpen,
   setIsMobileRequestOpen,
   navigate,
+  onOpenAuth,
 }) => {
   const isRequestMode = (listing.bookingMode as string) === 'request';
   const SHOW_CANCELLATION_POLICY_DETAIL = true;
@@ -261,6 +263,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
             onSuccess={() => navigate('/mis-viajes')}
             reservedDates={reservedDates}
             softReservedDates={softReservedDates}
+            onOpenAuth={onOpenAuth}
           />
         </div>
       ) : (
@@ -696,6 +699,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
                   }}
                   reservedDates={reservedDates}
                   softReservedDates={softReservedDates}
+                  onOpenAuth={onOpenAuth}
                 />
               </div>
             </motion.div>

@@ -13,6 +13,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
+import { useGuestProfile } from '@/features/dashboard/hooks/useGuestProfile';
 import { Booking } from '@/types';
 import {
   X,
@@ -94,6 +95,7 @@ type TerminalStatus = typeof TERMINAL_STATUSES[number];
 
 const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
+  const { trustScore, isLoading: isProfileLoading } = useGuestProfile(user?.uid);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
@@ -703,20 +705,34 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                               <div className="flex items-center justify-between gap-3 mt-4">
                                 <div className="flex-1">
                                   {booking.status === 'PENDING_PAYMENT' ? (
-                                    <div className="flex gap-2">
-                                      <button
-                                        onClick={() => setVerifyingId(verifyingId === booking.id ? null : booking.id)}
-                                        className="flex-1 bg-brand-navy text-white hover:bg-brand-navy/90 rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
-                                      >
-                                        {verifyingId === booking.id ? 'Cancelar' : 'Subir Pago'}
-                                      </button>
-                                      <button
-                                        onClick={() => navigate(`/checkout/${booking.id}`)}
-                                        className="flex-1 border border-gray-200 hover:bg-gray-50 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
-                                      >
-                                        Detalles
-                                      </button>
-                                    </div>
+                                    !isProfileLoading && trustScore < 40 ? (
+                                      <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex flex-col items-center justify-center gap-2">
+                                        <p className="text-[10px] text-red-600 font-bold text-center leading-tight">
+                                          Por favor completa tu perfil para proceder con el pago.
+                                        </p>
+                                        <button
+                                          onClick={() => navigate('/mi-pasaporte')}
+                                          className="bg-red-600 text-white rounded-xl px-4 py-1.5 text-[9px] font-black uppercase shadow-md transition-all hover:bg-red-700"
+                                        >
+                                          Completar Perfil
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={() => setVerifyingId(verifyingId === booking.id ? null : booking.id)}
+                                          className="flex-1 bg-brand-navy text-white hover:bg-brand-navy/90 rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
+                                        >
+                                          {verifyingId === booking.id ? 'Cancelar' : 'Subir Pago'}
+                                        </button>
+                                        <button
+                                          onClick={() => navigate(`/checkout/${booking.id}`)}
+                                          className="flex-1 border border-gray-200 hover:bg-gray-50 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
+                                        >
+                                          Detalles
+                                        </button>
+                                      </div>
+                                    )
                                   ) : (
                                     <div className="flex gap-2">
                                       <button

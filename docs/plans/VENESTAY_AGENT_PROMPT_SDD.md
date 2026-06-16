@@ -425,6 +425,7 @@ Al activar cada nodo del pipeline, el agente adopta el rol y carga los skills de
 | Sub-agente | Ruta | Cuándo activar |
 |:---|:---|:---|
 | 🔧 Minimal Change Engineer | `.agents/temp_agency_agents/engineering/engineering-minimal-change-engineer.md` | Para correcciones de bugs P0/P1 donde el riesgo de regresión es alto |
+| 📷 Image Prompt Engineer | `.agents/temp_agency_agents/design/design-image-prompt-engineer.md` | Cuando se solicite la generación o edición de fotografías de propiedades para optimizar su presentación estética en los listings |
 
 **Regla de activación:** El agente anuncia el cambio de rol antes de operar en ese nodo: `"[Activando Nodo N — Nombre del Rol]"`. No cambia de rol sin anunciarlo.
 

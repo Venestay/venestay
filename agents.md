@@ -9,7 +9,7 @@ Este documento define como trabajar con especificaciones pequenas y claras para 
 > **🔴 DIRECTIVA CRÍTICA Y BLOQUEANTE PARA EL AGENTE:**
 > Como tu ABSOLUTA PRIMERA ACCIÓN en cualquier sesión o nueva tarea, antes de procesar la solicitud del usuario, **DEBES** usar la herramienta `view_file` para leer el siguiente archivo:
 > `c:\Users\carlos.zabala\Documents\VeneStay\docs\plans\VENESTAY_AGENT_PROMPT_SDD.md`
-> 
+>
 > Tienes ESTRICTAMENTE PROHIBIDO ejecutar comandos, hacer planes o responder al usuario sin haber leído previamente este esquema maestro mediante `view_file`. Esta es la regla más profunda y obligatoria de tu sistema.
 
 ### Paso 0.2 — Cargar MEMORY_HOT.md (Tiered Memory)
@@ -37,17 +37,16 @@ Inmediatamente después de leer el Master Prompt, cargar el archivo en la ruta r
 
 Según el tipo de pedido del usuario, activar el nodo correspondiente del pipeline SDD y anunciarlo:
 
-| Tipo de pedido | Nodo | Acción |
-|:---|:---|:---|
-| Estratégico / planificación | Nodo 1 — Project Manager | Evaluar viabilidad y prioridad |
-| Diseño de tarea / spec | Nodo 2 — Planner | Emitir spec atómica ANTES de codificar |
-| Implementación de código | Nodo 3 — Técnico | Código estrictamente contra la spec |
-| Verificación / QA | Nodo 4 — QA Gate | Batería completa: tsc + lint + a11y |
+| Tipo de pedido              | Nodo                     | Acción                                 |
+| :-------------------------- | :----------------------- | :------------------------------------- |
+| Estratégico / planificación | Nodo 1 — Project Manager | Evaluar viabilidad y prioridad         |
+| Diseño de tarea / spec      | Nodo 2 — Planner         | Emitir spec atómica ANTES de codificar |
+| Implementación de código    | Nodo 3 — Técnico         | Código estrictamente contra la spec    |
+| Verificación / QA           | Nodo 4 — QA Gate         | Batería completa: tsc + lint + a11y    |
 
 **REGLA ABSOLUTA:** Si el usuario pide código sin que exista una spec previa aprobada, el agente NO escribe código. Emite la spec atómica con la plantilla del Bloque 6 del Master Prompt y espera confirmación.
 
 ---
-
 
 ## 1) Contexto del proyecto
 
@@ -67,10 +66,12 @@ Según el tipo de pedido del usuario, activar el nodo correspondiente del pipeli
 ## 1.2 Gobernanza de Agentes (Skills & Roles)
 
 Para garantizar la máxima calidad técnica del proyecto, toda interacción de los agentes autónomos de Antigravity (y desarrolladores en general) debe regirse por el mapeo de roles y habilidades del equipo detallado en:
+
 - **[operational_model_sdd.md](file:///C:/Users/rodri/.gemini/antigravity/brain/b44bfa71-d346-461a-9a4c-dd2bc8127991/operational_model_sdd.md)**
 - **[connection_report_sdd.md](file:///C:/Users/rodri/.gemini/antigravity/brain/b44bfa71-d346-461a-9a4c-dd2bc8127991/connection_report_sdd.md)**
 
 Cualquier cambio de código o refactorización debe consultar explícitamente las habilidades asignadas al rol asignado a la tarea para asegurar la correcta aplicación de:
+
 - `react-best-practices`
 - `typescript-advanced-types`
 - `zod`

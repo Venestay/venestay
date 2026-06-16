@@ -68,11 +68,12 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Módulo                                          | Archivo Objetivo                                     | Estado                   | 
 | :---------------------------------------------- | :--------------------------------------------------- | :----------------------- | 
+| **Flexibilización Pago (+8h) (P1)**             | MyTrips.tsx                                          | **SPEC CREADA / PEND. IMPL** |
+| **KYC Loop & Auth Modal Redirect (P1)**         | ProfileSettings.tsx, ListingDetail.tsx               | **COMPLETADO**           |
 | **Herramienta Limpieza Reservas (P1)**          | purgeTestBookings.ts, PurgeTestBookingsModal.tsx     | **CÓDIGO LISTO / DEPLOY FALLIDO**| 
 | **Fix Host Email Notification (P0)**            | functions/src/booking.functions.ts, templates/       | **COMPLETADO**           | 
 | **Email Notifications & Secure Stay Flow (P0)** | functions/src/\*, useCheckout.ts, booking-service.ts | **COMPLETADO**           | 
 | **SPEC-AUTH-MODAL-OPTIMIZATION (P0)**           | AuthModal.tsx, useAuthForm.ts, auth.schema.ts        | **COMPLETADO**           | 
-| Plan KYC v2.0                                   | docs/plans/implementation_plan_kyc_v2.md             | APROBADO                 | 
 
 ---
 
@@ -94,6 +95,13 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
 |:------|:-------|:-------|:--------|:---------------|
+| 2026-06-16 | Pausa de Sesión (Despliegue a QA local) | COMPLETADO | OK | Se continuará con el flujo de pruebas de notificaciones en otra conversación. |
+| 2026-06-16 | Conexión DEV a Nube (Desactivar Emulador Local) | COMPLETADO | OK | Reiniciar npm run dev y desplegar functions. |
+| 2026-06-16 | Resolución de crash interno del emulador de Firestore | COMPLETADO | OK | Proceder con validaciones de publicación local. |
+| 2026-06-14 | Registro Image Prompt Engineer (VENESTAY_AGENT_PROMPT_SDD) | COMPLETADO | OK | Utilizar el agente cuando se requiera optimización o edición de imágenes de listings. |
+| 2026-06-14 | Habilitación Emuladores Firebase (SPEC-INFRA-001 v2) | COMPLETADO | PENDIENTE | Levantar `firebase emulators:start` y probar flujo de notificaciones. |
+| 2026-06-13 | KYC Loop & Redirección Reservas (ProfileSettings) | COMPLETADO | OK | Implementar la Spec de Flexibilización de Pagos. |
+| 2026-06-13 | Spec: Flexibilización de Pagos a +8h | PLANIFICADO | PENDIENTE | Ejecutar implementación técnica en MyTrips.tsx. |
 | 2026-06-12 | Mejora del Ecosistema de Agentes (IMPL-AGENTS-S05-01) | COMPLETADO | OK | Ninguna. Ecosistema de agentes y validaciones completamente operativo. |
 | 2026-06-12 | Corrección QA Gate (Dependencias G3, G8, G9) | COMPLETADO | OK | Proceder a integrar qa a main. |
 | 2026-06-12 | Permisos Firestore Pasaporte (cerz@venestay.com) | COMPLETADO | OK | Copiar reglas a consola Firebase. |
