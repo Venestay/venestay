@@ -95,6 +95,12 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
 |:------|:-------|:-------|:--------|:---------------|
+| 2026-06-18 | Pausa de Sesión (Pruebas pendientes) | COMPLETADO | OK | Se continuará con las pruebas manuales de los correos y PDF adjunto en otra conversación. |
+| 2026-06-18 | PDF Resumen Estadía Email Confirmado (SPEC-EMAIL-PDF-ATTACH-001) | COMPLETADO | OK | (Manual) Verificar en el flujo de confirmación que el huésped recibe un email con un PDF adjunto del resumen de la estadía. |
+| 2026-06-18 | Fix Triggers Email Pago (SPEC-EMAIL-TRIGGERS-FIX-001) | COMPLETADO | OK | Prueba manual en localhost:3000: aprobar reserva, subir pago, verificar pago. Verificar que llegan los 3 correos faltantes. |
+| 2026-06-18 | Documentación de Plantillas de Email y Flujo Huésped | COMPLETADO | OK | Proceder con la validación manual del correo del huésped en el entorno local. |
+| 2026-06-18 | Migración Triggers Firestore v1→v2 (SPEC-NOTIFICATIONS-001/002) | COMPLETADO | OK | Realizar prueba en vivo: hacer reserva en localhost:3000 y verificar que llegan los correos. |
+| 2026-06-17 | Optimización de Imágenes (.tempmediaStorage) | COMPLETADO | OK | Integrar las imágenes optimizadas en el listado de la propiedad. |
 | 2026-06-16 | Pausa de Sesión (Despliegue a QA local) | COMPLETADO | OK | Se continuará con el flujo de pruebas de notificaciones en otra conversación. |
 | 2026-06-16 | Conexión DEV a Nube (Desactivar Emulador Local) | COMPLETADO | OK | Reiniciar npm run dev y desplegar functions. |
 | 2026-06-16 | Resolución de crash interno del emulador de Firestore | COMPLETADO | OK | Proceder con validaciones de publicación local. |

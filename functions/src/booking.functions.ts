@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import {
   buildConfirmationEmailHTML,
   buildBookingRequestEmailHTML,
@@ -7,8 +8,9 @@ import {
   buildPaymentSubmittedEmailHTML,
   buildRejectionEmailHTML
 } from './templates/booking-emails';
+import { buildBookingConfirmationPDF } from './templates/booking-pdf';
 
-import { db } from './config/db';
+import { db, DATABASE_ID } from './config/db';
 
 
 
@@ -68,14 +70,16 @@ export const cronCancelExpiredBookings = functions.pubsub.schedule('every 15 min
 });
 
 /**
- * TRIGGER: Nueva solicitud de reserva
+ * TRIGGER v2: Nueva solicitud de reserva
  * Envía un correo electrónico al anfitrión cuando se crea una reserva en PENDING_APPROVAL.
  */
-export const onBookingCreated = functions.firestore
-  .document('bookings/{bookingId}')
-  .onCreate(async (snap, context) => {
+export const onBookingCreated = onDocumentCreated(
+  { document: 'bookings/{bookingId}', database: DATABASE_ID },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
     const booking = snap.data();
-    const bookingId = context.params.bookingId;
+    const bookingId = event.params.bookingId;
 
     if (booking.status === 'PENDING_APPROVAL') {
       try {
@@ -99,19 +103,21 @@ export const onBookingCreated = functions.firestore
         console.error('Error queueing booking request email:', err);
       }
     }
-  });
+  }
+);
 
 /**
- * TRIGGER: Message Injection Segura y Alertas de Correo
+ * TRIGGER v2: Message Injection Segura y Alertas de Correo
  * En este trigger escuchamos los cambios de estado en las reservas 
  * y generamos los mensajes automáticos y notificaciones correspondientes.
  */
-export const onBookingStateChanged = functions.firestore
-  .document('bookings/{bookingId}')
-  .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
-    const bookingId = context.params.bookingId;
+export const onBookingStateChanged = onDocumentUpdated(
+  { document: 'bookings/{bookingId}', database: DATABASE_ID },
+  async (event) => {
+    if (!event.data) return null;
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+    const bookingId = event.params.bookingId;
 
     if (before.status === after.status) {
       return null; // El estado no cambió
@@ -150,9 +156,6 @@ export const onBookingStateChanged = functions.firestore
     // Correo automático al cambiar a PENDING_PAYMENT
     if (after.status === 'PENDING_PAYMENT' && before.status !== 'PENDING_PAYMENT') {
       if (!after.paymentInstructionsEmailSentAt) {
-        await change.after.ref.update({
-          paymentInstructionsEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
-        });
         try {
           const guestSnap = await db.collection('users').doc(after.guestId).get();
           const guest = guestSnap.data();
@@ -166,6 +169,10 @@ export const onBookingStateChanged = functions.firestore
                 html: buildPaymentInstructionsEmailHTML(after, guest, listing || {}),
               },
             });
+            // Flag marcado DESPUÉS del mail.add exitoso (fix idempotencia + base de datos)
+            await db.collection('bookings').doc(bookingId).update({
+              paymentInstructionsEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
+            });
             console.log(`Payment instructions email queued successfully for booking ${bookingId}`);
           }
         } catch (err) {
@@ -177,9 +184,6 @@ export const onBookingStateChanged = functions.firestore
     // Correo automático al cambiar a AWAITING_VERIFICATION (Pago subido)
     if (after.status === 'AWAITING_VERIFICATION' && before.status !== 'AWAITING_VERIFICATION') {
       if (!after.paymentSubmittedEmailSentAt) {
-        await change.after.ref.update({
-          paymentSubmittedEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
-        });
         try {
           let hostEmail = '';
           let hostDisplayName = 'Anfitrión';
@@ -213,6 +217,10 @@ export const onBookingStateChanged = functions.firestore
               html: buildPaymentSubmittedEmailHTML(after, { displayName: hostDisplayName, email: hostEmail }, listing || {}),
             },
           });
+          // Flag marcado DESPUÉS del mail.add exitoso (fix idempotencia + base de datos)
+          await db.collection('bookings').doc(bookingId).update({
+            paymentSubmittedEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
+          });
           console.log(`Payment submitted email queued successfully for booking ${bookingId}`);
         } catch (err) {
           console.error('Error queueing payment submitted email:', err);
@@ -223,11 +231,6 @@ export const onBookingStateChanged = functions.firestore
     // Correo automático al confirmar con guard de idempotencia
     if (after.status === 'CONFIRMED' && before.status !== 'CONFIRMED') {
       if (!after.confirmationEmailSentAt) {
-        // Marcar como enviado inmediatamente para evitar reentradas
-        await change.after.ref.update({
-          confirmationEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-
         try {
           // Obtener datos del huésped
           const guestSnap = await db.collection('users').doc(after.guestId).get();
@@ -238,13 +241,33 @@ export const onBookingStateChanged = functions.firestore
             const listingSnap = await db.collection('listings').doc(after.listingId).get();
             const listing = listingSnap.data();
 
+            // Generar PDF
+            let attachments = [];
+            try {
+              const pdfBuffer = await buildBookingConfirmationPDF(after, guest, listing || {});
+              attachments.push({
+                filename: `VeneStay-Reserva-${(bookingId || '').slice(0, 8).toUpperCase()}.pdf`,
+                content: pdfBuffer.toString('base64'),
+                encoding: 'base64',
+                contentType: 'application/pdf',
+              });
+            } catch (pdfErr) {
+              console.error('Error generando PDF de confirmación:', pdfErr);
+              // Continuamos sin PDF si falla la generación, para que al menos llegue el correo
+            }
+
             // Escribir en la colección mail
             await db.collection('mail').add({
               to: guest.email,
               message: {
                 subject: `Confirmación de tu estadía en ${listing?.title || 'VeneStay'} — VeneStay`,
                 html: buildConfirmationEmailHTML(after, guest, listing || {}),
+                attachments: attachments.length > 0 ? attachments : undefined,
               },
+            });
+            // Flag marcado DESPUÉS del mail.add exitoso (fix idempotencia + base de datos)
+            await db.collection('bookings').doc(bookingId).update({
+              confirmationEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
             });
             console.log(`Confirmation email queued successfully for booking ${bookingId}`);
           }
@@ -257,9 +280,6 @@ export const onBookingStateChanged = functions.firestore
     // Correo automático al cambiar a REJECTED
     if (after.status === 'REJECTED' && before.status !== 'REJECTED') {
       if (!after.rejectionEmailSentAt) {
-        await change.after.ref.update({
-          rejectionEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
-        });
         try {
           const guestSnap = await db.collection('users').doc(after.guestId).get();
           const guest = guestSnap.data();
@@ -273,6 +293,10 @@ export const onBookingStateChanged = functions.firestore
                 html: buildRejectionEmailHTML(after, guest, listing || {}),
               },
             });
+            // Flag marcado DESPUÉS del mail.add exitoso (fix idempotencia + base de datos)
+            await db.collection('bookings').doc(bookingId).update({
+              rejectionEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
+            });
             console.log(`Rejection email queued successfully for booking ${bookingId}`);
           }
         } catch (err) {
@@ -282,7 +306,8 @@ export const onBookingStateChanged = functions.firestore
     }
 
     return null;
-  });
+  }
+);
 
 /**
  * Cloud Function: getProofSignedURL

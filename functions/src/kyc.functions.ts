@@ -1,11 +1,12 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import {
   buildKYCApprovedEmailHTML,
   buildKYCRejectedEmailHTML
 } from './templates/kyc-emails';
 
-import { db } from './config/db';
+import { db, DATABASE_ID } from './config/db';
 
 /**
  * Notificación a administradores
@@ -236,18 +237,17 @@ export const getKYCDocumentSignedURL = functions.https.onCall(
   }
 );
 
-
-
 /**
- * TRIGGER: Actualización de estado KYC
+ * TRIGGER v2: Actualización de estado KYC
  * Envía un correo electrónico al usuario cuando su KYC es verificado o rechazado.
  */
-export const onKYCStatusChanged = functions.firestore
-  .document('users/{uid}')
-  .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
-    const uid = context.params.uid;
+export const onKYCStatusChanged = onDocumentUpdated(
+  { document: 'users/{uid}', database: DATABASE_ID },
+  async (event) => {
+    if (!event.data) return null;
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+    const uid = event.params.uid;
 
     if (before.kycStatus === after.kycStatus) {
       return null; // El estado de KYC no cambió
@@ -256,10 +256,6 @@ export const onKYCStatusChanged = functions.firestore
     // Aprobado
     if (after.kycStatus === 'VERIFIED' && before.kycStatus !== 'VERIFIED') {
       if (!after.kycVerificationEmailSentAt) {
-        await change.after.ref.update({
-          kycVerificationEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-
         try {
           if (after.email) {
             await db.collection('mail').add({
@@ -268,6 +264,10 @@ export const onKYCStatusChanged = functions.firestore
                 subject: '¡Tu Pasaporte VeneStay ha sido verificado! 🛡️ — VeneStay',
                 html: buildKYCApprovedEmailHTML(after),
               },
+            });
+            // Flag marcado DESPUÉS del mail.add exitoso (fix idempotencia + base de datos)
+            await db.collection('users').doc(uid).update({
+              kycVerificationEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
             });
             console.log(`KYC verification approval email queued successfully for user ${uid}`);
           }
@@ -280,10 +280,6 @@ export const onKYCStatusChanged = functions.firestore
     // Rechazado
     if (after.kycStatus === 'REJECTED' && before.kycStatus !== 'REJECTED') {
       if (!after.kycRejectionEmailSentAt) {
-        await change.after.ref.update({
-          kycRejectionEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-
         try {
           if (after.email) {
             await db.collection('mail').add({
@@ -292,6 +288,10 @@ export const onKYCStatusChanged = functions.firestore
                 subject: 'Actualización sobre tu verificación de identidad — VeneStay',
                 html: buildKYCRejectedEmailHTML(after, after.kycRejectionNote || 'El documento subido no es legible o es inválido.'),
               },
+            });
+            // Flag marcado DESPUÉS del mail.add exitoso (fix idempotencia + base de datos)
+            await db.collection('users').doc(uid).update({
+              kycRejectionEmailSentAt: admin.firestore.FieldValue.serverTimestamp()
             });
             console.log(`KYC rejection email queued successfully for user ${uid}`);
           }
@@ -302,5 +302,5 @@ export const onKYCStatusChanged = functions.firestore
     }
 
     return null;
-  });
-
+  }
+);
