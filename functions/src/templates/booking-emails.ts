@@ -1,5 +1,5 @@
 // functions/src/templates/booking-emails.ts
-import { buildEmailWrapper } from './email-layout';
+import { buildEmailWrapper, APP_BASE_URL_PRODUCTION } from './email-layout';
 
 export interface EmailBooking {
   id?: string;
@@ -14,6 +14,8 @@ export interface EmailBooking {
   paymentInstructions?: string;
   proofUrl?: string;
   rejectionReason?: string;
+  /** URL base del frontend de origen. Inyectada por booking-service al crear la reserva. */
+  appBaseUrl?: string;
 }
 
 export interface EmailGuest {
@@ -102,6 +104,7 @@ export function buildBookingRequestEmailHTML(
 ): string {
   const total = booking.totalAmount || 0;
   const deposit = (total * 0.2).toFixed(2);
+  const baseUrl = booking.appBaseUrl || APP_BASE_URL_PRODUCTION;
   
   const content = `
     <div class="title">¡Nueva solicitud de reserva! 📬</div>
@@ -143,7 +146,7 @@ export function buildBookingRequestEmailHTML(
     ` : ''}
 
     <div class="button-container">
-      <a href="https://venestay.app/admin" class="btn-primary">Verificar Solicitud</a>
+      <a href="${baseUrl}/dashboard" class="btn-primary">Verificar Solicitud</a>
     </div>
   `;
   
@@ -158,6 +161,7 @@ export function buildPaymentInstructionsEmailHTML(
   const total = booking.totalAmount || 0;
   const deposit = (total * 0.2).toFixed(2);
   const remaining = (total * 0.8).toFixed(2);
+  const baseUrl = booking.appBaseUrl || APP_BASE_URL_PRODUCTION;
   
   const content = `
     <div class="title">¡Tu solicitud ha sido aprobada! 🌟</div>
@@ -198,7 +202,7 @@ export function buildPaymentInstructionsEmailHTML(
     </div>
 
     <div class="button-container">
-      <a href="https://venestay.app/checkout/${booking.id}" class="btn-primary">Asegurar mi Estadía</a>
+      <a href="${baseUrl}/checkout/${booking.id}" class="btn-primary">Asegurar mi Estadía</a>
     </div>
   `;
   
@@ -212,6 +216,7 @@ export function buildPaymentSubmittedEmailHTML(
 ): string {
   const total = booking.totalAmount || 0;
   const deposit = (total * 0.2).toFixed(2);
+  const baseUrl = booking.appBaseUrl || APP_BASE_URL_PRODUCTION;
   
   const content = `
     <div class="title">¡Comprobante de pago recibido! 💳</div>
@@ -244,7 +249,7 @@ export function buildPaymentSubmittedEmailHTML(
     ` : ''}
 
     <div class="button-container">
-      <a href="https://venestay.app/admin" class="btn-primary">Validar Pago en Dashboard</a>
+      <a href="${baseUrl}/dashboard" class="btn-primary">Validar Pago en Dashboard</a>
     </div>
   `;
   
@@ -256,6 +261,8 @@ export function buildRejectionEmailHTML(
   guest: EmailGuest,
   listing: EmailListing
 ): string {
+  const baseUrl = booking.appBaseUrl || APP_BASE_URL_PRODUCTION;
+
   const content = `
     <div class="title">Actualización sobre tu solicitud de reserva ✉️</div>
     <div class="text">Hola ${guest.displayName || 'Huésped'}, lamentamos informarte que tu solicitud de reserva para <strong>${listing.title || 'Propiedad'}</strong> no ha podido ser procesada o fue declinada por el anfitrión.</div>
@@ -284,7 +291,7 @@ export function buildRejectionEmailHTML(
     </div>
 
     <div class="button-container">
-      <a href="https://venestay.app/" class="btn-primary">Explorar Alojamientos</a>
+      <a href="${baseUrl}/" class="btn-primary">Explorar Alojamientos</a>
     </div>
   `;
   

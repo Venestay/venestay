@@ -78,6 +78,9 @@ export interface Booking {
   isTestBooking?: boolean;
   cancelledAt?: string | Date | FieldValue;
   cancelledBy?: string;
+  /** URL base del frontend que originó la reserva. Usado por Cloud Functions para generar
+   *  links en emails que sean correctos según el entorno (localhost / QA / producción). */
+  appBaseUrl?: string;
 }
 
 export interface BookingDetails {

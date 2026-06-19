@@ -1,5 +1,5 @@
 // functions/src/templates/kyc-emails.ts
-import { buildEmailWrapper } from './email-layout';
+import { buildEmailWrapper, APP_BASE_URL_PRODUCTION } from './email-layout';
 
 export interface KYCUserData {
   displayName?: string;
@@ -7,7 +7,14 @@ export interface KYCUserData {
   trustScore?: number;
 }
 
-export function buildKYCApprovedEmailHTML(user: KYCUserData): string {
+/**
+ * Email enviado al usuario cuando su Pasaporte VeneStay es aprobado.
+ * @param user - Datos del usuario verificado.
+ * @param baseUrl - URL base del entorno del frontend (fallback: producción venestay.com).
+ *                  Los triggers de KYC son iniciados desde el panel admin, por lo que
+ *                  no hay un appBaseUrl en el documento — se usa APP_BASE_URL_PRODUCTION.
+ */
+export function buildKYCApprovedEmailHTML(user: KYCUserData, baseUrl: string = APP_BASE_URL_PRODUCTION): string {
   const score = user.trustScore || 40;
   const content = `
     <div class="title">¡Tu Pasaporte VeneStay ha sido verificado! 🛡️</div>
@@ -30,14 +37,20 @@ export function buildKYCApprovedEmailHTML(user: KYCUserData): string {
     </div>
 
     <div class="button-container">
-      <a href="https://venestay.app/" class="btn-primary">Comenzar a Explorar</a>
+      <a href="${baseUrl}/" class="btn-primary">Comenzar a Explorar</a>
     </div>
   `;
 
   return buildEmailWrapper('¡Tu Pasaporte VeneStay ha sido verificado!', content);
 }
 
-export function buildKYCRejectedEmailHTML(user: KYCUserData, note: string): string {
+/**
+ * Email enviado al usuario cuando su Pasaporte VeneStay es rechazado.
+ * @param user - Datos del usuario.
+ * @param note - Motivo del rechazo.
+ * @param baseUrl - URL base del entorno del frontend (fallback: producción venestay.com).
+ */
+export function buildKYCRejectedEmailHTML(user: KYCUserData, note: string, baseUrl: string = APP_BASE_URL_PRODUCTION): string {
   const content = `
     <div class="title">Actualización sobre tu verificación de identidad ⚠️</div>
     <div class="text">Hola ${user.displayName || 'Usuario'}, lamentablemente no hemos podido verificar tu documento de identidad debido a que no cumple con nuestros requerimientos de legibilidad o validez.</div>
@@ -52,7 +65,7 @@ export function buildKYCRejectedEmailHTML(user: KYCUserData, note: string): stri
     </div>
 
     <div class="button-container">
-      <a href="https://venestay.app/mi-pasaporte" class="btn-primary" style="background-color: #0B1120; color: #ffffff !important; border: 1px solid #C5A059;">Volver a Subir Documento</a>
+      <a href="${baseUrl}/mi-pasaporte" class="btn-primary" style="background-color: #0B1120; color: #ffffff !important; border: 1px solid #C5A059;">Volver a Subir Documento</a>
     </div>
   `;
 

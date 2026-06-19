@@ -1,6 +1,13 @@
 // functions/src/templates/email-layout.ts
 
 /**
+ * Dominio de producción oficial de VeneStay.
+ * Usado como fallback cuando booking.appBaseUrl no está disponible
+ * (e.g. triggers de KYC iniciados desde el panel de admin).
+ */
+export const APP_BASE_URL_PRODUCTION = 'https://venestay.com';
+
+/**
  * Layout / Wrapper común para todos los correos electrónicos de VeneStay.
  * Define la estructura HTML responsiva, tipografía, estilos CSS del sistema de diseño premium,
  * cabecera Navy con logo Oro, pie de página oficial de VeneStay y un contenedor centrado.
@@ -44,7 +51,7 @@ export function buildEmailWrapper(title: string, contentHtml: string): string {
         ${contentHtml}
       </div>
       <div class="footer">
-        VeneStay · Lechería, Venezuela · venestay.app<br>
+        VeneStay · Lechería, Venezuela · venestay.com<br>
         Este correo es una notificación automática. Por favor no respondas directamente.
       </div>
     </div>

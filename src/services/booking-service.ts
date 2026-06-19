@@ -111,6 +111,9 @@ export const createBookingWithTransaction = async (
         ...bookingData,
         guestMessage: initialMessage || '',
         id: docId,
+        // Capturar el origen del frontend para que Cloud Functions pueda generar
+        // links correctos en emails según el entorno (local, QA, producción).
+        appBaseUrl: typeof window !== 'undefined' ? window.location.origin : 'https://venestay.com',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -205,6 +208,9 @@ export const requestBookingDirectly = async (
       bookingMode: 'request' as 'request' | 'instant',
       guestMessage: payload.guestMessage,
       expiresAt,
+      // Capturar el origen del frontend para que Cloud Functions pueda generar
+      // links correctos en emails según el entorno (local, QA, producción).
+      appBaseUrl: typeof window !== 'undefined' ? window.location.origin : 'https://venestay.com',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };

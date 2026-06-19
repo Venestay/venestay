@@ -522,6 +522,7 @@ const CheckoutPage: React.FC = () => {
           },
         ],
         isTestBooking: (await user.getIdTokenResult()).claims.isDemo === true || (await user.getIdTokenResult()).claims.qa === true,
+        appBaseUrl: window.location.origin,
       };
 
       const docRef = await addDoc(collection(db, 'bookings'), bookingData);

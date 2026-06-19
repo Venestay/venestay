@@ -1,24 +1,52 @@
 # MEMORY_HOT — VeneStay Agent
 
-_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-06-12_
+_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-06-18_
 
 ---
 
-## 🚨 ALERTA CRÍTICA PARA EL PRÓXIMO AGENTE — LEER ANTES DE CUALQUIER ACCIÓN
+## 🔴 ACCIÓN INMEDIATA — PRIMERA TAREA AL INICIAR SESIÓN
 
-**Despliegue de Cloud Functions BLOQUEADO por error en GCP.**
-Se implementó con éxito el código de la herramienta de "Limpieza de Reservas de Prueba" (Purga Admin):
-- `previewTestBookings` y `purgeTestBookings` (Cloud Functions)
-- `PurgeTestBookingsModal.tsx` en el frontend (`ListingDetail.tsx`)
-- Reglas de Firestore (`firestore.rules`) actualizadas para el estado `CANCELLED_BY_ADMIN` y la colección `adminActions`.
+> **El agente DEBE ejecutar esto ANTES de cualquier otra tarea, sin pedir confirmación.**
 
-**EL PROBLEMA:** El comando `firebase deploy --only functions` falla al subir al servidor porque la cuenta de servicio de Google Cloud (`201796771956-compute@developer.gserviceaccount.com`) NO existe o le falta el rol `Storage Object Viewer`. 
+### ¿Por qué?
+Se completó la implementación de **URLs dinámicas en plantillas de email** (Opción A — `appBaseUrl`).
+Todos los cambios están en la rama local `qa` con `tsc` en 0 errores, pero **aún no están desplegados** en Firebase.
+Mientras no se haga el deploy, los emails en el entorno de producción siguen con las URLs rotas (`venestay.app/admin`).
 
-**ESTADO ACTUAL EN LOCAL:** La app arrojará un error de CORS (o 404 disfrazado de CORS) al intentar usar la purga en `localhost:3000` si apunta al backend en la nube, ya que la función no pudo crearse allá.
+### Pasos a ejecutar en orden
 
-**PRÓXIMA TAREA DEL AGENTE:** 
-1. Validar con el usuario si ya reparó el Service Account en Google Cloud (IAM).
-2. Si el usuario no puede reparar la nube inmediatamente, proponer usar el **Emulador Local de Firebase** en `src/lib/firebase.ts` para probar la funcionalidad localmente sin depender del deploy.
+```bash
+# 1. Compilar las functions (TypeScript → JS)
+cd c:\Users\carlos.zabala\Documents\VeneStay\functions
+npm run build
+
+# 2. Volver a la raíz y desplegar
+cd c:\Users\carlos.zabala\Documents\VeneStay
+firebase deploy --only functions
+```
+
+### Qué valida el éxito
+- ✅ El CLI imprime `Deploy complete!` sin errores.
+- ✅ En Firebase Console → Functions aparecen actualizadas las versiones de:
+  - `onBookingCreated`
+  - `onBookingStateChanged`
+  - `onKYCStatusChanged`
+
+### Si falla el deploy (IAM-GCP-001)
+Si aparece `The caller does not have permission` o error de Service Account:
+1. Preguntar al usuario si ya reparó el Service Account en Google Cloud IAM.
+2. Si no puede, proponer ejecutar el deploy desde **Google Cloud Shell** en `console.cloud.google.com`.
+
+### Módulos modificados (pendientes de deploy)
+| Archivo | Cambio |
+|:--------|:-------|
+| `functions/src/templates/email-layout.ts` | `APP_BASE_URL_PRODUCTION = 'https://venestay.com'` + footer corregido |
+| `functions/src/templates/booking-emails.ts` | 4 botones dinámicos + `/admin` → `/dashboard` |
+| `functions/src/templates/kyc-emails.ts` | 2 botones dinámicos con `baseUrl` opcional |
+| `src/features/bookings/types/index.ts` | Campo `appBaseUrl?: string` en tipo `Booking` |
+| `src/services/booking-service.ts` | `appBaseUrl: window.location.origin` en creación de reservas |
+| `src/features/bookings/components/checkout/CheckoutPage.tsx` | `appBaseUrl: window.location.origin` en `ensureBooking` |
+| `index.html` | `og:url` corregido a `venestay.com` |
 
 ---
 
@@ -95,6 +123,8 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
 |:------|:-------|:-------|:--------|:---------------|
+| 2026-06-18 | Planificación Soft KYC (CNE) Seguro | COMPLETADO | PENDIENTE | Ejecutar Specs Atómicas (SPEC-AUTH-KYC-001 a 004) en la próxima sesión. |
+| 2026-06-18 | Fix URLs Plantillas Email (SPEC-EMAIL-URL-FIX-001) | COMPLETADO | OK | Desplegar functions: `firebase deploy --only functions`. |
 | 2026-06-18 | Pausa de Sesión (Pruebas pendientes) | COMPLETADO | OK | Se continuará con las pruebas manuales de los correos y PDF adjunto en otra conversación. |
 | 2026-06-18 | PDF Resumen Estadía Email Confirmado (SPEC-EMAIL-PDF-ATTACH-001) | COMPLETADO | OK | (Manual) Verificar en el flujo de confirmación que el huésped recibe un email con un PDF adjunto del resumen de la estadía. |
 | 2026-06-18 | Fix Triggers Email Pago (SPEC-EMAIL-TRIGGERS-FIX-001) | COMPLETADO | OK | Prueba manual en localhost:3000: aprobar reserva, subir pago, verificar pago. Verificar que llegan los 3 correos faltantes. |
