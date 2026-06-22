@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { checkProfileCompletion } from '@/lib/user-utils';
 import { cn } from '@/lib/utils';
 import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
+import TravelerDNAWidget from './TravelerDNAWidget';
 
 const UserProfileSetup: React.FC = () => {
   const { user, profileData, refreshProfile } = useAuth();
@@ -44,10 +45,11 @@ const UserProfileSetup: React.FC = () => {
   const completionPercentage = checkProfileCompletion(profileData);
 
   // Detectar si hay un draft de reserva pendiente al montar (solo una vez)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   useEffect(() => {
     const draft = restoreDraft();
     if (draft) setPendingDraft({ returnUrl: draft.returnUrl });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // hasDraft/restoreDraft son funciones puras estables, no necesitan como dep
 
   useEffect(() => {
@@ -183,7 +185,7 @@ const UserProfileSetup: React.FC = () => {
             </div>
 
             {/* Title & Badges */}
-            <div className="flex-grow space-y-4 text-center md:text-left">
+            <div className="grow space-y-4 text-center md:text-left">
               <div className="bg-brand-500/10 mb-2 inline-flex items-center gap-2 rounded-full px-4 py-2">
                 <Sparkles className="text-brand-500 h-4 w-4" />
                 <span className="text-brand-500 text-[10px] font-black tracking-widest uppercase">
@@ -323,6 +325,16 @@ const UserProfileSetup: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Traveler DNA Widget */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mb-8"
+      >
+        <TravelerDNAWidget userProfile={profileData} />
+      </motion.div>
 
       {/* Form Grid */}
       <form

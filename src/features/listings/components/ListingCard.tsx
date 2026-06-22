@@ -21,7 +21,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
       rel="noopener noreferrer"
       className="group animate-fade-in block flex cursor-pointer flex-col space-y-3"
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 shadow-sm transition-all duration-500 group-hover:shadow-2xl">
+      <div className="relative aspect-4/5 overflow-hidden rounded-2xl bg-gray-100 shadow-sm transition-all duration-500 group-hover:shadow-2xl">
         <img
           src={listing.images[0]}
           alt={listing.title}
@@ -35,7 +35,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
           }}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
         <button
           onClick={(e) => {
@@ -97,7 +97,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
         </div>
 
         <p className="text-[11px] font-semibold text-gray-400">
-          {listing.bedrooms} hab · {listing.beds} camas ·{' '}
+          {listing.maxGuests} huéspedes · {listing.bedrooms} hab · {listing.beds} camas ·{' '}
           <span className="text-brand-navy/60">
             {listing.isPetFriendly ? 'Pet Friendly' : 'No Pets'}
           </span>

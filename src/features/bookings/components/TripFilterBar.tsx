@@ -73,7 +73,7 @@ export const TripFilterBar: React.FC<TripFilterBarProps> = ({
       </div>
 
       {/* Search Input (responsive layout) */}
-      <div className="relative flex items-center flex-grow max-w-md sm:justify-end">
+      <div className="relative flex items-center grow max-w-md sm:justify-end">
         {/* Mobile collapsed icon trigger */}
         <button
           onClick={() => setMobileExpanded(true)}

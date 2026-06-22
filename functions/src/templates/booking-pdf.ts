@@ -1,8 +1,12 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import PDFDocument = require('pdfkit');
 
 export const buildBookingConfirmationPDF = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   booking: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   guest: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   listing: any
 ): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
@@ -67,17 +71,17 @@ export const buildBookingConfirmationPDF = async (
          .text('ALQUILERES PREMIUM · LECHERÍA', 50, 65);
 
       // Etiqueta "Reserva Confirmada" a la derecha
-      doc.rect(doc.page.width - 200, 40, 150, 25)
+      doc.rect(doc.page.width - 220, 40, 170, 25)
          .fillOpacity(0.2)
          .fill(colors.gold);
       
       doc.fillOpacity(1);
-      doc.rect(doc.page.width - 200, 40, 150, 25).stroke(colors.gold);
+      doc.rect(doc.page.width - 220, 40, 170, 25).stroke(colors.gold);
          
       doc.fillColor(colors.white)
-         .fontSize(12)
+         .fontSize(11)
          .font('Helvetica-Bold')
-         .text('RESERVA CONFIRMADA', doc.page.width - 195, 47, { width: 140, align: 'center' });
+         .text('RESERVA CONFIRMADA', doc.page.width - 215, 48, { width: 160, align: 'center' });
 
       // ==========================================
       // INFORMACIÓN DE LA PROPIEDAD
@@ -238,6 +242,62 @@ export const buildBookingConfirmationPDF = async (
          .fontSize(9)
          .font('Helvetica-Bold')
          .text('✓ Garantía del 20% recibida y verificada', doc.page.width / 2, currentY + 32);
+
+      // ==========================================
+      // NORMAS DE LA CASA Y POLÍTICAS
+      // ==========================================
+      currentY += 90;
+      
+      // Control de paginación para evitar sobreposición con el footer
+      if (currentY > doc.page.height - 180) {
+        doc.addPage();
+        currentY = 50; 
+      }
+
+      doc.fillColor(colors.gold)
+         .fontSize(12)
+         .font('Helvetica-Bold')
+         .text('NORMAS DE LA CASA Y POLÍTICAS', 50, currentY);
+         
+      currentY += 20;
+
+      // Línea superior de la caja de normas
+      doc.moveTo(50, currentY).lineTo(doc.page.width - 50, currentY).stroke('#E5E7EB');
+      
+      let rulesY = currentY + 15;
+      
+      // Fila 1 de reglas (Mascotas y Fumar)
+      doc.fillColor(colors.gray).fontSize(10).font('Helvetica-Bold').text('• Mascotas:', 55, rulesY);
+      doc.fillColor(listing.isPetFriendly ? '#10B981' : '#EF4444').font('Helvetica').text(listing.isPetFriendly ? 'Permitidas' : 'No permitidas', 120, rulesY);
+
+      doc.fillColor(colors.gray).font('Helvetica-Bold').text('• Fumar:', doc.page.width / 2, rulesY);
+      doc.fillColor(listing.allowSmoking ? '#10B981' : '#EF4444').font('Helvetica').text(listing.allowSmoking ? 'Permitido' : 'No permitido', doc.page.width / 2 + 50, rulesY);
+
+      rulesY += 20;
+
+      // Fila 2 de reglas (Eventos y Cancelación)
+      doc.fillColor(colors.gray).font('Helvetica-Bold').text('• Fiestas/Eventos:', 55, rulesY);
+      doc.fillColor(listing.allowEvents ? '#10B981' : '#EF4444').font('Helvetica').text(listing.allowEvents ? 'Permitidos' : 'No permitidos', 155, rulesY);
+
+      doc.fillColor(colors.gray).font('Helvetica-Bold').text('• Cancelación:', doc.page.width / 2, rulesY);
+      doc.fillColor(colors.navy).font('Helvetica').text(listing.cancellationPolicy || 'Estricta', doc.page.width / 2 + 80, rulesY);
+
+      rulesY += 30;
+
+      // Normas Adicionales
+      if (listing.additionalRules && listing.additionalRules.length > 0) {
+        doc.fillColor(colors.gray).font('Helvetica-Bold').fontSize(9).text('NORMAS ADICIONALES DEL ANFITRIÓN:', 55, rulesY);
+        rulesY += 15;
+        doc.fillColor(colors.gray).font('Helvetica').fontSize(9);
+        
+        listing.additionalRules.forEach((rule: string) => {
+           doc.text(`- ${rule}`, 55, rulesY, { width: doc.page.width - 110 });
+           rulesY += doc.heightOfString(`- ${rule}`, { width: doc.page.width - 110 }) + 5;
+        });
+      }
+
+      // Línea inferior de la caja de normas
+      doc.moveTo(50, rulesY + 5).lineTo(doc.page.width - 50, rulesY + 5).stroke('#E5E7EB');
 
       // ==========================================
       // FOOTER

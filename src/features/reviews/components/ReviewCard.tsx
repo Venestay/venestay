@@ -39,7 +39,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-gray-700 to-gray-900 text-sm font-bold text-white shadow-inner">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-gray-700 to-gray-900 text-sm font-bold text-white shadow-inner">
             {guestName.charAt(0).toUpperCase()}
           </div>
           <div>

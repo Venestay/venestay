@@ -222,7 +222,7 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   return (
-    <div className="animate-fade-in flex max-h-[85vh] w-full max-w-[340px] flex-col overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-2xl ring-1 ring-black/5 sm:max-h-none">
+    <div className="animate-fade-in flex max-h-[85vh] w-full max-w-[340px] flex-col overflow-hidden rounded-4xl border border-gray-100 bg-white shadow-2xl ring-1 ring-black/5 sm:max-h-none">
       <div className="bg-brand-navy flex shrink-0 items-center justify-between p-3">
         <div>
           <p className="text-brand-500 mb-1 text-[8px] leading-none font-black tracking-widest uppercase">

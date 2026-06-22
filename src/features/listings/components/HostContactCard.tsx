@@ -43,7 +43,7 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           )}
         </div>
 
-        <div className="w-full flex-grow space-y-6 text-center md:text-left">
+        <div className="w-full grow space-y-6 text-center md:text-left">
           {loadingHost ? (
             <div className="space-y-4">
               <Skeleton className="h-8 w-1/2" />

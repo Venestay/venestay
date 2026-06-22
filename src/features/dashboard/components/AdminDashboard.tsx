@@ -9,7 +9,6 @@ import {
   updateDoc,
   deleteDoc,
   setDoc,
-  arrayUnion,
   where,
 } from 'firebase/firestore';
 import { Booking, BookingStatus } from '@/features/bookings/types';
@@ -185,9 +184,9 @@ const AdminDashboard: React.FC = () => {
         console.error('Error auto-reopening draft:', e);
       }
     }
-  }, []);
+  }, [editingListing]);
 
-  const reorderImagesWithPrimary = useCallback((images: string[], _envPhotos?: Record<string, string>): string[] => {
+  const reorderImagesWithPrimary = useCallback((images: string[], envPhotos?: Record<string, string>): string[] => {
     // Retornamos el array libre de duplicados y valores nulos sin alterar el orden del usuario
     return Array.from(new Set(images.filter(Boolean)));
   }, []);
@@ -308,7 +307,7 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setIsUploading(false);
     }
-  }, [user?.uid, editingListing?.id, listings, reorderImagesWithPrimary]);
+  }, [user, editingListing?.id, listings, reorderImagesWithPrimary]);
 
   const removeImage = (index: number) => {
     setEditingListing((prev) => {
@@ -484,7 +483,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 pt-16">
-      <div className="animate-slide-up relative flex w-full flex-grow flex-col overflow-hidden bg-white shadow-2xl">
+      <div className="animate-slide-up relative flex w-full grow flex-col overflow-hidden bg-white shadow-2xl">
         <DashboardHeader
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -507,7 +506,7 @@ const AdminDashboard: React.FC = () => {
 
         {/* Toolbar */}
         <div className="flex flex-col gap-4 border-b border-gray-100 bg-gray-50/50 p-6 lg:flex-row">
-          <div className="relative flex-grow">
+          <div className="relative grow">
             <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -564,7 +563,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* List Content */}
-        <div className="no-scrollbar flex-grow overflow-y-auto bg-gray-50/20 p-6 md:p-8">
+        <div className="no-scrollbar grow overflow-y-auto bg-gray-50/20 p-6 md:p-8">
           <AnimatePresence mode="wait">
             {/* Herramienta de Migración Temporal - Visible para Admins y Hosts en cualquier pestaña */}
             {(isAdmin || isHost) && (
@@ -685,7 +684,7 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      <Suspense fallback={<div className="fixed inset-0 z-[120] bg-white/50 backdrop-blur-sm flex items-center justify-center"><Skeleton className="h-20 w-20 rounded-full" /></div>}>
+      <Suspense fallback={<div className="fixed inset-0 z-120 bg-white/50 backdrop-blur-sm flex items-center justify-center"><Skeleton className="h-20 w-20 rounded-full" /></div>}>
         {editingListing && (
           <ListingForm
             editingListing={editingListing}
@@ -706,17 +705,18 @@ const AdminDashboard: React.FC = () => {
 
       {activeChatId && activeChatBooking && (
         <FloatingChat
-          isOpen={true}
-          bookingId={activeChatId}
-          listingTitle={activeChatBooking.listingTitle}
-          senderId={user?.uid || 'admin'}
-          senderName={user?.displayName || 'Admin'}
-          recipientName={activeChatBooking.guestName || 'Huésped'}
-          recipientId={activeChatBooking.guestId}
+          isOpen={!!activeChatId}
           onClose={() => {
             setActiveChatId(null);
             setActiveChatBooking(null);
           }}
+          bookingId={activeChatId}
+          listingTitle={activeChatBooking.listingTitle}
+          senderId={user?.uid || 'admin'}
+          senderName={user?.displayName || 'Anfitrión (Tú)'}
+          recipientName={activeChatBooking.guestName || 'Huésped'}
+          recipientId={activeChatBooking.guestId}
+          isHost={true}
         />
       )}
 

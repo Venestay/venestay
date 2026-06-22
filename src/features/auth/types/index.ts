@@ -67,6 +67,19 @@ export interface HostLoyaltyStats {
   lastRecalculatedAt: string;
 }
 
+export interface TrustSignals {
+  emailVerified: boolean;
+  phoneVerified: boolean; // Legacy
+  whatsappVerified: boolean;
+  whatsappNumber: string | null;
+  whatsappVerifiedAt: string | null;
+  paymentNameMatchStatus: 'NOT_ATTEMPTED' | 'PENDING' | 'MATCHED' | 'FAILED';
+  paymentNameMatchedAt: string | null;
+  paymentNameExtracted: string | null;
+  vouchingStatus: 'NONE' | 'VOUCHED';
+  vouchedBy: string | null;
+}
+
 export interface UserProfile {
   uid: string;
   email: string | null;
@@ -85,6 +98,17 @@ export interface UserProfile {
   kycSubmittedAt?: string;
   kycReviewedAt?: string;
   kycRejectionNote?: string;
+  
+  trustSignals?: TrustSignals;
+  
+  profile?: {
+    bio?: string;
+    birthDate?: string | number | Date | FieldValue;
+    birthDateVerified?: boolean;
+  };
+
+  kycPhase?: 0 | 1 | 2 | 3;
+  canBook?: boolean;
   
   // Pasaporte VeneStay / Identity
   bio?: string;

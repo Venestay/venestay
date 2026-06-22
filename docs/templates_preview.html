@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeneStay - Previsualización de PDF Propuesto</title>
+  <style>
+    :root {
+      --navy: #0B1120;
+      --gold: #C5A059;
+      --gray: #4B5563;
+      --lightGray: #F3F4F6;
+      --text: #1F2937;
+      --white: #FFFFFF;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #e2e8f0;
+      margin: 0;
+      padding: 40px;
+    }
+    h1 { text-align: center; color: var(--navy); margin-bottom: 40px; }
+    
+    .template-container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 40px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .preview-box {
+      border: 1px dashed #ccc;
+      padding: 20px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ESTILOS APROXIMADOS DEL PDF NUEVO */
+    .pdf-container {
+      width: 595px; /* A4 Width en px a 72dpi */
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      position: relative;
+      font-family: Helvetica, Arial, sans-serif;
+      text-align: left;
+      padding-bottom: 80px;
+    }
+    .pdf-header {
+      background: var(--navy);
+      height: 100px;
+      padding: 40px 50px;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .pdf-logo { color: var(--gold); font-size: 24px; font-weight: bold; }
+    .pdf-subtitle { color: #9CA3AF; font-size: 10px; margin-top: 5px; }
+    
+    /* MODIFICACIÓN: Badge más ancho y fuente ligeramente más pequeña */
+    .pdf-badge {
+      position: absolute;
+      right: 50px;
+      top: 40px;
+      width: 170px; /* Incrementado de 150px a 170px */
+      height: 25px;
+      border: 1px solid var(--gold);
+      background: rgba(197, 160, 89, 0.2);
+      color: white;
+      font-size: 11px; /* Reducido para que entre en una línea */
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.5px;
+    }
+    
+    .pdf-body {
+      padding: 30px 50px;
+    }
+    .pdf-prop-title { color: var(--navy); font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+    .pdf-prop-text { color: var(--gray); font-size: 11px; margin-bottom: 5px; }
+    
+    .pdf-grid {
+      background: var(--lightGray);
+      border: 1px solid #E5E7EB;
+      display: flex;
+      height: 80px;
+      margin-top: 30px;
+    }
+    .pdf-grid-col { flex: 1; padding: 15px 20px; }
+    .pdf-grid-col:first-child { border-right: 1px solid #D1D5DB; }
+    .pdf-grid-title { color: var(--gray); font-size: 10px; font-weight: bold; }
+    .pdf-grid-value { color: var(--navy); font-size: 14px; margin-top: 5px; margin-bottom: 5px; }
+    .pdf-grid-sub { color: var(--gray); font-size: 10px; }
+
+    .pdf-status {
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      padding: 15px 20px;
+      margin-top: 30px;
+    }
+    .pdf-status-title { color: #065F46; font-size: 12px; font-weight: bold; }
+    .pdf-status-text { color: #047857; font-size: 10px; margin-top: 5px; }
+
+    .pdf-summary-title { color: var(--gold); font-size: 12px; font-weight: bold; margin-top: 30px; margin-bottom: 10px; text-transform: uppercase;}
+    .pdf-summary-box {
+      background: var(--lightGray);
+      border: 1px solid #E5E7EB;
+      padding: 15px 20px;
+    }
+    .pdf-summary-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #D1D5DB;
+      padding: 10px 0;
+      font-size: 11px;
+    }
+    .pdf-summary-row:last-child { border-bottom: none; }
+    .pdf-summary-label { font-weight: bold; }
+
+    /* NUEVA SECCIÓN DE NORMAS DE LA CASA */
+    .pdf-rules-grid {
+      display: flex;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #E5E7EB;
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+    }
+    .pdf-rules-col {
+      width: 50%;
+      margin-bottom: 10px;
+      font-size: 11px;
+    }
+    .pdf-rules-bullet {
+      color: var(--gray);
+    }
+    .pdf-rules-value {
+      font-weight: bold;
+      color: var(--navy);
+      margin-left: 5px;
+    }
+
+    .pdf-footer {
+      position: absolute;
+      bottom: 20px;
+      left: 50px;
+      right: 50px;
+      border-top: 1px solid #E5E7EB;
+      padding-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--gray);
+      font-size: 9px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>Previsualización: Nuevo PDF de Confirmación</h1>
+  
+  <div class="template-container">
+    <h3 style="color: #0B1120;">Visualización de los Cambios Propuestos:</h3>
+    <ul>
+      <li><strong>Badge superior:</strong> Más ancho y fuente ajustada para mantener "RESERVA CONFIRMADA" en una sola línea.</li>
+      <li><strong>Sección nueva:</strong> Agregado bloque de "NORMAS DE LA CASA Y POLÍTICAS" al final, antes del footer.</li>
+    </ul>
+
+    <div class="preview-box">
+      <div class="pdf-container">
+        <!-- HEADER -->
+        <div class="pdf-header">
+          <div class="pdf-logo">VENESTAY</div>
+          <div class="pdf-subtitle">ALQUILERES PREMIUM · LECHERÍA</div>
+          <div class="pdf-badge">RESERVA CONFIRMADA</div>
+        </div>
+
+        <div class="pdf-body">
+          <div class="pdf-prop-title">Villa Sol y Arena</div>
+          <div class="pdf-prop-text">Dirección: Av. Principal, El Morro, Lechería</div>
+          <div class="pdf-prop-text">Huésped: Rodrigo Mendoza</div>
+          <div class="pdf-prop-text">Personas: 2 huésped(es)</div>
+
+          <div class="pdf-grid">
+            <div class="pdf-grid-col">
+              <div class="pdf-grid-title">ESTADÍA</div>
+              <div class="pdf-grid-value">3 Noche(s)</div>
+              <div class="pdf-grid-sub">12 Ago 2026 -&gt; 15 Ago 2026</div>
+            </div>
+            <div class="pdf-grid-col">
+              <div class="pdf-grid-title">HORARIOS</div>
+              <div class="pdf-grid-value" style="font-size: 12px;">Check-In: 15:00</div>
+              <div class="pdf-grid-sub">Check-Out: 11:00</div>
+            </div>
+          </div>
+
+          <div class="pdf-status">
+            <div class="pdf-status-title">¡Tu estadía está confirmada!</div>
+            <div class="pdf-status-text">El anfitrión ha verificado la garantía del 20% y asegurado tus fechas.</div>
+          </div>
+
+          <div class="pdf-summary-title">RESUMEN DE SALDO</div>
+          <div class="pdf-summary-box">
+            <div class="pdf-summary-row">
+              <span class="pdf-summary-label" style="color: var(--text);">Total de la Estadía</span>
+              <span style="color: var(--text);">$150.00</span>
+            </div>
+            <div class="pdf-summary-row">
+              <span class="pdf-summary-label" style="color: var(--gold);">Garantía Pagada (20%)</span>
+              <span style="color: var(--gold);">$30.00</span>
+            </div>
+            <div class="pdf-summary-row" style="border: none;">
+              <span class="pdf-summary-label" style="color: var(--text);">Saldo Pendiente (80%) <br> <small style="color: var(--gray); font-weight: normal;">A pagar al anfitrión el día del Check-in</small></span>
+              <span style="color: var(--navy); font-size: 14px; font-weight: bold;">$120.00</span>
+            </div>
+          </div>
+
+          <div class="pdf-summary-title">COMPROBANTE DE PAGO</div>
+          <div class="pdf-summary-box">
+            <div class="pdf-grid-title">REFERENCIA DE TRANSACCIÓN</div>
+            <div class="pdf-grid-value" style="font-family: monospace;">TX-987654321</div>
+            <div class="pdf-status-text" style="color: #10B981; font-weight: bold;">✓ Garantía del 20% recibida y verificada</div>
+          </div>
+
+          <!-- NUEVA SECCION DE NORMAS -->
+          <div class="pdf-summary-title" style="margin-top: 40px;">NORMAS DE LA CASA Y POLÍTICAS</div>
+          <div class="pdf-summary-box" style="background-color: white;">
+            <div class="pdf-rules-grid">
+              <div class="pdf-rules-col"><span class="pdf-rules-bullet">• Mascotas:</span><span class="pdf-rules-value" style="color: #ef4444;">No permitidas</span></div>
+              <div class="pdf-rules-col"><span class="pdf-rules-bullet">• Fumar:</span><span class="pdf-rules-value" style="color: #ef4444;">No permitido</span></div>
+              <div class="pdf-rules-col"><span class="pdf-rules-bullet">• Fiestas/Eventos:</span><span class="pdf-rules-value" style="color: #ef4444;">No permitidos</span></div>
+              <div class="pdf-rules-col"><span class="pdf-rules-bullet">• Cancelación:</span><span class="pdf-rules-value">Estricta</span></div>
+            </div>
+            <div class="pdf-grid-title" style="margin-top: 10px; margin-bottom: 5px;">NORMAS ADICIONALES DEL ANFITRIÓN:</div>
+            <div style="font-size: 11px; color: var(--gray); line-height: 1.5;">
+              - Respetar el horario de silencio del condominio a partir de las 10:00 PM.<br>
+              - Prohibido el ingreso de visitantes no registrados en la reserva.<br>
+              - Apagar los aires acondicionados al salir del inmueble.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="pdf-footer">
+          <span>Código de Reserva: A1B2C3D4</span>
+          <span>Fecha de Emisión: 21/06/2026</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

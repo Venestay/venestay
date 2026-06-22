@@ -204,7 +204,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
           {/* Search Bar - Desktop */}
           {!logoOnly && (
-            <div className="relative mx-8 hidden max-w-xl flex-grow lg:flex">
+            <div className="relative mx-8 hidden max-w-xl grow lg:flex">
               <div className="hover:border-brand-200 flex w-full items-center rounded-full border border-gray-200 bg-gray-50 transition-all duration-300 hover:bg-white hover:shadow-lg">
                 <div className="flex-1 cursor-text border-r border-gray-100 px-5 py-2 hover:bg-gray-100/50">
                   <label className="text-brand-navy/60 block text-[10px] font-black uppercase">
@@ -244,7 +244,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
                   {isCalendarOpen && (
                     <div
-                      className="animate-slide-up absolute top-full right-0 z-[120] mt-4 w-[320px] origin-top-right md:w-[350px]"
+                      className="animate-slide-up absolute top-full right-0 z-120 mt-4 w-[320px] origin-top-right md:w-[350px]"
                       onClick={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
                     >
@@ -342,7 +342,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 z-[110] mt-3 w-64 origin-top-right rounded-2xl border border-gray-100 bg-white py-3 shadow-xl"
+                      className="absolute right-0 z-110 mt-3 w-64 origin-top-right rounded-2xl border border-gray-100 bg-white py-3 shadow-xl"
                     >
                       {!user ? (
                         <div className="py-2">
@@ -482,7 +482,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
               {isCalendarOpen && (
                 <div
-                  className="animate-slide-up absolute top-full right-0 left-0 z-[120] mt-2 rounded-3xl border border-gray-100 bg-white p-2 shadow-2xl"
+                  className="animate-slide-up absolute top-full right-0 left-0 z-120 mt-2 rounded-3xl border border-gray-100 bg-white p-2 shadow-2xl"
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
                 >

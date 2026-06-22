@@ -64,7 +64,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ oobCode, onClose }) => {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white" role="status" aria-busy="true">
+      <div className="fixed inset-0 z-200 flex items-center justify-center bg-white" role="status" aria-busy="true">
         <div className="space-y-4 text-center">
           <Loader2 className="text-brand-navy mx-auto h-12 w-12 animate-spin" aria-hidden="true" />
           <p className="text-brand-navy text-xs font-black tracking-widest uppercase italic">
@@ -77,7 +77,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ oobCode, onClose }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
         {/* Backdrop */}
         <div 
           className="absolute inset-0 cursor-default" 

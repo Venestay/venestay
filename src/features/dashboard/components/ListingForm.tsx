@@ -258,7 +258,7 @@ const ListingFormContent: React.FC<{
             ))}
           </div>
 
-          <div className="no-scrollbar flex-grow overflow-y-auto p-6 md:p-8">
+          <div className="no-scrollbar grow overflow-y-auto p-6 md:p-8">
             <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-brand-500" /></div>}>
               <AnimatePresence mode="wait">
                 {step === 1 && <StepGeneral />}
@@ -283,7 +283,7 @@ const ListingFormContent: React.FC<{
                 <button
                   type="submit"
                   disabled={isSaving || isUploading}
-                  className="bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow disabled:opacity-50"
+                  className="bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all grow disabled:opacity-50"
                 >
                   {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Guardando...</> : <><Check className="h-4 w-4" /> Actualizar Propiedad</>}
                 </button>
@@ -293,7 +293,7 @@ const ListingFormContent: React.FC<{
                   onClick={handleNextStep}
                   disabled={!isStepValid({ step, data: getStepData(step) } as unknown as FormStepState)}
                   className={cn(
-                    "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow",
+                    "flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all grow",
                     isStepValid({ step, data: getStepData(step) } as unknown as FormStepState)
                       ? "bg-brand-navy text-white hover:bg-brand-500 hover:text-brand-navy"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
@@ -303,7 +303,7 @@ const ListingFormContent: React.FC<{
                 </button>
               )
             ) : (
-              <button type="submit" disabled={isSaving || isUploading} className="bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all flex-grow disabled:opacity-50">
+              <button type="submit" disabled={isSaving || isUploading} className="bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl transition-all grow disabled:opacity-50">
                 {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> Guardando...</> : <><Check className="h-4 w-4" /> {editingListing.id.startsWith('listing-') ? 'Publicar Propiedad' : 'Actualizar Propiedad'}</>}
               </button>
             )}
@@ -323,7 +323,7 @@ const ListingFormContent: React.FC<{
               transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
               className="bg-brand-500 text-white p-6 rounded-full shadow-2xl shadow-brand-500/40"
             >
-              <Check className="h-16 w-16 stroke-[3]" />
+              <Check className="h-16 w-16 stroke-3" />
             </motion.div>
             <motion.div
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0] }}
@@ -412,7 +412,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
         document.body.removeAttribute('data-modal-count');
       }
     };
-  }, []);
+  }, [editingListing.id, setEditingListing]);
 
   useEffect(() => {
     if (editingListing.id.startsWith('listing-')) {
@@ -517,7 +517,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
   };
 
   return (
-    <div className="bg-brand-navy/60 fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto p-4 backdrop-blur-md">
+    <div className="bg-brand-navy/60 fixed inset-0 z-110 flex items-center justify-center overflow-y-auto p-4 backdrop-blur-md">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -551,7 +551,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
       {/* Warning Modal for Unsaved Changes */}
       <AnimatePresence>
         {showWarningModal && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-brand-navy/80 p-4 backdrop-blur-md">
+          <div className="fixed inset-0 z-120 flex items-center justify-center bg-brand-navy/80 p-4 backdrop-blur-md">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

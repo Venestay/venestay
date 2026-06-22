@@ -52,6 +52,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { cn, safeFormat, calculatePaymentBreakdown, parseLocalDate } from '@/lib/utils';
+import { toast } from 'sonner';
 import Chat from '@/components/Chat';
 import { calculateTrustScore } from '@/services/user-service';
 import * as bookingService from '@/services/booking-service';
@@ -66,6 +67,22 @@ import { CANCELLATION_POLICIES } from '@/features/listings/utils/cancellationPol
 import { CancellationPolicyType } from '@/features/listings/types';
 import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
 import { Calendar as CalendarIcon } from 'lucide-react';
+
+// Correos de administración/QA que marcan una reserva como prueba
+const QA_TEST_EMAILS = [
+  'anfitrionvenestay@venestay.com',
+  'rodriguezzcarlose@gmail.com',
+  'zabalareduardoc@gmail.com',
+];
+
+function isQaTestEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const lower = email.toLowerCase();
+  return (
+    lower.endsWith('@venestay.com') ||
+    QA_TEST_EMAILS.includes(lower)
+  );
+}
 
 const CheckoutPage: React.FC = () => {
   const { bookingId: urlBookingId } = useParams<{ bookingId: string }>();
@@ -150,12 +167,11 @@ const CheckoutPage: React.FC = () => {
   }, [profileData]);
 
   const isBlockedByTrust = useMemo(() => {
-    return trustScore < 40;
+    return trustScore < 25;
   }, [trustScore]);
 
   const isKycVerified = useMemo(() => {
-    const kycStatus = profileData?.kycStatus;
-    return kycStatus === 'VERIFIED' || profileData?.isIdentityVerified === true;
+    return profileData?.canBook === true;
   }, [profileData]);
 
   const isFormDisabled = useMemo(() => {
@@ -292,6 +308,13 @@ const CheckoutPage: React.FC = () => {
         async (docSnap) => {
           if (docSnap.exists()) {
             const bookingData = docSnap.data();
+
+            if (bookingData.status === 'PENDING_APPROVAL') {
+              toast.info('Tu solicitud está en espera de aprobación.');
+              navigate('/', { replace: true });
+              return;
+            }
+
             setBooking({ id: docSnap.id, ...bookingData } as Booking);
 
             if (!listing) {
@@ -357,6 +380,7 @@ const CheckoutPage: React.FC = () => {
     } else {
       fetchDraftData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlBookingId, location.search, location.state]);
 
   useEffect(() => {
@@ -395,6 +419,7 @@ const CheckoutPage: React.FC = () => {
       }
     };
     fetchReserved();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing?.id]);
 
   const convertedAmount = useMemo(() => {
@@ -521,7 +546,11 @@ const CheckoutPage: React.FC = () => {
             note: 'Reserva creada automáticamente al entrar al checkout',
           },
         ],
-        isTestBooking: (await user.getIdTokenResult()).claims.isDemo === true || (await user.getIdTokenResult()).claims.qa === true,
+        isTestBooking: (() => {
+          try {
+            return isQaTestEmail(user.email);
+          } catch { return false; }
+        })(),
         appBaseUrl: window.location.origin,
       };
 
@@ -544,6 +573,7 @@ const CheckoutPage: React.FC = () => {
     if (user && booking?.isDraft && listing && !loading && !isSubmitting && !isRequestMode) {
       ensureBooking();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, booking?.isDraft, listing, loading]);
 
   // Click outside logic to close menus
@@ -649,10 +679,10 @@ const CheckoutPage: React.FC = () => {
   };
 
   /** Guarda el draft y navega al pasaporte para completar KYC */
-  const handleGoToPassport = () => {
+  const handleGoToPassport = (section?: string) => {
     persistDraftAndReturn();
     setShowKYCModal(false);
-    navigate('/mi-pasaporte');
+    navigate(`/mi-pasaporte${section ? `?section=${section}` : ''}`);
   };
 
   const handleSubmitPayment = async () => {
@@ -665,13 +695,10 @@ const CheckoutPage: React.FC = () => {
 
     if (!booking || !listing) return;
 
-    // 2. Verificar KYC — bloquear UNVERIFIED y REJECTED, avisar PENDING_REVIEW
-    const kycStatus = profileData?.kycStatus;
-    const isKycVerified =
-      kycStatus === 'VERIFIED' || profileData?.isIdentityVerified === true;
+    // 2. Verificar Fase 1 de KYC (canBook)
+    const canBook = profileData?.canBook === true;
 
-    if (!isKycVerified && kycStatus !== 'PENDING_REVIEW') {
-      // UNVERIFIED o REJECTED → abrir modal de KYC
+    if (!canBook) {
       persistDraftAndReturn();
       setShowKYCModal(true);
       return;
@@ -692,7 +719,7 @@ const CheckoutPage: React.FC = () => {
     // 4. Check Trust Score Gatekeeper (VeneStay Passport)
     if (isBlockedByTrust) {
       setError(
-        `Tu nivel de confianza (${trustScore}%) es insuficiente para reservar. El mínimo requerido es 40%.`
+        `Tu nivel de confianza (${trustScore}%) es insuficiente para reservar. El mínimo requerido es 25%.`
       );
       return;
     }
@@ -739,7 +766,11 @@ const CheckoutPage: React.FC = () => {
                 : 'Reserva creada desde el proceso de checkout (flujo frictionless)',
             },
           ],
-          isTestBooking: (await user.getIdTokenResult()).claims.isDemo === true || (await user.getIdTokenResult()).claims.qa === true,
+          isTestBooking: (() => {
+            try {
+              return isQaTestEmail(user.email);
+            } catch { return false; }
+          })(),
         };
 
         currentBookingId = await bookingService.createBookingWithTransaction(
@@ -921,7 +952,7 @@ const CheckoutPage: React.FC = () => {
   if (loading || authLoading) {
     return (
       <div className="flex min-h-screen flex-col overflow-hidden bg-white md:flex-row">
-        <div className="flex-grow space-y-12 p-12 md:w-[65%]">
+        <div className="grow space-y-12 p-12 md:w-[65%]">
           <div className="flex items-center space-x-6">
             <Skeleton className="h-12 w-12 rounded-2xl" />
             <div className="space-y-2">
@@ -1116,7 +1147,7 @@ const CheckoutPage: React.FC = () => {
                       alt="Listing"
                     />
                   </div>
-                  <div className="flex-grow space-y-2">
+                  <div className="grow space-y-2">
                     <div className="flex items-center space-x-2">
                       <span className="text-brand-500 text-[10px] font-black tracking-widest uppercase">
                         {listing.propertyType || 'Propiedad'}
@@ -1148,7 +1179,7 @@ const CheckoutPage: React.FC = () => {
                       )}>
                         <ShieldCheck className="h-5 w-5" />
                       </div>
-                      <div className="flex-grow">
+                      <div className="grow">
                         <div className="flex items-center justify-between">
                           <p className={cn(
                             "text-[10px] font-black tracking-widest uppercase",
@@ -1196,15 +1227,18 @@ const CheckoutPage: React.FC = () => {
                   <div className="relative w-full flex-1">
                     <button
                       ref={stayTriggerRef}
+                      disabled={!isDraft}
                       onClick={() => {
                         setIsCalendarOpen(!isCalendarOpen);
                         setIsGuestsEditorOpen(false);
                       }}
                       className={cn(
-                        'group h-28 w-full cursor-pointer rounded-[28px] border bg-white p-6 text-left shadow-sm transition-all',
+                        'group h-28 w-full rounded-[28px] border bg-white p-6 text-left shadow-sm transition-all',
                         isCalendarOpen
                           ? 'border-brand-500 ring-brand-500/5 ring-4'
-                          : 'hover:border-brand-500 border-gray-100'
+                          : !isDraft 
+                            ? 'opacity-70 cursor-not-allowed bg-gray-50 border-gray-200' 
+                            : 'hover:border-brand-500 border-gray-100 cursor-pointer'
                       )}
                       id="checkout-stay-trigger"
                     >
@@ -1234,7 +1268,7 @@ const CheckoutPage: React.FC = () => {
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute top-full left-0 z-[60] mt-4 w-[320px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
+                          className="absolute top-full left-0 z-60 mt-4 w-[320px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
                         >
                           <div className="p-2">
                             <Calendar
@@ -1255,15 +1289,18 @@ const CheckoutPage: React.FC = () => {
                   <div className="relative w-full flex-1">
                     <button
                       ref={guestsTriggerRef}
+                      disabled={!isDraft}
                       onClick={() => {
                         setIsGuestsEditorOpen(!isGuestsEditorOpen);
                         setIsCalendarOpen(false);
                       }}
                       className={cn(
-                        'group h-28 w-full cursor-pointer rounded-[28px] border bg-white p-6 text-left shadow-sm transition-all',
+                        'group h-28 w-full rounded-[28px] border bg-white p-6 text-left shadow-sm transition-all',
                         isGuestsEditorOpen
                           ? 'border-brand-500 ring-brand-500/5 ring-4'
-                          : 'hover:border-brand-500 border-gray-100'
+                          : !isDraft
+                            ? 'opacity-70 cursor-not-allowed bg-gray-50 border-gray-200'
+                            : 'hover:border-brand-500 border-gray-100 cursor-pointer'
                       )}
                       id="checkout-guests-trigger"
                     >
@@ -1285,7 +1322,7 @@ const CheckoutPage: React.FC = () => {
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute top-full left-0 z-[60] mt-4 min-w-[250px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
+                          className="absolute top-full left-0 z-60 mt-4 min-w-[250px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
                         >
                           <div className="flex items-center justify-between p-6">
                             <span className="text-brand-navy text-[10px] font-black tracking-widest uppercase">
@@ -1445,7 +1482,7 @@ const CheckoutPage: React.FC = () => {
                   <div className="bg-brand-navy text-brand-500 flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
                     1
                   </div>
-                  <div className="flex flex-grow items-center justify-between">
+                  <div className="flex grow items-center justify-between">
                     <h2 className="text-brand-navy text-sm font-black tracking-widest uppercase flex items-center gap-2">
                       Datos de Pago {listing?.bookingMode === 'request' && <span className="text-[9px] text-[#b08f23] font-black italic tracking-widest lowercase bg-brand-gold/10 px-2 py-0.5 rounded-md leading-none select-none">(Opcional)</span>}
                     </h2>
@@ -1701,7 +1738,7 @@ const CheckoutPage: React.FC = () => {
                               )}
 
                               {selectedMethod.type === 'PagoMovil' && rates && (
-                                <div className="md:col-span-2 flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/[0.02] p-6 text-center space-y-4">
+                                <div className="md:col-span-2 flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/2 p-6 text-center space-y-4">
                                   <div className="flex items-center gap-2">
                                     <QrCode className="h-5 w-5 text-brand-500" />
                                     <h4 className="text-[10px] font-black tracking-widest uppercase text-brand-500">
@@ -2003,7 +2040,7 @@ const CheckoutPage: React.FC = () => {
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      onClick={handleGoToPassport}
+                      onClick={() => handleGoToPassport()}
                       className="mb-6 flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-amber-100 bg-amber-50/40 p-4 transition-all duration-300 hover:scale-[1.01] hover:border-amber-200 hover:bg-amber-50 shadow-sm"
                     >
                       <div className="flex items-center gap-3">
@@ -2030,7 +2067,7 @@ const CheckoutPage: React.FC = () => {
                     className={cn(
                       "shadow-2xl flex w-full items-center justify-center space-x-4 rounded-[40px] py-8 text-sm font-black tracking-[0.3em] uppercase transition-all duration-500 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
                       isRequestPhase
-                        ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
+                        ? "animate-shimmer-sweep bg-linear-to-r from-brand-600 via-brand-400 to-brand-600 bg-size-[200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
                         : "bg-brand-500 text-brand-navy shadow-brand-500/20 hover:bg-brand-400"
                     )}
                   >
@@ -2067,7 +2104,7 @@ const CheckoutPage: React.FC = () => {
 
       {/* Mobile Sticky CTA */}
       {!uploadSuccess && (
-        <div className="pointer-events-none fixed right-0 bottom-16 left-0 z-[60] p-4 md:hidden">
+        <div className="pointer-events-none fixed right-0 bottom-16 left-0 z-60 p-4 md:hidden">
           <button
             id="payment-submit-button-mobile"
             disabled={isFormDisabled}
@@ -2075,7 +2112,7 @@ const CheckoutPage: React.FC = () => {
             className={cn(
               "pointer-events-auto flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-xs font-black tracking-[0.2em] uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
               isRequestPhase
-                ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
+                ? "animate-shimmer-sweep bg-linear-to-r from-brand-600 via-brand-400 to-brand-600 bg-size-[200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
                 : "bg-brand-500 text-brand-navy shadow-brand-500/40"
             )}
           >
@@ -2094,10 +2131,10 @@ const CheckoutPage: React.FC = () => {
       )}
 
       {/* Mobile Chat Button and View */}
-      <div className="fixed right-0 bottom-0 left-0 z-[80] flex gap-3 border-t border-gray-100 bg-white/80 p-3 backdrop-blur-xl md:hidden">
+      <div className="fixed right-0 bottom-0 left-0 z-80 flex gap-3 border-t border-gray-100 bg-white/80 p-3 backdrop-blur-xl md:hidden">
         <button
           onClick={() => setIsChatOpen(true)}
-          className="bg-brand-navy flex flex-grow items-center justify-center space-x-3 rounded-2xl py-4 text-white transition-transform active:scale-95"
+          className="bg-brand-navy flex grow items-center justify-center space-x-3 rounded-2xl py-4 text-white transition-transform active:scale-95"
         >
           <MessageSquare className="h-4 w-4" />
           <span className="text-[10px] font-black tracking-widest uppercase">
@@ -2118,7 +2155,7 @@ const CheckoutPage: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-0 z-[100] flex flex-col bg-white md:hidden"
+              className="fixed inset-0 z-100 flex flex-col bg-white md:hidden"
             >
               <div className="bg-brand-navy flex items-center justify-between border-b border-gray-100 p-6 text-white">
                 <div className="flex items-center gap-4">
@@ -2148,7 +2185,7 @@ const CheckoutPage: React.FC = () => {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              <div className="flex-grow overflow-hidden">
+              <div className="grow overflow-hidden">
                 <Chat
                   bookingId={booking?.id || ''}
                   senderId={user?.uid || 'guest'}
@@ -2166,7 +2203,7 @@ const CheckoutPage: React.FC = () => {
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsChatOpen(false)}
-              className="fixed inset-0 z-[90] bg-brand-navy hidden md:block backdrop-blur-[2px]"
+              className="fixed inset-0 z-90 bg-brand-navy hidden md:block backdrop-blur-[2px]"
             />
 
             {/* Desktop View Drawer */}
@@ -2175,7 +2212,7 @@ const CheckoutPage: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 z-[100] hidden h-screen w-[420px] flex-col border-l border-gray-100 bg-gray-50 shadow-2xl md:flex"
+              className="fixed right-0 top-0 bottom-0 z-100 hidden h-screen w-[420px] flex-col border-l border-gray-100 bg-gray-50 shadow-2xl md:flex"
             >
               <div className="flex items-center justify-between border-b border-gray-200 bg-white p-6 shadow-sm">
                 <div className="flex items-center gap-4">
@@ -2211,7 +2248,7 @@ const CheckoutPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="flex-grow overflow-hidden bg-white/40 backdrop-blur-sm">
+              <div className="grow overflow-hidden bg-white/40 backdrop-blur-sm">
                 <Chat
                   bookingId={booking?.id || ''}
                   senderId={user?.uid || 'guest'}
@@ -2246,6 +2283,7 @@ const CheckoutPage: React.FC = () => {
         isOpen={showKYCModal}
         onClose={() => setShowKYCModal(false)}
         kycStatus={profileData?.kycStatus}
+        profile={profileData}
         onGoToPassport={handleGoToPassport}
       />
 

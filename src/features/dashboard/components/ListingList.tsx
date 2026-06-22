@@ -48,7 +48,7 @@ const ListingList: React.FC<ListingListProps> = ({
               )}
             </div>
           </div>
-          <div className="flex flex-grow flex-col p-6">
+          <div className="flex grow flex-col p-6">
             <div className="mb-2 flex items-start justify-between">
               <h4 className="text-brand-navy line-clamp-1 text-lg leading-tight font-black">
                 {listing.title}

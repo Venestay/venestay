@@ -137,7 +137,7 @@ const StepPayments: React.FC = () => {
                 type="button" 
                 aria-pressed={isActive}
                 onClick={() => handlePaymentTypeSelect(opt.type as PaymentMethodType)} 
-                className={`group relative flex flex-col items-center gap-3 rounded-[2rem] border-2 p-5 transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500 ${isActive ? 'bg-brand-navy border-brand-navy text-white shadow-xl -translate-y-1 motion-reduce:transform-none' : 'bg-white border-transparent text-brand-navy hover:border-brand-500/20 shadow-sm'}`}
+                className={`group relative flex flex-col items-center gap-3 rounded-4xl border-2 p-5 transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500 ${isActive ? 'bg-brand-navy border-brand-navy text-white shadow-xl -translate-y-1 motion-reduce:transform-none' : 'bg-white border-transparent text-brand-navy hover:border-brand-500/20 shadow-sm'}`}
               >
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${isActive ? 'bg-white/10' : opt.bgColor}`} aria-hidden="true">
                   <opt.icon className={`h-6 w-6 ${isActive ? 'text-brand-500' : opt.color}`} />

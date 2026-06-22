@@ -29,6 +29,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ImageModal } from '@/components/ui/ImageModal';
+import { HOST_QUICK_REPLIES } from '@/lib/quick-replies';
 
 interface SystemMessage extends Message {
   details?: string;
@@ -42,6 +43,7 @@ interface ChatProps {
   recipientId?: string;
   isFloating?: boolean;
   onAuthRequired?: () => void;
+  isHost?: boolean;
 }
 
 const Chat: React.FC<ChatProps> = ({
@@ -51,6 +53,7 @@ const Chat: React.FC<ChatProps> = ({
   recipientId,
   isFloating,
   onAuthRequired,
+  isHost,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -232,7 +235,7 @@ const Chat: React.FC<ChatProps> = ({
 
       <div
         ref={scrollRef}
-        className="no-scrollbar flex-grow space-y-6 overflow-y-auto p-6 pb-10"
+        className="no-scrollbar grow space-y-6 overflow-y-auto p-6 pb-10"
       >
         {loading ? (
           <div className="flex h-full items-center justify-center">
@@ -267,7 +270,7 @@ const Chat: React.FC<ChatProps> = ({
                     </div>
                     <div className="text-slate-800 font-bold text-xs flex items-start gap-2">
                       <span className="text-emerald-500">✅</span>
-                      <div className="flex-grow space-y-2">
+                      <div className="grow space-y-2">
                         <p className="font-bold text-slate-800">{sysMsg.text}</p>
                         {sysMsg.details && (
                           <div className="bg-white rounded-xl border border-slate-100 p-2.5 mt-2 font-mono text-[10px] text-slate-600">
@@ -380,6 +383,23 @@ const Chat: React.FC<ChatProps> = ({
         )}
       </div>
 
+      {/* Quick Replies for Host */}
+      {isHost && messages.length < 5 && (
+        <div className="flex shrink-0 flex-row gap-2 overflow-x-auto border-t border-gray-100 bg-white px-6 pt-4 pb-2 scrollbar-none">
+          {HOST_QUICK_REPLIES.map((reply, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setNewMessage(reply)}
+              className="shrink-0 whitespace-nowrap rounded-full border border-brand-500/30 bg-brand-50 px-4 py-2 text-[10px] font-bold text-brand-navy hover:bg-brand-500 hover:text-white transition-colors"
+              title={reply}
+            >
+              {reply.length > 35 ? `${reply.substring(0, 35)}...` : reply}
+            </button>
+          ))}
+        </div>
+      )}
+
       <form
         onSubmit={(e) => {
           if (senderId === 'guest') {
@@ -440,7 +460,7 @@ const Chat: React.FC<ChatProps> = ({
                 ? 'Inicia sesión para escribir al anfitrión...'
                 : 'Escribe un mensaje seguro...'
             }
-            className="flex-grow rounded-xl border-none bg-transparent px-2 py-2 text-sm font-medium placeholder:text-gray-400 focus:outline-none"
+            className="grow rounded-xl border-none bg-transparent px-2 py-2 text-sm font-medium placeholder:text-gray-400 focus:outline-none"
           />
           <button
             type="submit"

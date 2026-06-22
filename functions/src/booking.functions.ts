@@ -242,7 +242,7 @@ export const onBookingStateChanged = onDocumentUpdated(
             const listing = listingSnap.data();
 
             // Generar PDF
-            let attachments = [];
+            const attachments = [];
             try {
               const pdfBuffer = await buildBookingConfirmationPDF(after, guest, listing || {});
               attachments.push({

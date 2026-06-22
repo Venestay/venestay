@@ -43,7 +43,7 @@ const ListingMap = lazy(() => import('./ListingMap'));
 const MapSkeleton = () => (
   <div className="bg-brand-navy flex h-96 w-full flex-col items-center justify-center rounded-[40px] border-8 border-gray-100 p-12 text-center relative overflow-hidden shadow-2xl">
     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')] opacity-20 grayscale invert" />
-    <div className="from-brand-navy via-brand-navy/95 to-brand-500/10 absolute inset-0 bg-gradient-to-br animate-pulse" />
+    <div className="from-brand-navy via-brand-navy/95 to-brand-500/10 absolute inset-0 bg-linear-to-br animate-pulse" />
     <div className="relative z-10 flex flex-col items-center gap-4">
       <Loader2 className="text-brand-500 h-10 w-10 animate-spin" />
       <span className="text-[10px] font-black tracking-widest text-white/50 uppercase">
@@ -204,7 +204,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="bg-brand-navy/60 fixed inset-0 z-[100] flex items-end justify-center p-4 backdrop-blur-md sm:items-center lg:hidden"
+                  className="bg-brand-navy/60 fixed inset-0 z-100 flex items-end justify-center p-4 backdrop-blur-md sm:items-center lg:hidden"
                   onClick={() => setIsCalendarOpen(false)}
                   role="dialog"
                   aria-modal="true"
@@ -245,7 +245,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
 
               <div className="p-6 md:px-12 md:py-6">
                 <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="flex-grow space-y-10">
+                  <div className="grow space-y-10">
                     <div>
                       {/* Reviews & Status Bar */}
                       <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -254,7 +254,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
                           <span className="text-sm font-black tracking-tight">
                             {currentListing.rating}
                           </span>
-                          <div className="mx-2 h-4 w-[1px] bg-white/20" />
+                          <div className="mx-2 h-4 w-px bg-white/20" />
                           <span className="text-[11px] font-black tracking-wider text-white/70 uppercase">
                             {currentListing.reviewsCount} reseñas
                           </span>
@@ -424,7 +424,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
                           {currentListing.description}
                         </p>
                         {!isDescriptionExpanded && (
-                          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 h-12 bg-linear-to-t from-white to-transparent" />
                         )}
                       </div>
                       <button
@@ -718,7 +718,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = (props) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[200] flex flex-col bg-black/95"
+                className="fixed inset-0 z-200 flex flex-col bg-black/95"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Galería de fotos en pantalla completa"

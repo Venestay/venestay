@@ -100,7 +100,7 @@ const ExchangeCalculator: React.FC<ExchangeCalculatorProps> = ({
       {/* 3. BLOQUE DE PAGO: Pagas hoy vs Saldo restante al llegar */}
       <div className="space-y-3.5">
         {/* ROW 1: Pagas Hoy (Highlighted & clean) */}
-        <div className="relative overflow-hidden rounded-[20px] border border-brand-navy/[0.06] bg-brand-navy/[0.02] p-4 transition-all duration-300 hover:border-brand-navy/[0.1] shadow-[0_2px_12px_rgba(5,11,24,0.01)]">
+        <div className="relative overflow-hidden rounded-[20px] border border-brand-navy/6 bg-brand-navy/2 p-4 transition-all duration-300 hover:border-brand-navy/[0.1] shadow-[0_2px_12px_rgba(5,11,24,0.01)]">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] font-black tracking-widest text-brand-navy/60 uppercase">

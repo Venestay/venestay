@@ -73,7 +73,7 @@ export const ListingMap: React.FC<ListingMapProps> = ({
       ) : (
         <div className="bg-brand-navy group/map-error relative flex h-full w-full flex-col items-center justify-center overflow-hidden p-12 text-center">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')] opacity-20 grayscale invert" />
-          <div className="from-brand-navy via-brand-navy/95 to-brand-500/10 absolute inset-0 bg-gradient-to-br" />
+          <div className="from-brand-navy via-brand-navy/95 to-brand-500/10 absolute inset-0 bg-linear-to-br" />
 
           <div className="relative z-10 flex max-w-md flex-col items-center">
             <div className="bg-brand-500/10 border-brand-500/20 mb-8 flex h-24 w-24 items-center justify-center rounded-[32px] border shadow-2xl backdrop-blur-xl transition-transform duration-700 group-hover/map-error:scale-110">
@@ -94,7 +94,7 @@ export const ListingMap: React.FC<ListingMapProps> = ({
             <div className="flex w-full flex-col gap-5 sm:flex-row">
               <button
                 onClick={handleOpenExternalMap}
-                className="bg-brand-500 text-brand-navy flex flex-grow items-center justify-center gap-3 rounded-2xl px-8 py-5 text-xs font-black tracking-widest uppercase shadow-2xl transition-all hover:bg-white active:scale-95"
+                className="bg-brand-500 text-brand-navy flex grow items-center justify-center gap-3 rounded-2xl px-8 py-5 text-xs font-black tracking-widest uppercase shadow-2xl transition-all hover:bg-white active:scale-95"
               >
                 Abrir en Google Maps
                 <Globe className="h-4 w-4" />

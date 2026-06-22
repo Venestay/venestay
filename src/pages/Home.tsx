@@ -103,7 +103,7 @@ const Home: React.FC = () => {
     );
 
     return () => unsubscribe();
-  }, [location.search]);
+  }, [location.search, navigate]);
 
   // Sync search state from location.state (e.g. when searching from ListingDetail)
   useEffect(() => {
@@ -168,7 +168,7 @@ const Home: React.FC = () => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="sticky top-0 z-[100] overflow-hidden bg-red-600 text-white shadow-lg"
+            className="sticky top-0 z-100 overflow-hidden bg-red-600 text-white shadow-lg"
           >
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
               <div className="flex items-center gap-3">
@@ -234,7 +234,7 @@ const Home: React.FC = () => {
                       alt="Luxury Venezuela"
                       className="h-full w-full object-cover opacity-50 transition-transform duration-1000 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120]/90 via-[#0B1120]/40 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-r from-[#0B1120]/90 via-[#0B1120]/40 to-transparent" />
                   </div>
 
                   <div className="relative flex w-full max-w-3xl flex-col justify-center p-8 md:p-20">
@@ -557,7 +557,7 @@ const Home: React.FC = () => {
               </div>
 
               <div className="space-y-8 md:col-span-3">
-                <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+                <div className="rounded-4xl border border-white/10 bg-white/5 p-6">
                   <h5 className="text-brand-500 mb-4 text-xs font-black tracking-widest uppercase">
                     Exclusivo
                   </h5>
@@ -569,7 +569,7 @@ const Home: React.FC = () => {
                     <input
                       type="text"
                       placeholder="Tu email"
-                      className="bg-brand-navy focus:border-brand-500 flex-grow rounded-xl border border-white/10 px-4 py-2 text-xs text-white focus:outline-none"
+                      className="bg-brand-navy focus:border-brand-500 grow rounded-xl border border-white/10 px-4 py-2 text-xs text-white focus:outline-none"
                     />
                     <button className="bg-brand-500 text-brand-navy rounded-xl p-2 transition-transform active:scale-95">
                       <ChevronRight className="h-4 w-4" />

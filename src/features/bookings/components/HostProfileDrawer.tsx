@@ -54,7 +54,7 @@ const HostProfileDrawer: React.FC<HostProfileDrawerProps> = ({
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-[120]"
+            className="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-120"
           />
 
           <motion.div
@@ -62,7 +62,7 @@ const HostProfileDrawer: React.FC<HostProfileDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-[130] flex flex-col no-scrollbar overflow-y-auto"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-130 flex flex-col no-scrollbar overflow-y-auto"
             role="dialog"
             aria-labelledby="host-profile-title"
           >
@@ -86,7 +86,7 @@ const HostProfileDrawer: React.FC<HostProfileDrawerProps> = ({
             </div>
 
             {/* Content Body */}
-            <div className="flex-grow p-6 space-y-6 overflow-y-auto no-scrollbar">
+            <div className="grow p-6 space-y-6 overflow-y-auto no-scrollbar">
               <div className="rounded-3xl border border-gray-100 bg-gray-50/40 p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
@@ -102,7 +102,7 @@ const HostProfileDrawer: React.FC<HostProfileDrawerProps> = ({
                 {isLoading ? (
                   <div className="flex items-center gap-4 animate-pulse">
                     <div className="h-14 w-14 rounded-full bg-gray-200" />
-                    <div className="space-y-2 flex-grow">
+                    <div className="space-y-2 grow">
                       <div className="h-4 bg-gray-200 rounded w-1/3" />
                       <div className="h-3 bg-gray-200 rounded w-1/2" />
                     </div>

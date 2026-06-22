@@ -286,7 +286,7 @@ const PaymentSettings: React.FC<PaymentSettingsProps> = ({
                     key={opt.type}
                     onClick={(e) => handleSelectType(e, opt.type)}
                     className={cn(
-                      'group relative flex flex-col items-center gap-3 rounded-[2rem] border-2 p-5 transition-all',
+                      'group relative flex flex-col items-center gap-3 rounded-4xl border-2 p-5 transition-all',
                       selectedType === opt.type
                         ? 'bg-brand-navy border-brand-navy translate-y-[-4px] text-white shadow-xl'
                         : 'text-brand-navy hover:border-brand-500/20 border-transparent bg-white hover:translate-y-[-2px]'

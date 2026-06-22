@@ -14,9 +14,26 @@ import { format, parseISO, isWithinInterval, startOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Booking, BookingStatus } from '@/types';
 import { calculateCommission, getCommissionTier, CommissionTier } from '@/lib/commission';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
+import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { PromptDialog } from '@/components/ui/PromptDialog';
 import { useChatNotifications } from '@/features/bookings/hooks/useChatNotifications';
+
+// Emails de QA/admin que saltan el flujo KYC en reservas de prueba
+const QA_ADMIN_EMAILS = [
+  'anfitrionvenestay@venestay.com',
+  'rodriguezzcarlose@gmail.com',
+  'zabalareduardoc@gmail.com',
+];
+
+function isQaAdminEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const lower = email.toLowerCase();
+  return lower.endsWith('@venestay.com') || QA_ADMIN_EMAILS.includes(lower);
+}
+
 
 const CountdownTimer: React.FC<{ expiresAt?: string }> = ({ expiresAt }) => {
   const [timeLeft, setTimeLeft] = useState('');
@@ -54,7 +71,7 @@ const CountdownTimer: React.FC<{ expiresAt?: string }> = ({ expiresAt }) => {
 interface BookingListProps {
   bookings: Booking[];
   isAdmin: boolean;
-  user: { uid: string; displayName?: string | null } | null;
+  user: { uid: string; displayName?: string | null; email?: string | null } | null;
   handleUpdateStatus: (booking: Booking, newStatus: BookingStatus, note?: string) => Promise<void>;
   setActiveChatId: (id: string | null) => void;
   setActiveChatBooking: (booking: Booking | null) => void;
@@ -74,6 +91,8 @@ const BookingList: React.FC<BookingListProps> = ({
 }) => {
   const [bookingToReject, setBookingToReject] = useState<Booking | null>(null);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
+  const [bookingToConfirmPayment, setBookingToConfirmPayment] = useState<Booking | null>(null);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const { unreadPerBooking } = useChatNotifications();
 
   const getSafeDate = (dateVal: Date | string | { seconds: number } | null | undefined | unknown): Date | null => {
@@ -222,7 +241,7 @@ const BookingList: React.FC<BookingListProps> = ({
 
           <AnimatePresence mode="wait">
             <div className="mb-8 flex flex-col gap-6 sm:flex-row">
-              <div className="flex-grow space-y-4">
+              <div className="grow space-y-4">
                 <h4 className="text-brand-navy text-xl leading-tight font-black">
                   {booking.listingTitle}
                 </h4>
@@ -311,10 +330,25 @@ const BookingList: React.FC<BookingListProps> = ({
               <div className="flex flex-col gap-3">
                 <div className="flex gap-3">
                   <button
-                    onClick={() =>
-                      handleUpdateStatus(booking, 'CONFIRMED')
-                    }
-                    className="flex-grow transform rounded-2xl bg-emerald-500 py-3 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-95"
+                    onClick={() => {
+                      // Un booking es de prueba si:
+                      // 1) El campo isTestBooking == true (flujo moderno), O
+                      // 2) El admin actual es un email QA conocido (fallback para docs legados)
+                      const isTest =
+                        booking.isTestBooking === true ||
+                        isQaAdminEmail(user?.email);
+
+                      if (isTest) {
+                        handleUpdateStatus(
+                          booking,
+                          'CONFIRMED',
+                          'Pago de prueba validado automáticamente.'
+                        );
+                      } else {
+                        setBookingToConfirmPayment(booking);
+                      }
+                    }}
+                    className="grow transform rounded-2xl bg-emerald-500 py-3 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-95"
                   >
                     Validar Pago
                   </button>
@@ -358,7 +392,7 @@ const BookingList: React.FC<BookingListProps> = ({
                     className="flex items-start gap-3 text-[9px]"
                   >
                     <div className="bg-brand-500 mt-1.5 h-1 w-1 shrink-0 rounded-full" />
-                    <div className="flex-grow">
+                    <div className="grow">
                       <div className="mb-0.5 flex items-center justify-between">
                         <span className="text-brand-navy font-black uppercase">
                           {h.status}
@@ -448,6 +482,46 @@ const BookingList: React.FC<BookingListProps> = ({
         placeholder="Razón del rechazo..."
         confirmText="Rechazar Pago"
         required
+      />
+
+      <PromptDialog
+        isOpen={!!bookingToConfirmPayment}
+        onClose={() => {
+          setBookingToConfirmPayment(null);
+          setIsVerifyingPayment(false);
+        }}
+        onConfirm={async (extractedName) => {
+          if (bookingToConfirmPayment) {
+            setIsVerifyingPayment(true);
+            try {
+              if (extractedName && extractedName.trim().length > 0) {
+                const verifyFn = httpsCallable<{targetUserId: string, bookingId: string, extractedName: string}, unknown>(functions, 'verifyPaymentNameMatch');
+                await verifyFn({
+                  targetUserId: bookingToConfirmPayment.guestId,
+                  bookingId: bookingToConfirmPayment.id,
+                  extractedName: extractedName.trim()
+                });
+                toast.success('Señal de KYC analizada exitosamente');
+              }
+              await handleUpdateStatus(
+                bookingToConfirmPayment, 
+                'CONFIRMED', 
+                `Pago validado. Nombre en comprobante: ${extractedName || 'No indicado'}`
+              );
+            } catch (error) {
+              console.error("Error validando pago:", error);
+              toast.error('Ocurrió un error al verificar el nombre o confirmar la reserva.');
+            } finally {
+              setIsVerifyingPayment(false);
+              setBookingToConfirmPayment(null);
+            }
+          }
+        }}
+        title="Validar Pago UCP 20/80"
+        message="Para aumentar el Trust Score del huésped (KYC), por favor ingresa el nombre EXACTO del emisor que aparece en el comprobante bancario:"
+        placeholder="Ej. JUAN PEREZ (Opcional si es caja/banco)"
+        confirmText={isVerifyingPayment ? "Procesando..." : "Validar y Confirmar"}
+        required={false}
       />
 
       <ConfirmDialog

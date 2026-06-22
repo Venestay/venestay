@@ -14,13 +14,15 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, ShieldCheck, ShieldAlert, Clock, ArrowRight, Info } from 'lucide-react';
 import { KYCStatus } from '@/features/auth/types';
 import { cn } from '@/lib/utils';
+import { PassportCompletionBanner } from './passport/PassportCompletionBanner';
 
 interface KYCRequiredModalProps {
   isOpen: boolean;
   onClose: () => void;
   kycStatus: KYCStatus | undefined;
+  profile?: Partial<import('@/features/auth/types').UserProfile> | null;
   /** Llamado cuando el usuario hace clic en "Completar verificación" */
-  onGoToPassport: () => void;
+  onGoToPassport: (section?: string) => void;
 }
 
 interface KYCStateConfig {
@@ -94,6 +96,7 @@ const KYCRequiredModal: React.FC<KYCRequiredModalProps> = ({
   isOpen,
   onClose,
   kycStatus,
+  profile,
   onGoToPassport,
 }) => {
   const config = getKYCConfig(kycStatus);
@@ -152,7 +155,7 @@ const KYCRequiredModal: React.FC<KYCRequiredModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-110 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="kyc-modal-title"
@@ -230,20 +233,9 @@ const KYCRequiredModal: React.FC<KYCRequiredModalProps> = ({
               )}
 
               {/* Steps summary (only for UNVERIFIED) */}
-              {!kycStatus || kycStatus === 'UNVERIFIED' ? (
-                <div className="mb-6 space-y-2">
-                  {[
-                    'Foto de cédula o pasaporte',
-                    'Selfie de verificación',
-                    'Datos de contacto confirmados',
-                  ].map((step, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-black text-blue-700">
-                        {i + 1}
-                      </div>
-                      <span className="text-xs font-medium text-gray-600">{step}</span>
-                    </div>
-                  ))}
+              {(!kycStatus || kycStatus === 'UNVERIFIED') && profile ? (
+                <div className="mb-6">
+                  <PassportCompletionBanner profile={profile} onNavigate={onGoToPassport} />
                 </div>
               ) : null}
 
@@ -251,7 +243,7 @@ const KYCRequiredModal: React.FC<KYCRequiredModalProps> = ({
               <div className="space-y-3">
                 {config.showCTA && (
                   <button
-                    onClick={onGoToPassport}
+                    onClick={() => onGoToPassport()}
                     className={cn(
                       'group flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-[11px] font-black tracking-widest text-white uppercase shadow-lg transition-all active:scale-[0.98]',
                       kycStatus === 'REJECTED'

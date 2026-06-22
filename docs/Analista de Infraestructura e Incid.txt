@@ -1,0 +1,50 @@
+Analista de Infraestructura e Incidentes con más de 10 años de trayectoria en entornos de misión crítica y producción a gran escala, evolucionando hacia roles de Cloud Support Engineer y Site Reliability Engineering (SRE). Mi enfoque profesional combina la solidez operativa en la resolución de fallos bajo presión con una mentalidad ágil de Vibe Coding y automatización para optimizar la disponibilidad de los sistemas.
+
+Actualmente me especializo en la observabilidad y el soporte técnico avanzado (N2/N3), gestionando la salud de aplicaciones e infraestructura mediante herramientas empresariales de vanguardia. Cuento con experiencia probada garantizando estrictos acuerdos de nivel de servicio (SLAs) en operaciones industriales complejas y entornos distribuidos.
+
+Paralelamente, poseo un perfil tecnológico versátil y autodidacta centrado en la arquitectura Cloud. Diseño e implemento soluciones serverless completas, integrando el consumo de APIs, flujos de integración y la orquestación de agentes de Inteligencia Artificial para automatizar tareas operativas y de desarrollo.
+
+Core Tech Stack & Competencias:
+
+Cloud & Observability: Datadog, Kubernetes (K8s), Apache Kafka, Google Cloud Platform (GCP).
+
+Automation & Middleware: MuleSoft, API Integrations, Automation Scripts, GitHub (CI/CD), AI Orchestration.
+
+Infrastructure & Databases: Linux Enterprise, Windows Server, Oracle SQL, MySQL, LDAP Directory.
+
+Methodologies & Tools: ITSM (Jira), Incident Management, Troubleshooting, QA Testing, SLAs Compliance.
+
+
+
+
+Soporte onsite avanzado (Nivel 2/3) y resolución de incidentes para la línea de producción de Toyota, garantizando la alta disponibilidad de aplicaciones de misión crítica (sistemas Alex/GALC) en esquemas de operación continua.
+
+• Soporte Crítico y Alta Disponibilidad: Garantizo la continuidad operativa de aplicaciones de control industrial interactuando con sistemas de radiofrecuencia (RFID) y servidores PLC.
+• Gestión de Incidentes y Observabilidad: Resolución proactiva de un promedio de 30 tickets mensuales (SLAs <2h para fallos críticos) a través de Jira. Monitoreo de infraestructura y cuellos de botella mediante Datadog, y análisis avanzado de logs/estado de pods en entornos distribuidos utilizando Kubernetes y Apache Kafka.
+• Gestión de Datos y Reportes Operativos: Ejecución de consultas en bases de datos Oracle SQL para diagnóstico de errores, aplicación de actualizaciones de datos (UPDATE) y extracción de reportes a demanda.
+• Infraestructura Híbrida y Mantenimiento: Administración y soporte de servidores Linux Enterprise y Windows Server, ejecutando ventanas de mantenimiento, reinicios programados y políticas de backup.
+• Automatización e Integraciones (IAM): Ampliación de flujos de trabajo corporativos, implementando nuevos flujos de automatización en MuleSoft y gestionando la provisión segura de perfiles de usuario mediante directorios LDAP.
+• Aseguramiento de Calidad (QA): Colaboración directa con el equipo de desarrollo en el testing de nuevas funcionalidades y mejoras previas a su despliegue en el entorno productivo.
+
+
+
+Soporte técnico integral y gestión de infraestructura de hardware en entorno industrial crítico (Refinería Axion - Pan American Energy).
+
+• Gestión de Infraestructura Física: Administración, mantenimiento y gestión logística de la flota corporativa instalada en el sitio del cliente.
+• Despliegue de Soluciones: Instalación, configuración y puesta a punto de hardware y soluciones tecnológicas alineadas a los requerimientos corporativos.
+• Mejora Continua: Identificación de cuellos de botella operativos y ejecución de oportunidades de mejora en sitio.
+• Documentación Técnica: Elaboración y mantenimiento de registros de inventario y manuales de procedimientos.
+
+
+Soporte técnico integral presencial y remoto en entorno industrial de misión crítica (Refinería Axion).
+
+
+
+Descripción:
+Administración integral de la infraestructura de red, seguridad y servidores para la organización.
+
+• Administración de Servidores: Configuración y mantenimiento de servidores Windows Server y Linux Enterprise.
+• Scripting y Bases de Datos: Desarrollo de scripts iniciales para la automatización de tareas operativas y ejecución de consultas en MySQL.
+• Gestión de Redes: Administración de la red corporativa y controles de seguridad informática.
+
+Aptitudes a vincular: Windows Server, Linux Enterprise, MySQL, Network Administration, Scripting.

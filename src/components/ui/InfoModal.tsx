@@ -505,7 +505,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
   const activeContent = content[tab];
 
   return (
-    <div className="bg-brand-navy/60 animate-fade-in fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto p-4 backdrop-blur-md">
+    <div className="bg-brand-navy/60 animate-fade-in fixed inset-0 z-70 flex items-center justify-center overflow-y-auto p-4 backdrop-blur-md">
       <div className="animate-slide-up relative w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 p-8">

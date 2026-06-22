@@ -101,7 +101,7 @@ export const ListingGallery: React.FC<ListingGalleryProps> = ({
         {/* Floating Back Button for Mobile */}
         <button
           onClick={handleClose}
-          className="absolute left-4 top-4 z-[70] flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-transform active:scale-90"
+          className="absolute left-4 top-4 z-70 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-transform active:scale-90"
         >
           <ArrowLeft className="h-5 w-5 text-brand-navy" />
         </button>

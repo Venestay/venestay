@@ -230,7 +230,7 @@ export const BookingSummaryModal: React.FC<BookingSummaryModalProps> = ({
                   alt={listing.title} 
                   className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/20 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-brand-navy via-brand-navy/20 to-transparent" />
                 
                 <div className="absolute bottom-4 left-6 right-6">
                   <span className={`text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full mb-1 inline-block ${
@@ -486,7 +486,7 @@ export const BookingSummaryModal: React.FC<BookingSummaryModalProps> = ({
       {showFullReceipt && proofSignedUrl && (
         <div 
           data-print-hide
-          className="fixed inset-0 z-[200] bg-black/90 flex flex-col items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-200 bg-black/90 flex flex-col items-center justify-center p-4 cursor-pointer"
           onClick={() => setShowFullReceipt(false)}
         >
           <button
@@ -513,7 +513,7 @@ export const BookingSummaryModal: React.FC<BookingSummaryModalProps> = ({
 
       {/* Custom print instructions modal */}
       {showPrintInstructions && (
-        <div data-print-hide className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div data-print-hide className="fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#0B1120] border border-white/10 text-white rounded-[24px] p-6 max-w-sm w-full shadow-2xl relative">
             <h4 className="text-sm font-black uppercase tracking-wider text-[#C5A059] mb-3 flex items-center gap-2">
               <Download className="h-5 w-5" />

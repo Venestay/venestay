@@ -67,7 +67,7 @@ const StepGallery: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none"
+              className="absolute inset-0 bg-linear-to-r from-emerald-500/5 to-transparent pointer-events-none"
             />
           )}
         </AnimatePresence>
@@ -297,9 +297,9 @@ const StepGallery: React.FC = () => {
         {/* Extra Photos Dropzone */}
         <div className="mt-10 space-y-4">
           <div className="flex items-center gap-4" aria-hidden="true">
-            <div className="h-[1px] flex-grow bg-gray-100" />
+            <div className="h-[1px] grow bg-gray-100" />
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Otras Fotos</span>
-            <div className="h-[1px] flex-grow bg-gray-100" />
+            <div className="h-[1px] grow bg-gray-100" />
           </div>
 
           <div
@@ -399,7 +399,7 @@ const StepGallery: React.FC = () => {
               aria-modal="true"
             >
               {/* Gold Top Accent Line */}
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-500 to-amber-500" />
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-linear-to-r from-brand-500 to-amber-500" />
 
               <div className="text-center space-y-4">
                 <div className="mx-auto w-14 h-14 bg-emerald-50 text-emerald-500 flex items-center justify-center rounded-2xl mb-2">

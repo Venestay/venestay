@@ -145,7 +145,7 @@ service cloud.firestore {
                     incoming().role == 'user' && // Prevent self-escalation
                     !incoming().keys().hasAny(['loyaltyStats', 'currentCommissionRate']);
       allow update: if isSignedIn() && (
-                    (request.auth.uid == userId && !incoming().diff(existing()).affectedKeys().hasAny(['loyaltyStats', 'currentCommissionRate', 'role', 'kycStatus', 'isIdentityVerified', 'trustScore', 'kycDocumentUrl', 'kycStatusHistory'])) ||
+                    (request.auth.uid == userId && !incoming().diff(existing()).affectedKeys().hasAny(['loyaltyStats', 'currentCommissionRate', 'role', 'kycStatus', 'isIdentityVerified', 'trustScore', 'kycDocumentUrl', 'kycStatusHistory', 'trustSignals', 'kycPhase', 'canBook'])) ||
                     isAdmin() ||
                     isQATester()
                   );
@@ -188,7 +188,9 @@ service cloud.firestore {
         isAdmin()
       );
 
-      allow create: if isSignedIn() && isValidBooking(incoming());
+      allow create: if isSignedIn() && isValidBooking(incoming()) &&
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.canBook == true;
+      
       
       // Payments sub-collection
       match /payments/{paymentId} {
@@ -267,6 +269,11 @@ service cloud.firestore {
     match /adminActions/{actionId} {
       allow read: if isAdmin();
       allow write: if false; // Solo se escribe mediante Cloud Functions (Admin SDK)
+    }
+
+    // OTP temporal
+    match /otpCodes/{userId} {
+      allow read, write: if false; // solo Admin SDK
     }
   }
 }

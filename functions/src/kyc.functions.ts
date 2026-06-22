@@ -304,3 +304,135 @@ export const onKYCStatusChanged = onDocumentUpdated(
     return null;
   }
 );
+
+interface TrustSignals {
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
+  paymentNameMatchStatus?: string;
+}
+
+/**
+ * Calcula el Trust Score escalonado en base a las 3 señales de confianza.
+ */
+function calculateTrustScore(signals: TrustSignals): number {
+  let score = 0;
+  if (signals?.emailVerified) score += 10;
+  if (signals?.phoneVerified) score += 15;
+  if (signals?.paymentNameMatchStatus === 'MATCHED') score += 20;
+  return score;
+}
+
+/**
+ * TRIGGER: Actualización centralizada de Trust Score
+ * Se dispara al actualizar un usuario, revisando cambios en isEmailVerified, isPhoneVerified o trustSignals
+ */
+export const onUserTrustSignalsUpdated = onDocumentUpdated(
+  { document: 'users/{uid}', database: DATABASE_ID },
+  async (event) => {
+    if (!event.data) return null;
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+    const uid = event.params.uid;
+
+    const beforeSignals = before.trustSignals || {};
+    const afterSignals = after.trustSignals || {};
+    
+    const signalsToUpdate: TrustSignals = {};
+    let needsSignalsUpdate = false;
+    
+    if (after.isEmailVerified !== before.isEmailVerified && after.isEmailVerified !== afterSignals.emailVerified) {
+       signalsToUpdate.emailVerified = after.isEmailVerified || false;
+       needsSignalsUpdate = true;
+    }
+    if (after.isPhoneVerified !== before.isPhoneVerified && after.isPhoneVerified !== afterSignals.phoneVerified) {
+       signalsToUpdate.phoneVerified = after.isPhoneVerified || false;
+       needsSignalsUpdate = true;
+    }
+    
+    const currentSignals = { ...afterSignals, ...signalsToUpdate };
+    const newScore = calculateTrustScore(currentSignals);
+    
+    const scoreChanged = newScore !== after.trustScore;
+    const statusChanged = currentSignals.paymentNameMatchStatus !== beforeSignals.paymentNameMatchStatus;
+    
+    if (needsSignalsUpdate || scoreChanged || statusChanged) {
+       const updatePayload: Record<string, unknown> = {};
+       if (needsSignalsUpdate) updatePayload.trustSignals = currentSignals;
+       if (scoreChanged) updatePayload.trustScore = newScore;
+       
+       if (newScore >= 45 && after.kycStatus !== 'VERIFIED') {
+         updatePayload.kycStatus = 'VERIFIED';
+         updatePayload.isIdentityVerified = true;
+       }
+       
+       if (Object.keys(updatePayload).length > 0) {
+         await db.collection('users').doc(uid).update(updatePayload);
+       }
+    }
+    
+    return null;
+  }
+);
+
+/**
+ * Cloud Function: verifyPaymentNameMatch
+ * Comparación del nombre del comprobante (vía Admin) con el nombre declarado del usuario
+ */
+export const verifyPaymentNameMatch = functions.https.onCall(
+  async (data: { targetUserId: string; bookingId: string; extractedName: string }, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Autenticación requerida.');
+    }
+
+    const adminSnap = await db.collection('users').doc(context.auth.uid).get();
+    if (adminSnap.data()?.role !== 'admin') {
+      throw new functions.https.HttpsError('permission-denied', 'Acción reservada para administradores.');
+    }
+
+    const { targetUserId, extractedName } = data;
+    const userRef = db.collection('users').doc(targetUserId);
+
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(userRef);
+      const user = snap.data();
+      
+      if (!user) throw new functions.https.HttpsError('not-found', 'Usuario no encontrado.');
+
+      const normalize = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+      
+      const normalizedExtracted = normalize(extractedName);
+      const normalizedDisplay = normalize(user.displayName || '');
+      
+      const extractedWords = normalizedExtracted.split(/\s+/);
+      const displayWords = normalizedDisplay.split(/\s+/);
+      
+      let matches = 0;
+      for (const word of extractedWords) {
+         if (displayWords.includes(word) && word.length > 2) matches++;
+      }
+      
+      // Match si coinciden al menos 2 palabras (nombre y apellido) o es idéntico
+      const isMatch = matches >= 2 || normalizedExtracted === normalizedDisplay;
+      const status = isMatch ? 'MATCHED' : 'FAILED';
+      
+      const currentSignals = user.trustSignals || {
+        emailVerified: user.isEmailVerified || false,
+        phoneVerified: user.isPhoneVerified || false,
+      };
+      
+      const newSignals = {
+        ...currentSignals,
+        paymentNameMatchStatus: status,
+        paymentNameExtracted: normalizedExtracted,
+        paymentNameMatchedAt: new Date().toISOString()
+      };
+      
+      tx.update(userRef, {
+        trustSignals: newSignals,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+
+    return { success: true };
+  }
+);

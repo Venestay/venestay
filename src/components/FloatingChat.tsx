@@ -13,6 +13,7 @@ interface FloatingChatProps {
   senderName: string;
   recipientName: string;
   recipientId?: string;
+  isHost?: boolean;
 }
 
 const FloatingChat: React.FC<FloatingChatProps> = ({
@@ -24,6 +25,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({
   senderName,
   recipientName,
   recipientId,
+  isHost,
 }) => {
   return (
     <AnimatePresence>
@@ -33,7 +35,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed top-0 right-0 z-[200] flex h-full w-full flex-col border-l border-gray-100 bg-white shadow-[-20px_0_50px_rgba(0,0,0,0.1)] sm:w-[450px]"
+          className="fixed top-0 right-0 z-200 flex h-full w-full flex-col border-l border-gray-100 bg-white shadow-[-20px_0_50px_rgba(0,0,0,0.1)] sm:w-[450px]"
         >
           {/* Header Binance Style */}
           <div className="bg-brand-navy shrink-0 p-6 text-white">
@@ -88,13 +90,14 @@ const FloatingChat: React.FC<FloatingChatProps> = ({
           </div>
 
           {/* Chat Component */}
-          <div className="flex flex-grow flex-col overflow-hidden">
+          <div className="flex grow flex-col overflow-hidden">
             <Chat
               bookingId={bookingId}
               senderId={senderId}
               senderName={senderName}
               recipientId={recipientId}
               isFloating={true}
+              isHost={isHost}
             />
           </div>
         </motion.div>

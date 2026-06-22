@@ -61,7 +61,7 @@ const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
       const createdDate = ca?.toDate
         ? ca.toDate()
         : new Date(createdAt as string | Date);
-      const expiryDate = new Date(createdDate.getTime() + 60 * 60 * 1000); // 1 hour later
+      const expiryDate = new Date(createdDate.getTime() + 24 * 60 * 60 * 1000); // 24 hours later
       const now = new Date();
       const diff = expiryDate.getTime() - now.getTime();
 
@@ -70,9 +70,12 @@ const CountdownTimer: React.FC<{ createdAt: unknown }> = ({ createdAt }) => {
         return;
       }
 
+      const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setTimeLeft(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+      setTimeLeft(
+        `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+      );
     };
 
     calculateTime();
@@ -478,7 +481,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           <button
             onClick={() => setMobileTab('reservas')}
             className={cn(
-              "flex-grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all",
+              "grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all",
               mobileTab === 'reservas'
                 ? "border-brand-navy text-brand-navy font-black"
                 : "border-transparent text-gray-400"
@@ -489,7 +492,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           <button
             onClick={() => setMobileTab('chat')}
             className={cn(
-              "flex-grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all relative flex items-center justify-center gap-1.5",
+              "grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all relative flex items-center justify-center gap-1.5",
               mobileTab === 'chat'
                 ? "border-brand-navy text-brand-navy font-black"
                 : "border-transparent text-gray-400"
@@ -503,7 +506,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Content & Chat Split */}
-        <div className="flex flex-row overflow-hidden flex-grow h-full w-full">
+        <div className="flex flex-row overflow-hidden grow h-full w-full">
           {/* Left Column: Bookings */}
           <div className={cn(
             "no-scrollbar flex-1 overflow-y-auto p-4 lg:p-8 space-y-6",
@@ -688,7 +691,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                       value={paymentRef}
                                       onChange={(e) => setPaymentRef(e.target.value)}
                                       placeholder="Referencia"
-                                      className="focus:border-brand-500 flex-grow rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold focus:outline-none"
+                                      className="focus:border-brand-500 grow rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold focus:outline-none"
                                     />
                                     <button
                                       disabled={submitting || !paymentRef || !file}
@@ -737,7 +740,11 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                     <div className="flex gap-2">
                                       <button
                                         onClick={() => {
-                                          if (booking.status === 'CONFIRMED' || booking.status === 'AWAITING_VERIFICATION') {
+                                          if (
+                                            booking.status === 'CONFIRMED' ||
+                                            booking.status === 'AWAITING_VERIFICATION' ||
+                                            booking.status === 'PENDING_APPROVAL'
+                                          ) {
                                             setSummaryBooking(booking);
                                           } else {
                                             navigate(`/checkout/${booking.id}`);
@@ -811,7 +818,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                     Seguro
                   </div>
                 </div>
-                <div className="flex-grow overflow-hidden relative chat-embedded-container">
+                <div className="grow overflow-hidden relative chat-embedded-container">
                   <Chat
                     bookingId={activeChatBooking.id}
                     senderId={user?.uid || ''}

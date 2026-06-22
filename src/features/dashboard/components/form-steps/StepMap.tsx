@@ -159,7 +159,7 @@ const StepMap: React.FC = () => {
         <div className="flex flex-col gap-2">
           <label htmlFor="listing-manual-address" className="text-brand-navy/40 ml-1 text-[10px] font-black tracking-widest uppercase">Dirección Detallada / Punto de Referencia</label>
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-grow">
+            <div className="relative grow">
               <input
                 id="listing-manual-address"
                 type="text"

@@ -61,7 +61,7 @@ export const PassportHeader: React.FC<PassportHeaderProps> = ({
       <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-500/10 blur-3xl animate-[pulse_6s_ease-in-out_infinite]" />
       <div className="pointer-events-none absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-brand-500/6 blur-3xl animate-[pulse_8s_ease-in-out_2s_infinite]" />
       {/* Línea decorativa sutil en el borde superior */}
-      <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-linear-to-r from-transparent via-brand-500/40 to-transparent" />
 
       <div className="relative space-y-10">
         {/* ─── Cabecera: Título + Trust Score ─── */}
@@ -240,7 +240,7 @@ export const PassportHeader: React.FC<PassportHeaderProps> = ({
           {/* Texto + Badge de verificación */}
           <div
             className={cn(
-              'flex-grow space-y-4 text-center transition-all duration-700 delay-200 ease-out md:text-left',
+              'grow space-y-4 text-center transition-all duration-700 delay-200 ease-out md:text-left',
               mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'
             )}
           >

@@ -198,7 +198,7 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-[120]"
+            className="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-120"
           />
 
           {/* Drawer Container */}
@@ -207,7 +207,7 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-lg bg-white shadow-2xl z-[130] flex flex-col no-scrollbar overflow-y-auto"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-lg bg-white shadow-2xl z-130 flex flex-col no-scrollbar overflow-y-auto"
             role="dialog"
             aria-labelledby="drawer-title"
           >
@@ -244,7 +244,7 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
             </div>
 
             {/* Content Body */}
-            <div className="flex-grow p-6 space-y-6 overflow-y-auto no-scrollbar">
+            <div className="grow p-6 space-y-6 overflow-y-auto no-scrollbar">
               {/* Conflict Alerter */}
               {isConflicting && (
                 <div className="rounded-2xl border border-red-200 bg-red-50/50 p-4 flex gap-3 text-red-700 animate-pulse">
@@ -276,7 +276,7 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
                 {isProfileLoading ? (
                   <div className="flex items-center gap-4 animate-pulse">
                     <div className="h-14 w-14 rounded-full bg-gray-200" />
-                    <div className="space-y-2 flex-grow">
+                    <div className="space-y-2 grow">
                       <div className="h-4 bg-gray-200 rounded w-1/3" />
                       <div className="h-3 bg-gray-200 rounded w-1/2" />
                     </div>
@@ -518,7 +518,7 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
               <button
                 disabled={isSubmitting || !hostNote.trim()}
                 onClick={handleApproveWithDetails}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white flex-grow flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-50"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white grow flex items-center justify-center gap-2 rounded-2xl py-4 px-6 text-[10px] font-black tracking-widest uppercase shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-50"
                 aria-label={`Aprobar solicitud de reserva`}
               >
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
@@ -538,7 +538,7 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
             {/* Inline Reject Dialog Modal */}
             <AnimatePresence>
               {showRejectDialog && (
-                <div className="fixed inset-0 z-[140] flex items-center justify-center bg-brand-navy/80 p-4 backdrop-blur-md">
+                <div className="fixed inset-0 z-140 flex items-center justify-center bg-brand-navy/80 p-4 backdrop-blur-md">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -573,13 +573,13 @@ const GuestRequestVerificationDrawer: React.FC<GuestRequestVerificationDrawerPro
                           setRejectionReason('');
                           setRejectionError('');
                         }}
-                        className="flex-grow py-3.5 bg-gray-100 text-gray-500 rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-gray-200 transition-colors"
+                        className="grow py-3.5 bg-gray-100 text-gray-500 rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-gray-200 transition-colors"
                       >
                         Cancelar
                       </button>
                       <button
                         onClick={handleReject}
-                        className="flex-grow py-3.5 bg-red-500 text-white rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                        className="grow py-3.5 bg-red-500 text-white rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
                       >
                         Confirmar Rechazo
                       </button>

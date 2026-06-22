@@ -138,7 +138,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
                 >
                   -
                 </button>
-                <span className="text-brand-navy min-w-[2.5rem] text-center text-xs font-black">
+                <span className="text-brand-navy min-w-10 text-center text-xs font-black">
                   {guests} {guests === 1 ? 'Viajero' : 'Viajeros'}
                 </span>
                 <button
@@ -301,7 +301,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 bg-brand-navy/[0.02] border border-brand-navy/[0.06] rounded-xl px-2.5 py-1.5 shrink-0 select-none">
+                      <div className="flex items-center gap-1 bg-brand-navy/2 border border-brand-navy/6 rounded-xl px-2.5 py-1.5 shrink-0 select-none">
                         <Star className="text-brand-500 fill-brand-500 h-3.5 w-3.5" />
                         <span className="text-brand-navy text-[11px] font-extrabold">
                           {listing.rating}
@@ -410,7 +410,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
                       >
                         -
                       </button>
-                      <span className="text-brand-navy min-w-[2.5rem] text-center text-xs font-black">
+                      <span className="text-brand-navy min-w-10 text-center text-xs font-black">
                         {guests} {guests === 1 ? 'Viajero' : 'Viajeros'}
                       </span>
                       <button
@@ -518,7 +518,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
                 <div className="space-y-3.5">
                   <button
                     id="reserve-button-desktop"
-                    className="bg-gradient-to-r from-brand-navy via-[#0d1b3a] to-brand-navy hover:from-[#0d1b3a] hover:to-brand-navy active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] text-white uppercase shadow-[0_10px_30px_rgba(10,15,40,0.18)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_14px_35px_rgba(10,15,40,0.22)] cursor-pointer"
+                    className="bg-linear-to-r from-brand-navy via-[#0d1b3a] to-brand-navy hover:from-[#0d1b3a] hover:to-brand-navy active:scale-[0.99] group/btn relative w-full transform overflow-hidden rounded-[24px] py-[18px] text-[11px] font-black tracking-[0.25em] text-white uppercase shadow-[0_10px_30px_rgba(10,15,40,0.18)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_14px_35px_rgba(10,15,40,0.22)] cursor-pointer"
                     onClick={handleBooking}
                   >
                     <span className="relative z-10">Asegurar mi Estadía</span>
@@ -574,7 +574,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.96 }}
               transition={{ duration: 0.22, ease: [0.32, 0, 0.67, 0] }}
-              className="hidden lg:block fixed bottom-6 right-6 z-[55]"
+              className="hidden lg:block fixed bottom-6 right-6 z-55"
             >
               <div className="flex items-center gap-4 rounded-[20px] border border-white/60 bg-white/98 px-5 py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_0_0_1px_rgba(0,0,0,0.04)] backdrop-blur-md">
                 <div className="flex flex-col select-none">
@@ -599,7 +599,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
 
                 <button
                   onClick={handleBooking}
-                  className="bg-gradient-to-r from-brand-navy to-[#0d1b3a] rounded-[14px] px-5 py-2.5 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] cursor-pointer"
+                  className="bg-linear-to-r from-brand-navy to-[#0d1b3a] rounded-[14px] px-5 py-2.5 text-[10px] font-black tracking-[0.2em] text-white uppercase shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] cursor-pointer"
                 >
                   Reservar
                 </button>
@@ -619,7 +619,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
       )}
 
       {/* Sticky Mobile CTA Bar */}
-      <div className="fixed right-0 bottom-0 left-0 z-[70] flex items-center justify-between border-t border-gray-100 bg-white/95 px-6 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl lg:hidden">
+      <div className="fixed right-0 bottom-0 left-0 z-70 flex items-center justify-between border-t border-gray-100 bg-white/95 px-6 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl lg:hidden">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/')}
@@ -651,9 +651,9 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
           id="reserve-button-mobile"
           onClick={handleBooking}
           className={cn(
-            "flex h-[60px] min-w-[160px] items-center justify-center rounded-2xl px-10 py-5 text-xs font-black tracking-[0.1em] uppercase shadow-xl transition-all active:scale-95",
+            "flex h-[60px] min-w-[160px] items-center justify-center rounded-2xl px-10 py-5 text-xs font-black tracking-widest uppercase shadow-xl transition-all active:scale-95",
             isRequestMode
-              ? "animate-shimmer-sweep bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-[length:200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
+              ? "animate-shimmer-sweep bg-linear-to-r from-brand-600 via-brand-400 to-brand-600 bg-size-[200%_auto] hover:bg-right text-brand-navy shadow-brand-gold/20"
               : "bg-brand-500 text-brand-navy shadow-brand-500/20"
           )}
         >
@@ -670,7 +670,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="bg-brand-navy/60 fixed inset-0 z-[100] flex items-end justify-center p-4 backdrop-blur-md lg:hidden"
+            className="bg-brand-navy/60 fixed inset-0 z-100 flex items-end justify-center p-4 backdrop-blur-md lg:hidden"
             onClick={() => setIsMobileRequestOpen(false)}
           >
             <motion.div
@@ -685,7 +685,7 @@ export const BookingPanel: React.FC<BookingPanelProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsMobileRequestOpen(false)}
-                  className="absolute right-4 top-4 z-[110] flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 active:scale-90 font-bold"
+                  className="absolute right-4 top-4 z-110 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 active:scale-90 font-bold"
                   aria-label="Cerrar solicitud"
                 >
                   ✕

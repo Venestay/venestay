@@ -86,6 +86,11 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
       return;
     }
 
+    if (trustScore < 25) {
+      toast.error(`Tu nivel de confianza (${trustScore}%) es insuficiente. El mínimo requerido es 25%.`);
+      return;
+    }
+
     // Validar esquema Zod
     const validation = directRequestSchema.safeParse({
       startDate: startDate.toISOString(),
@@ -149,7 +154,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
               El anfitrión responderá en menos de 24 horas. Sin cargos previos.
             </span>
           </div>
-          <div className="flex items-center gap-1 bg-brand-navy/[0.02] border border-brand-navy/[0.06] rounded-xl px-2.5 py-1.5 shrink-0 select-none">
+          <div className="flex items-center gap-1 bg-brand-navy/2 border border-brand-navy/6 rounded-xl px-2.5 py-1.5 shrink-0 select-none">
             <Star className="text-brand-500 fill-brand-500 h-3.5 w-3.5" />
             <span className="text-brand-navy text-[11px] font-extrabold">
               {listing.rating}
@@ -244,7 +249,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
               >
                 -
               </button>
-              <span className="text-brand-navy min-w-[2.5rem] text-center text-xs font-black">
+              <span className="text-brand-navy min-w-10 text-center text-xs font-black">
                 {guestsCount} {guestsCount === 1 ? 'Viajero' : 'Viajeros'}
               </span>
               <button
@@ -331,7 +336,7 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
               "w-full rounded-[24px] py-4.5 text-[11px] font-black tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2",
               isSubmitting || (user ? !isMessageValid : false)
                 ? "bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-brand-gold to-[#cfae69] text-brand-navy hover:shadow-lg active:scale-98 cursor-pointer"
+                : "bg-linear-to-r from-brand-gold to-[#cfae69] text-brand-navy hover:shadow-lg active:scale-98 cursor-pointer"
             )}
           >
             {isSubmitting ? (

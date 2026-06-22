@@ -13,17 +13,10 @@ Se completó la implementación de **URLs dinámicas en plantillas de email** (O
 Todos los cambios están en la rama local `qa` con `tsc` en 0 errores, pero **aún no están desplegados** en Firebase.
 Mientras no se haga el deploy, los emails en el entorno de producción siguen con las URLs rotas (`venestay.app/admin`).
 
-### Pasos a ejecutar en orden
+### Pasos a ejecutar en orden (COMPLETADO)
 
-```bash
-# 1. Compilar las functions (TypeScript → JS)
-cd c:\Users\carlos.zabala\Documents\VeneStay\functions
-npm run build
-
-# 2. Volver a la raíz y desplegar
-cd c:\Users\carlos.zabala\Documents\VeneStay
-firebase deploy --only functions
-```
+✅ El código ha sido compilado (`npm run build`)
+✅ `firebase deploy --only functions` fue ejecutado y ha finalizado con éxito (`Deploy complete!`). Las URLs dinámicas ya están operativas en producción.
 
 ### Qué valida el éxito
 - ✅ El CLI imprime `Deploy complete!` sin errores.
@@ -54,7 +47,7 @@ Si aparece `The caller does not have permission` o error de Service Account:
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : OK | 2026-06-12
+QA_GATE   : PASS (G4/G10 passed, G6 skipped) | 2026-06-22
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
 ```
@@ -122,7 +115,17 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
-|:------|:-------|:-------|:--------|:---------------|
+| 2026-06-22 | Ejecución de VeneStay Validation Skill | COMPLETADO | PASS | Continuar con revisión de módulo solicitado u optimización de código. |
+| 2026-06-21 | Ajustes PDF: Badge y Normas (SPEC-PDF-RULES-LAYOUT) | COMPLETADO | OK | Implementado en booking-pdf.ts y probado sin errores. |
+| 2026-06-21 | Restricciones en Checkout (Pago Pendiente) y Tiempo de Pago (SPEC-CHECKOUT-PAYMENT-RESTRICTION) | COMPLETADO | OK | Validaciones de compilación y lint exitosas. |
+| 2026-06-21 | Restringir Checkout en Modo Solicitud (SPEC-CHECKOUT-REQUEST-BLOCK) | COMPLETADO | OK | Validaciones de compilación completadas exitosamente. |
+| 2026-06-21 | Omitir Modal KYC en Pago de Reserva de Prueba (SPEC-DASHBOARD-002) | COMPLETADO | OK | Validaciones de compilación y lint completadas. Pruebas manuales locales. |
+| 2026-06-20 | Spec: Ocultar Datos Anfitrión en Checkout (Futuro) | PLANIFICADO | PENDIENTE | Documentado en `docs/plans/spec_checkout_payment_venestay_future.md` |
+| 2026-06-20 | Visualización de Huéspedes en Miniaturas (SPEC-LISTINGS-001) | COMPLETADO | OK | Pruebas manuales locales por parte del usuario. |
+| 2026-06-20 | Corrección de Tipos en kyc.functions.ts | COMPLETADO | OK | Ninguna. Errores de linting de TypeScript resueltos. |
+| 2026-06-19 | Implementación de Mensajes Rápidos del Anfitrión (Quick Replies) | COMPLETADO | OK | Pruebas manuales en el entorno local para el panel de administración. |
+| 2026-06-19 | Implementación de TravelerDNA & Umbrales de Checkout | COMPLETADO | OK | Validaciones exitosas, listo para pruebas locales en el navegador. |
+| 2026-06-19 | Despliegue de Cloud Functions | COMPLETADO | OK | Ejecutar npm audit fix para resolver G9 y re-validar rama. |
 | 2026-06-18 | Planificación Soft KYC (CNE) Seguro | COMPLETADO | PENDIENTE | Ejecutar Specs Atómicas (SPEC-AUTH-KYC-001 a 004) en la próxima sesión. |
 | 2026-06-18 | Fix URLs Plantillas Email (SPEC-EMAIL-URL-FIX-001) | COMPLETADO | OK | Desplegar functions: `firebase deploy --only functions`. |
 | 2026-06-18 | Pausa de Sesión (Pruebas pendientes) | COMPLETADO | OK | Se continuará con las pruebas manuales de los correos y PDF adjunto en otra conversación. |

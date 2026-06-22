@@ -317,7 +317,7 @@ const KYCAuditPanel: React.FC = () => {
       {/* Modal: Previsualización de Documento */}
       {previewUser && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in"
           role="dialog"
           aria-modal="true"
         >
@@ -410,7 +410,7 @@ const KYCAuditPanel: React.FC = () => {
       {/* Modal: Motivo de Rechazo */}
       {userToReject && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in"
           role="dialog"
           aria-modal="true"
         >
