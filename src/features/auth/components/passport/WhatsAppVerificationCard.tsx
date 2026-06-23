@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Smartphone, Check, Info, Loader2 } from 'lucide-react';
 import { UserProfile } from '@/features/auth/types';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
 
 interface WhatsAppVerificationCardProps {
@@ -45,7 +46,6 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
     
     setIsLoading(true);
     try {
-      const functions = getFunctions();
       const sendOTP = httpsCallable(functions, 'sendWhatsAppOTP');
       await sendOTP({ phoneNumber: fullNumber });
       setStep('OTP_SENT');
@@ -68,7 +68,6 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
 
     setIsLoading(true);
     try {
-      const functions = getFunctions();
       const confirmOTP = httpsCallable(functions, 'confirmWhatsAppOTP');
       await confirmOTP({ phoneNumber: fullNumber, code: otp });
       toast.success('¡Número de WhatsApp verificado con éxito!');

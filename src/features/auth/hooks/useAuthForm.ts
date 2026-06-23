@@ -40,7 +40,7 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [unverifiedEmailWarning, setUnverifiedEmailWarning] = useState(false);
 
-  const resetForm = (keepEmail: boolean = false) => {
+  const resetForm = React.useCallback((keepEmail: boolean = false) => {
     if (!keepEmail) {
       setEmail('');
     }
@@ -51,7 +51,7 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
     setShowPassword(false);
     setResetEmailSent(false);
     setUnverifiedEmailWarning(false);
-  };
+  }, []);
 
   const handleModeChange = (newMode: FormMode) => {
     resetForm(newMode === 'forgot-password'); // Keep email if moving to forgot-password
@@ -221,5 +221,7 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
     handleResendVerification,
     unverifiedEmailWarning,
     passwordStrength: getPasswordStrength(),
+    resetForm,
+    setMode,
   };
 }

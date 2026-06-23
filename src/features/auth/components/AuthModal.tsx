@@ -38,7 +38,17 @@ const AuthModal: React.FC<AuthModalProps> = ({
     passwordStrength,
     unverifiedEmailWarning,
     handleResendVerification,
+    resetForm,
+    setMode,
   } = useAuthForm(onClose, initialView);
+
+  // Reset the form when the modal opens to avoid showing stale state (e.g. unverified email warning)
+  useEffect(() => {
+    if (isOpen) {
+      resetForm();
+      setMode(initialView);
+    }
+  }, [isOpen, initialView, resetForm, setMode]);
 
   // Esc key closes the modal
   useEffect(() => {
