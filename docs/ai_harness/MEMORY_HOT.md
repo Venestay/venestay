@@ -47,9 +47,10 @@ Si aparece `The caller does not have permission` o error de Service Account:
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS (G4/G10 passed, G6 skipped) | 2026-06-22
+QA_GATE   : PASS (E2E Playwright Passport) | 2026-06-23
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
+TURNO_REANCLA: 0
 ```
 
 ---
@@ -115,8 +116,11 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
-| 2026-06-23 | KYC (Auth) - Plantillas de Correo Premium | PLANIFICADO | PENDIENTE | El usuario debe proporcionar ACTION_CODE_URL y confirmar trigger onEmailVerified para ejecutar el plan v2 en la prox sesión. |
+| 2026-06-23 | Playwright E2E: Passport Auth | COMPLETADO | PASS | Módulo de pruebas E2E configurado y pasando exitosamente. |
+| 2026-06-23 | Fix SMTP Secrets (SPEC-AUTH-MAILER-001) | COMPLETADO | PASS | Desplegar functions: `firebase deploy --only functions:sendCustomVerificationEmail,functions:sendCustomPasswordResetEmail` y probar el reenvío de correo. |
+| 2026-06-23 | KYC (Auth) - Plantillas de Correo Premium | COMPLETADO | PASS | Configurar secrets de SMTP en Google Secret Manager y desplegar funciones. Realizar pruebas manuales de registro y reset de password. |
 | 2026-06-23 | Fix Bug: AuthModal State Reset | COMPLETADO | OK | Se corrigió el bug donde AuthModal retenía el estado de unverifiedEmailWarning al reabrirse. |
+| 2026-06-22 | Push a Github QA | COMPLETADO | PASS | Push exitoso a cerz30 qa con la Fase 1 de KYC y validaciones de Auth. |
 | 2026-06-22 | Ejecución de VeneStay Validation Skill | COMPLETADO | PASS | Continuar con revisión de módulo solicitado u optimización de código. |
 | 2026-06-21 | Ajustes PDF: Badge y Normas (SPEC-PDF-RULES-LAYOUT) | COMPLETADO | OK | Implementado en booking-pdf.ts y probado sin errores. |
 | 2026-06-21 | Restricciones en Checkout (Pago Pendiente) y Tiempo de Pago (SPEC-CHECKOUT-PAYMENT-RESTRICTION) | COMPLETADO | OK | Validaciones de compilación y lint exitosas. |

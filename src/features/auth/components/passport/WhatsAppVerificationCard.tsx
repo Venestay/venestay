@@ -24,7 +24,7 @@ const COUNTRIES = [
 
 export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> = ({ profile }) => {
   // Parse existing phone number
-  const initialPhone = profile?.phoneNumber || '';
+  const initialPhone = profile?.trustSignals?.whatsappNumber || profile?.phoneNumber || '';
   const matchedCountry = COUNTRIES.find(c => initialPhone.startsWith(c.code));
   const initialCode = matchedCountry ? matchedCountry.code : '+58';
   const initialLocalNumber = matchedCountry ? initialPhone.slice(matchedCountry.code.length).trim() : initialPhone;
@@ -92,7 +92,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
           <div>
             <p className="text-sm font-black text-brand-navy">WhatsApp / Teléfono</p>
             {isVerified ? (
-              <p className="text-xs text-gray-600 font-medium">{profile?.phoneNumber || 'Número verificado'}</p>
+              <p className="text-xs text-gray-600 font-medium">{profile?.trustSignals?.whatsappNumber || profile?.phoneNumber || 'Número verificado'}</p>
             ) : (
               <p className="text-xs text-gray-500 font-medium">Verifica tu número para reservar</p>
             )}

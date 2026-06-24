@@ -10,7 +10,8 @@ import {
   serverTimestamp,
   onSnapshot,
 } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { auth, db, functions } from '@/lib/firebase';
 import { UserProfile } from '@/types';
 
 export const signOut = async () => {
@@ -24,9 +25,23 @@ export const signOut = async () => {
 
 export const sendVerificationEmail = async (user: FirebaseUser): Promise<void> => {
   try {
-    await firebaseSendEmailVerification(user);
+    const sendCustomVerificationEmail = httpsCallable(functions, 'sendCustomVerificationEmail');
+    await sendCustomVerificationEmail({ 
+      email: user.email, 
+      displayName: user.displayName || 'Huésped' 
+    });
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('Error sending custom verification email:', error);
+    throw error;
+  }
+};
+
+export const sendPasswordReset = async (email: string): Promise<void> => {
+  try {
+    const sendCustomPasswordResetEmail = httpsCallable(functions, 'sendCustomPasswordResetEmail');
+    await sendCustomPasswordResetEmail({ email });
+  } catch (error) {
+    console.error('Error sending custom password reset email:', error);
     throw error;
   }
 };

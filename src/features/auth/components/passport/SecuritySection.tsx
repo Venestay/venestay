@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Mail, Check, Info, User } from 'lucide-react';
 import { UserProfile } from '@/features/auth/types';
 import { WhatsAppVerificationCard } from './WhatsAppVerificationCard';
+import { sendVerificationEmail } from '@/services/auth-service';
+import { auth } from '@/lib/firebase';
+import { toast } from 'sonner';
 
 interface SecuritySectionProps {
   profile: UserProfile | null;
@@ -12,6 +15,22 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
   profile,
   onOpenVerificationModal
 }) => {
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  const handleResendEmail = async () => {
+    if (!profile?.email || !auth.currentUser) return;
+    setIsSendingEmail(true);
+    try {
+      await sendVerificationEmail(auth.currentUser);
+      toast.success('Correo de verificación reenviado con éxito.');
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al reenviar el correo. Intenta de nuevo más tarde.');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   return (
     <div className="py-12 md:py-16 space-y-10">
       <div>
@@ -36,9 +55,18 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
               <span className="text-[9px] font-black uppercase tracking-widest">Verificado</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 text-brand-500 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-100">
-              <Info className="h-3 w-3" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Pendiente</span>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-1.5 text-brand-500 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-100">
+                <Info className="h-3 w-3" />
+                <span className="text-[9px] font-black uppercase tracking-widest">Pendiente</span>
+              </div>
+              <button 
+                onClick={handleResendEmail}
+                disabled={isSendingEmail}
+                className="text-[10px] font-bold text-brand-500 hover:text-brand-600 underline disabled:opacity-50"
+              >
+                {isSendingEmail ? 'Enviando...' : 'Reenviar email'}
+              </button>
             </div>
           )}
         </div>

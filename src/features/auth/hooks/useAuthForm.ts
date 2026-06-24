@@ -4,11 +4,10 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
-  sendPasswordResetEmail,
   AuthError,
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
-import { sendVerificationEmail } from '@/services/auth-service';
+import { sendVerificationEmail, sendPasswordReset } from '@/services/auth-service';
 import { loginSchema, registerSchema, forgotPasswordSchema } from '../schemas/auth.schema';
 
 type FormMode = 'login' | 'register' | 'forgot-password';
@@ -94,7 +93,7 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
     }
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordReset(email);
       setResetEmailSent(true);
     } catch (err: unknown) {
       const authErr = err as AuthError;

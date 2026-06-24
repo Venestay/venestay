@@ -13,7 +13,10 @@
     "validate": "node scripts/run-validation.cjs",
     "validate:json": "node scripts/run-validation.cjs --json",
     "validate:pre-demo": "node scripts/run-validation.cjs --trigger pre-demo",
-    "validate:sprint-close": "node scripts/run-validation.cjs --trigger sprint-close"
+    "validate:sprint-close": "node scripts/run-validation.cjs --trigger sprint-close",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:auth": "playwright codegen --save-storage=playwright/.auth/user.json localhost:3000"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -36,9 +39,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
+    "@playwright/test": "^1.61.1",
     "@types/google.maps": "^3.64.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "dotenv": "^17.4.2",
     "eslint": "^9.39.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-hooks": "^7.1.1",

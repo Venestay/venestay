@@ -8,3 +8,5 @@ export * from './kyc.functions';
 export * from './auth.functions';
 export * from './previewTestBookings';
 export * from './purgeTestBookings';
+export * from './auth/customEmails.functions';
+export * from './auth/onEmailVerified.functions';

@@ -41,3 +41,8 @@ implementation_plan.md
 push_report.txt
 walkthrough.md
 task.md
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
