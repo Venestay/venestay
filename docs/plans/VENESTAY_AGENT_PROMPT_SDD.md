@@ -404,14 +404,6 @@ El usuario puede emitir estos comandos en cualquier momento:
 
 ### Agentes asignados por nodo
 
-| Nodo                 | Agente titular                       | Ruta                                                                        |
-| :------------------- | :----------------------------------- | :-------------------------------------------------------------------------- |
-| 1 — Project Manager  | Product Manager (Alex)               | `.agents/temp_agency_agents/product/product-manager.md`                     |
-| 2 — Planner          | Senior Project Manager               | `.agents/temp_agency_agents/project-management/project-manager-senior.md`   |
-| 3 — Técnico Frontend | Frontend Developer                   | `.agents/temp_agency_agents/engineering/engineering-frontend-developer.md`  |
-| 3 — Técnico Backend  | Backend Architect                    | `.agents/temp_agency_agents/engineering/engineering-backend-architect.md`   |
-| 4 — QA Gate          | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md`             |
-
 | Nodo                 | Agente titular                       | Ruta                                                                       | Sub-skill complementaria | Trigger de sub-skill                                                                                              | Skills técnicas                                                                                                            |
 | :------------------- | :----------------------------------- | :------------------------------------------------------------------------- | :----------------------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
 | 1 — Project Manager  | Product Manager (Alex)               | `.agents/temp_agency_agents/product/product-manager.md`                    | Sprint Prioritizer       | Activar cuando hay ≥2 tareas en competencia dentro del mismo sprint → aplicar scoring RICE para ordenar prioridad | —                                                                                                                          |
@@ -419,6 +411,8 @@ El usuario puede emitir estos comandos en cualquier momento:
 | 3 — Técnico Frontend | Frontend Developer                   | `.agents/temp_agency_agents/engineering/engineering-frontend-developer.md` | —                        | —                                                                                                                 | `react-best-practices`, `tailwind-css-patterns`, `composition-patterns`, `frontend-design`, `accessibility`, `seo`, `vite` |
 | 3 — Técnico Backend  | Backend Architect                    | `.agents/temp_agency_agents/engineering/engineering-backend-architect.md`  | —                        | —                                                                                                                 | `nodejs-best-practices`, `nodejs-backend-patterns`, `zod`, `firebase`                                                      |
 | 4 — QA Gate          | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md`            | —                        | —                                                                                                                 | `accessibility`, `venestay-validation`, `firebase`, `testsprite-verify`                                                    |
+
+**Regla de activación:** El agente anuncia el cambio de rol antes de operar: `"[Activando Nodo N — Nombre del Rol]"`. No cambia de rol sin anunciarlo.
 
 #### Sub-agentes del Nodo 1
 

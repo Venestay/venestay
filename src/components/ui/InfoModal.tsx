@@ -17,8 +17,7 @@ import { CONTACT_CONFIG } from '@/shared/config/contact';
 export type InfoKey =
   | 'zones'
   | 'investment'
-  | 'blog'
-  | 'p2p'
+  | 'ucp'
   | 'security'
   | 'support'
   | 'contact'
@@ -146,7 +145,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
             </div>
             <div className="rounded-2xl bg-gray-50 p-4">
               <h4 className="text-brand-navy mb-2 text-sm font-black uppercase">
-                Caracas (Este)
+                Caracas (Este) <span className="text-[10px] text-brand-500 ml-1">(Pronto)</span>
               </h4>
               <p className="text-xs leading-relaxed font-medium text-gray-500">
                 Zonas como Altamira, Los Palos Grandes y La Castellana, con
@@ -155,7 +154,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
             </div>
             <div className="rounded-2xl bg-gray-50 p-4">
               <h4 className="text-brand-navy mb-2 text-sm font-black uppercase">
-                Isla de Margarita
+                Isla de Margarita <span className="text-[10px] text-brand-500 ml-1">(Pronto)</span>
               </h4>
               <p className="text-xs leading-relaxed font-medium text-gray-500">
                 Playa El Agua y Pampatar, combinando gastronomía de autor con
@@ -164,7 +163,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
             </div>
             <div className="rounded-2xl bg-gray-50 p-4">
               <h4 className="text-brand-navy mb-2 text-sm font-black uppercase">
-                Los Roques
+                Los Roques <span className="text-[10px] text-brand-500 ml-1">(Pronto)</span>
               </h4>
               <p className="text-xs leading-relaxed font-medium text-gray-500">
                 El archipiélago virgen más exclusivo, con posadas de primera
@@ -182,116 +181,68 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
         <div className="space-y-4">
           <p>
             Venezuela presenta una oportunidad única de inversión en bienes
-            raíces turísticos con alta rentabilidad en divisas.
+            raíces turísticos con alta rentabilidad, gestionada de forma segura a través de VeneStay.
           </p>
           <ul className="space-y-3">
             <li className="flex items-start space-x-3">
               <div className="bg-brand-500 mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
               <span className="text-sm font-medium">
                 <span className="text-brand-navy font-black">
-                  Rentabilidad:
+                  Rentabilidad Superior:
                 </span>{' '}
-                Retornos anuales atractivos en alquileres de corta estancia.
+                Retornos atractivos mediante el alquiler de corta estancia de propiedades premium.
               </span>
             </li>
             <li className="flex items-start space-x-3">
               <div className="bg-brand-500 mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
               <span className="text-sm font-medium">
                 <span className="text-brand-navy font-black">
-                  Seguridad Patrimonial:
+                  Gestión Segura:
                 </span>{' '}
-                Propiedades con planta eléctrica, pozo de agua y seguridad
-                privada que mantienen su valor.
+                Nosotros validamos a los huéspedes (KYC), filtramos las reservas y aseguramos el flujo de pago directo 20/80.
               </span>
             </li>
             <li className="flex items-start space-x-3">
               <div className="bg-brand-500 mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
               <span className="text-sm font-medium">
                 <span className="text-brand-navy font-black">
-                  Gestión VeneStay:
+                  Control Total:
                 </span>{' '}
-                Nosotros nos encargamos de la curaduría y visibilidad para
-                atraer al público P2P de Binance.
+                El anfitrión mantiene el control de su propiedad y recibe sus pagos directamente al momento del check-in.
               </span>
             </li>
           </ul>
         </div>
       ),
     },
-    blog: {
-      title: 'VeneStay Blog',
-      icon: <Zap className="text-brand-500 h-8 w-8" />,
-      body: (
-        <div className="space-y-6">
-          <div className="flex space-x-4 border-b border-gray-100 pb-4">
-            <div className="bg-brand-navy h-24 w-24 shrink-0 overflow-hidden rounded-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=150&q=80"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div>
-              <h4 className="text-brand-navy leading-tight font-black">
-                5 Razones para usar USDT en tus viajes por Venezuela
-              </h4>
-              <p className="mt-1 text-xs text-gray-400">
-                Publicado el 15 Abr 2024
-              </p>
-              <button className="text-brand-500 mt-2 text-[10px] font-black tracking-widest uppercase">
-                Leer más
-              </button>
-            </div>
-          </div>
-          <div className="flex space-x-4 border-b border-gray-100 pb-4">
-            <div className="bg-brand-navy h-24 w-24 shrink-0 overflow-hidden rounded-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=150&q=80"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div>
-              <h4 className="text-brand-navy leading-tight font-black">
-                Margarita: La guía definitiva de posadas boutique
-              </h4>
-              <p className="mt-1 text-xs text-gray-400">
-                Publicado el 10 Abr 2024
-              </p>
-              <button className="text-brand-500 mt-2 text-[10px] font-black tracking-widest uppercase">
-                Leer más
-              </button>
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    p2p: {
-      title: 'Ayuda P2P',
+
+    ucp: {
+      title: 'UCP 20/80',
       icon: <CreditCard className="text-brand-500 h-8 w-8" />,
       body: (
         <div className="space-y-4">
           <div className="bg-brand-50 border-brand-100 rounded-2xl border p-4">
             <h4 className="text-brand-navy mb-2 text-xs font-black uppercase">
-              ¿Cómo funciona el pago directo?
+              ¿Cómo funciona el proceso 20/80?
             </h4>
             <p className="text-sm leading-relaxed font-medium text-gray-600">
-              VeneStay facilita la conexión entre huéspedes y anfitriones. Al
-              elegir USDT, utilizas la plataforma P2P (como Binance) para
-              transferir fondos de manera segura.
+              Para garantizar el compromiso y la seguridad de ambas partes, el pago se divide en dos fases:
             </p>
           </div>
-          <p className="text-sm font-medium">Beneficios del sistema P2P:</p>
-          <ul className="space-y-2 text-xs font-bold text-gray-500">
-            <li className="flex items-center">
-              <CheckCircle2 className="mr-2 h-3 w-3 text-emerald-500" /> Sin
-              comisiones bancarias locales.
+          <ul className="space-y-3 text-sm font-medium text-gray-600">
+            <li className="flex items-start space-x-3">
+              <div className="bg-brand-500 mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
+              <span>
+                <strong className="text-brand-navy">20% para Reservar:</strong>{' '}
+                El huésped abona el 20% del total a VeneStay para bloquear las fechas de forma garantizada.
+              </span>
             </li>
-            <li className="flex items-center">
-              <CheckCircle2 className="mr-2 h-3 w-3 text-emerald-500" />{' '}
-              Protección contra la inflación diaria.
-            </li>
-            <li className="flex items-center">
-              <CheckCircle2 className="mr-2 h-3 w-3 text-emerald-500" />{' '}
-              Confirmación instantánea en la blockchain.
+            <li className="flex items-start space-x-3">
+              <div className="bg-brand-500 mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
+              <span>
+                <strong className="text-brand-navy">80% al Check-in:</strong>{' '}
+                El 80% restante se paga directamente al anfitrión de forma segura y presencial al momento de llegar a la propiedad.
+              </span>
             </li>
           </ul>
         </div>
@@ -303,34 +254,31 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
       body: (
         <div className="space-y-4">
           <p className="text-sm leading-loose font-medium">
-            Tu tranquilidad es nuestra prioridad. VeneStay implementa un triple
-            filtro de seguridad:
+            Tu tranquilidad es nuestra prioridad. VeneStay protege tanto al huésped como al anfitrión:
           </p>
           <div className="space-y-3">
             <div className="rounded-xl border border-gray-100 p-3">
               <span className="text-brand-navy mb-1 block text-xs font-black">
-                Verificación de Identidad
+                Validación de Identidad (KYC)
               </span>
               <p className="text-[10px] text-gray-400">
-                Anfitriones y huéspedes deben validar su identidad oficial antes
-                de cualquier transacción.
+                Todo huésped pasa por un sistema de verificación por fases antes de poder confirmar una reserva.
               </p>
             </div>
             <div className="rounded-xl border border-gray-100 p-3">
               <span className="text-brand-navy mb-1 block text-xs font-black">
-                Escrutinio de Propiedad
+                Reserva Protegida 20/80
               </span>
               <p className="text-[10px] text-gray-400">
-                Verificamos la operatividad de servicios básicos (luz/agua) en
-                cada alojamiento premium.
+                El depósito inicial protege al anfitrión contra cancelaciones, y el pago final al check-in protege al huésped.
               </p>
             </div>
             <div className="rounded-xl border border-gray-100 p-3">
               <span className="text-brand-navy mb-1 block text-xs font-black">
-                Protección de Datos
+                Escrutinio de Propiedades
               </span>
               <p className="text-[10px] text-gray-400">
-                Tus datos bancarios y personales nunca son expuestos a terceros.
+                Verificamos la operatividad y calidad de cada alojamiento premium antes de listarlo en nuestra plataforma.
               </p>
             </div>
           </div>
@@ -397,7 +345,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
                 Correo Eléctrónico
               </span>
               <p className="text-brand-navy decoration-brand-500 text-sm font-bold underline underline-offset-4">
-                premium@venestay.com
+                info@venestay.com
               </p>
             </div>
             <div className="space-y-1">
@@ -418,14 +366,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
                 </a>
               </p>
             </div>
-            <div className="space-y-1 md:col-span-2">
-              <span className="text-[10px] font-black text-gray-400 uppercase">
-                Sede Administrativa
-              </span>
-              <p className="text-brand-navy text-sm font-bold">
-                Torre Financiera, Av. Francisco de Miranda, Caracas, Venezuela.
-              </p>
-            </div>
+
           </div>
           <div className="flex justify-center space-x-6 border-t border-gray-100 pt-4">
             <div className="text-center">

@@ -9,6 +9,7 @@ _Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-06-18_
 > **El agente DEBE ejecutar esto ANTES de cualquier otra tarea, sin pedir confirmación.**
 
 ### ¿Por qué?
+
 Se completó la implementación de **URLs dinámicas en plantillas de email** (Opción A — `appBaseUrl`).
 Todos los cambios están en la rama local `qa` con `tsc` en 0 errores, pero **aún no están desplegados** en Firebase.
 Mientras no se haga el deploy, los emails en el entorno de producción siguen con las URLs rotas (`venestay.app/admin`).
@@ -19,6 +20,7 @@ Mientras no se haga el deploy, los emails en el entorno de producción siguen co
 ✅ `firebase deploy --only functions` fue ejecutado y ha finalizado con éxito (`Deploy complete!`). Las URLs dinámicas ya están operativas en producción.
 
 ### Qué valida el éxito
+
 - ✅ El CLI imprime `Deploy complete!` sin errores.
 - ✅ En Firebase Console → Functions aparecen actualizadas las versiones de:
   - `onBookingCreated`
@@ -26,20 +28,23 @@ Mientras no se haga el deploy, los emails en el entorno de producción siguen co
   - `onKYCStatusChanged`
 
 ### Si falla el deploy (IAM-GCP-001)
+
 Si aparece `The caller does not have permission` o error de Service Account:
+
 1. Preguntar al usuario si ya reparó el Service Account en Google Cloud IAM.
 2. Si no puede, proponer ejecutar el deploy desde **Google Cloud Shell** en `console.cloud.google.com`.
 
 ### Módulos modificados (pendientes de deploy)
-| Archivo | Cambio |
-|:--------|:-------|
-| `functions/src/templates/email-layout.ts` | `APP_BASE_URL_PRODUCTION = 'https://venestay.com'` + footer corregido |
-| `functions/src/templates/booking-emails.ts` | 4 botones dinámicos + `/admin` → `/dashboard` |
-| `functions/src/templates/kyc-emails.ts` | 2 botones dinámicos con `baseUrl` opcional |
-| `src/features/bookings/types/index.ts` | Campo `appBaseUrl?: string` en tipo `Booking` |
-| `src/services/booking-service.ts` | `appBaseUrl: window.location.origin` en creación de reservas |
-| `src/features/bookings/components/checkout/CheckoutPage.tsx` | `appBaseUrl: window.location.origin` en `ensureBooking` |
-| `index.html` | `og:url` corregido a `venestay.com` |
+
+| Archivo                                                      | Cambio                                                                |
+| :----------------------------------------------------------- | :-------------------------------------------------------------------- |
+| `functions/src/templates/email-layout.ts`                    | `APP_BASE_URL_PRODUCTION = 'https://venestay.com'` + footer corregido |
+| `functions/src/templates/booking-emails.ts`                  | 4 botones dinámicos + `/admin` → `/dashboard`                         |
+| `functions/src/templates/kyc-emails.ts`                      | 2 botones dinámicos con `baseUrl` opcional                            |
+| `src/features/bookings/types/index.ts`                       | Campo `appBaseUrl?: string` en tipo `Booking`                         |
+| `src/services/booking-service.ts`                            | `appBaseUrl: window.location.origin` en creación de reservas          |
+| `src/features/bookings/components/checkout/CheckoutPage.tsx` | `appBaseUrl: window.location.origin` en `ensureBooking`               |
+| `index.html`                                                 | `og:url` corregido a `venestay.com`                                   |
 
 ---
 
@@ -70,11 +75,11 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 ## Incidentes documentados recientes
 
-| ID                     | Incidente                                  | Causa raíz                              | Estado                   |
-| ---------------------- | ------------------------------------------ | --------------------------------------- | ------------------------ |
-| IAM-GCP-001            | Deploy functions falla                     | Compute Default Service Account borrado | ✅ Resuelto              |
-| ENCODING-MYTRIPS-001   | Tildes corruptas en browser                | `Out-File -Encoding UTF8` en PowerShell | ✅ Resuelto en qa        |
-| RCA-MYTRIPS-001        | Ruta `/mis-viajes` perdida                 | `--theirs` en merge App.tsx             | ✅ Resuelto              |
+| ID                   | Incidente                   | Causa raíz                              | Estado            |
+| -------------------- | --------------------------- | --------------------------------------- | ----------------- |
+| IAM-GCP-001          | Deploy functions falla      | Compute Default Service Account borrado | ✅ Resuelto       |
+| ENCODING-MYTRIPS-001 | Tildes corruptas en browser | `Out-File -Encoding UTF8` en PowerShell | ✅ Resuelto en qa |
+| RCA-MYTRIPS-001      | Ruta `/mis-viajes` perdida  | `--theirs` en merge App.tsx             | ✅ Resuelto       |
 
 ---
 
@@ -88,14 +93,14 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 ## Módulos Recientes — Estado consolidado
 
-| Módulo                                          | Archivo Objetivo                                     | Estado                   | 
-| :---------------------------------------------- | :--------------------------------------------------- | :----------------------- | 
-| **Flexibilización Pago (+8h) (P1)**             | MyTrips.tsx                                          | **SPEC CREADA / PEND. IMPL** |
-| **KYC Loop & Auth Modal Redirect (P1)**         | ProfileSettings.tsx, ListingDetail.tsx               | **COMPLETADO**           |
-| **Herramienta Limpieza Reservas (P1)**          | purgeTestBookings.ts, PurgeTestBookingsModal.tsx     | **CÓDIGO LISTO / DEPLOY FALLIDO**| 
-| **Fix Host Email Notification (P0)**            | functions/src/booking.functions.ts, templates/       | **COMPLETADO**           | 
-| **Email Notifications & Secure Stay Flow (P0)** | functions/src/\*, useCheckout.ts, booking-service.ts | **COMPLETADO**           | 
-| **SPEC-AUTH-MODAL-OPTIMIZATION (P0)**           | AuthModal.tsx, useAuthForm.ts, auth.schema.ts        | **COMPLETADO**           | 
+| Módulo                                          | Archivo Objetivo                                     | Estado                            |
+| :---------------------------------------------- | :--------------------------------------------------- | :-------------------------------- |
+| **Flexibilización Pago (+8h) (P1)**             | MyTrips.tsx                                          | **SPEC CREADA / PEND. IMPL**      |
+| **KYC Loop & Auth Modal Redirect (P1)**         | ProfileSettings.tsx, ListingDetail.tsx               | **COMPLETADO**                    |
+| **Herramienta Limpieza Reservas (P1)**          | purgeTestBookings.ts, PurgeTestBookingsModal.tsx     | **CÓDIGO LISTO / DEPLOY FALLIDO** |
+| **Fix Host Email Notification (P0)**            | functions/src/booking.functions.ts, templates/       | **COMPLETADO**                    |
+| **Email Notifications & Secure Stay Flow (P0)** | functions/src/\*, useCheckout.ts, booking-service.ts | **COMPLETADO**                    |
+| **SPEC-AUTH-MODAL-OPTIMIZATION (P0)**           | AuthModal.tsx, useAuthForm.ts, auth.schema.ts        | **COMPLETADO**                    |
 
 ---
 
@@ -149,4 +154,5 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 | 2026-06-13 | Spec: Flexibilización de Pagos a +8h | PLANIFICADO | PENDIENTE | Ejecutar implementación técnica en MyTrips.tsx. |
 | 2026-06-12 | Mejora del Ecosistema de Agentes (IMPL-AGENTS-S05-01) | COMPLETADO | OK | Ninguna. Ecosistema de agentes y validaciones completamente operativo. |
 | 2026-06-12 | Corrección QA Gate (Dependencias G3, G8, G9) | COMPLETADO | OK | Proceder a integrar qa a main. |
+| 2026-06-12 | Permisos Firestore Pasaporte (cerz@venestay.com) | COMPLETADO | OK | Copiar reglas a consola Firebase. |
 | 2026-06-12 | Permisos Firestore Pasaporte (cerz@venestay.com) | COMPLETADO | OK | Copiar reglas a consola Firebase. |

@@ -482,14 +482,7 @@ const Home: React.FC = () => {
                       Guía de Inversión
                     </button>
                   </li>
-                  <li>
-                    <button
-                      onClick={() => openInfo('blog')}
-                      className="hover:text-brand-500 text-left text-sm font-bold text-white/30 transition-colors"
-                    >
-                      VeneStay Blog
-                    </button>
-                  </li>
+
                   <li>
                     <button
                       onClick={() => navigate('/host-guide')}
@@ -511,10 +504,10 @@ const Home: React.FC = () => {
                 <ul className="space-y-4">
                   <li>
                     <button
-                      onClick={() => openInfo('p2p')}
+                      onClick={() => openInfo('ucp')}
                       className="hover:text-brand-500 text-left text-sm font-bold text-white/30 transition-colors"
                     >
-                      Ayuda P2P
+                      UCP 20/80
                     </button>
                   </li>
                   <li>
@@ -556,32 +549,13 @@ const Home: React.FC = () => {
                 </ul>
               </div>
 
-              <div className="space-y-8 md:col-span-3">
-                <div className="rounded-4xl border border-white/10 bg-white/5 p-6">
-                  <h5 className="text-brand-500 mb-4 text-xs font-black tracking-widest uppercase">
-                    Exclusivo
-                  </h5>
-                  <p className="mb-4 text-xs font-medium text-white/60">
-                    Únete a nuestra lista VIP y recibe las mejores ofertas antes
-                    que nadie.
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Tu email"
-                      className="bg-brand-navy focus:border-brand-500 grow rounded-xl border border-white/10 px-4 py-2 text-xs text-white focus:outline-none"
-                    />
-                    <button className="bg-brand-500 text-brand-navy rounded-xl p-2 transition-transform active:scale-95">
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+
+
             </div>
 
             <div className="mx-auto mt-24 flex max-w-7xl flex-col items-center justify-between gap-6 border-t border-white/5 pt-8 md:flex-row">
               <p className="text-[10px] font-black tracking-widest text-white/20 uppercase">
-                © 2024 VeneStay Luxury Rentals. Design for Venezuela.
+                © 2026 Desarrollado por el equipo de ingeniería de VeneStay. Hecho en Venezuela.
               </p>
               <div className="flex items-center space-x-8 text-[10px] font-black tracking-widest text-white/40 uppercase">
                 <a href="#" className="hover:text-brand-500">

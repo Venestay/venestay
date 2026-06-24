@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { Mail, Check, Info, User, Loader2 } from 'lucide-react';
+import { Mail, Check, Info, Loader2, User } from 'lucide-react';
 import { UserProfile } from '@/features/auth/types';
-import { sendEmailVerification } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
 import { WhatsAppVerificationCard } from './WhatsAppVerificationCard';
 import { sendVerificationEmail } from '@/services/auth-service';
-import { auth } from '@/lib/firebase';
 
 interface SecuritySectionProps {
   profile: UserProfile | null;
@@ -22,18 +20,33 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
   const { user, refreshProfile } = useAuth();
   const [isSending, setIsSending] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const handleSendVerification = async () => {
     if (!user) return;
     setIsSending(true);
     try {
-      await sendEmailVerification(user);
+      await sendVerificationEmail(user);
       toast.success('Correo de verificación enviado. Revisa tu bandeja de entrada o spam.');
     } catch (error) {
       console.error(error);
       toast.error('Error al enviar correo. Puede que hayas excedido el límite, intenta más tarde.');
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!user) return;
+    setIsSendingEmail(true);
+    try {
+      await sendVerificationEmail(user);
+      toast.success('Correo de verificación reenviado con éxito.');
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al reenviar el correo. Intenta de nuevo más tarde.');
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -84,11 +97,18 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
               <span className="text-[9px] font-black uppercase tracking-widest">Verificado</span>
             </div>
           ) : (
-            <div className="flex flex-col gap-2 items-end">
+            <div className="flex flex-col items-end gap-2">
               <div className="flex items-center gap-1.5 text-brand-500 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-100">
                 <Info className="h-3 w-3" />
                 <span className="text-[9px] font-black uppercase tracking-widest">Pendiente</span>
               </div>
+              <button 
+                onClick={handleResendEmail}
+                disabled={isSendingEmail}
+                className="text-[10px] font-bold text-brand-500 hover:text-brand-600 underline disabled:opacity-50"
+              >
+                {isSendingEmail ? 'Enviando...' : 'Reenviar email'}
+              </button>
             </div>
           )}
         </div>
