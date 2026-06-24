@@ -304,10 +304,14 @@ SDD RULE 5 — MEMORY AS CONTRACT
 ║                           │  Código producido                       ║
 ║                           ▼                                          ║
 ║   ┌─────────────────────────────────────────────────────────┐       ║
-║   │  NODO 4 — QA GATE (Reality Checker)                     │       ║
-║   │  Ejecuta criterios de aceptación de la spec             │       ║
-║   │  tsc --noEmit · eslint · tests · reglas Firestore       │       ║
-║   │  Iteración [N]/3 — si N=3 → BLOQUEANTE                  │       ║
+║   │  NODO 4 — TESTING QA & SEGURIDAD (Quality Gate)         │       ║
+║   │  Ejecuta batería completa de verificación:              │       ║
+║   │  · tsc --noEmit (0 errores TypeScript)                  │       ║
+║   │  · eslint . (0 errores severos)                         │       ║
+║   │  · Tests de integración (Vitest + Firebase Emulator)    │       ║
+║   │  · Verificación E2E (TestSprite en entornos desplegados)│       ║
+║   │  · Auditoría firestore.rules + storage.rules            │       ║
+║   │  · Accesibilidad WCAG 2.2 AA                            │       ║
 ║   └───────────────────────┬─────────────────────────────────┘       ║
 ║                    OK ────┘──── FALLO                                ║
 ║                    │             │                                   ║
@@ -408,7 +412,13 @@ El usuario puede emitir estos comandos en cualquier momento:
 | 3 — Técnico Backend  | Backend Architect                    | `.agents/temp_agency_agents/engineering/engineering-backend-architect.md`   |
 | 4 — QA Gate          | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md`             |
 
-**Regla de activación:** El agente anuncia el cambio de rol antes de operar: `"[Activando Nodo N — Nombre del Rol]"`. No cambia de rol sin anunciarlo.
+| Nodo                 | Agente titular                       | Ruta                                                                       | Sub-skill complementaria | Trigger de sub-skill                                                                                              | Skills técnicas                                                                                                            |
+| :------------------- | :----------------------------------- | :------------------------------------------------------------------------- | :----------------------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| 1 — Project Manager  | Product Manager (Alex)               | `.agents/temp_agency_agents/product/product-manager.md`                    | Sprint Prioritizer       | Activar cuando hay ≥2 tareas en competencia dentro del mismo sprint → aplicar scoring RICE para ordenar prioridad | —                                                                                                                          |
+| 2 — Planner          | Senior Project Manager               | `.agents/temp_agency_agents/project-management/project-manager-senior.md`  | —                        | —                                                                                                                 | `typescript-advanced-types`, `zod`                                                                                         |
+| 3 — Técnico Frontend | Frontend Developer                   | `.agents/temp_agency_agents/engineering/engineering-frontend-developer.md` | —                        | —                                                                                                                 | `react-best-practices`, `tailwind-css-patterns`, `composition-patterns`, `frontend-design`, `accessibility`, `seo`, `vite` |
+| 3 — Técnico Backend  | Backend Architect                    | `.agents/temp_agency_agents/engineering/engineering-backend-architect.md`  | —                        | —                                                                                                                 | `nodejs-best-practices`, `nodejs-backend-patterns`, `zod`, `firebase`                                                      |
+| 4 — QA Gate          | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md`            | —                        | —                                                                                                                 | `accessibility`, `venestay-validation`, `firebase`, `testsprite-verify`                                                    |
 
 #### Sub-agentes del Nodo 1
 

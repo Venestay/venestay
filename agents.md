@@ -42,7 +42,7 @@ Según el tipo de pedido del usuario, activar el nodo correspondiente del pipeli
 | Estratégico / planificación | Nodo 1 — Project Manager | Evaluar viabilidad y prioridad         |
 | Diseño de tarea / spec      | Nodo 2 — Planner         | Emitir spec atómica ANTES de codificar |
 | Implementación de código    | Nodo 3 — Técnico         | Código estrictamente contra la spec    |
-| Verificación / QA           | Nodo 4 — QA Gate         | Batería completa: tsc + lint + a11y    |
+| Verificación / QA           | Nodo 4 — QA Gate         | Batería completa: tsc + lint + a11y + TestSprite |
 
 **REGLA ABSOLUTA:** Si el usuario pide código sin que exista una spec previa aprobada, el agente NO escribe código. Emite la spec atómica con la plantilla del Bloque 6 del Master Prompt y espera confirmación.
 
@@ -252,6 +252,7 @@ Antes de hacer push a `qa` o realizar un merge a `main`, es de carácter OBLIGAT
 - [ ] Se ejecutó `npm run dev` y se verificó VISUALMENTE en el navegador que el código funciona.
 - [ ] Los conflictos en `App.tsx` u otros archivos críticos se resolvieron **manualmente**.
 - [ ] No se expuso ninguna API Key, token ni secreto en el código.
+- [ ] La nueva funcionalidad ha sido validada exitosamente con pruebas E2E (TestSprite) en la rama `qa`.
 
 ---
 
