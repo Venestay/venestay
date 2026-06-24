@@ -9,7 +9,6 @@ import { useAuth } from '@/features/auth/hooks/AuthContext';
 import { WhatsAppVerificationCard } from './WhatsAppVerificationCard';
 import { sendVerificationEmail } from '@/services/auth-service';
 import { auth } from '@/lib/firebase';
-import { toast } from 'sonner';
 
 interface SecuritySectionProps {
   profile: UserProfile | null;
