@@ -73,6 +73,24 @@ export const passportDraftSchema = z.object({
     whatsapp: z.boolean(),
     push: z.boolean(),
   }),
+  birthDate: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        const birth = new Date(val);
+        if (isNaN(birth.getTime())) return false;
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        return age >= 18;
+      },
+      { message: 'Debes ser mayor de 18 años para registrarte en VeneStay.' }
+    ),
 });
 
 export type PassportDraftData = z.infer<typeof passportDraftSchema>;

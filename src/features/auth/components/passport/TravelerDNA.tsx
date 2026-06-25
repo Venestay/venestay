@@ -10,7 +10,7 @@
  * skill: frontend-design → micro-interacciones, hover states that surprise
  */
 import React from 'react';
-import { Languages, Check } from 'lucide-react';
+import { Languages, Check, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TravelInterest } from '@/features/auth/types';
 
@@ -20,6 +20,8 @@ interface TravelerDNAProps {
   toggleInterest: (interest: TravelInterest) => void;
   languages: string[];
   toggleLanguage: (lang: string) => void;
+  birthDate: string;
+  setBirthDate: (val: string) => void;
 }
 
 export const TravelerDNA: React.FC<TravelerDNAProps> = ({
@@ -28,7 +30,14 @@ export const TravelerDNA: React.FC<TravelerDNAProps> = ({
   toggleInterest,
   languages,
   toggleLanguage,
+  birthDate,
+  setBirthDate,
 }) => {
+  const maxDate = React.useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    return d.toISOString().split('T')[0];
+  }, []);
   return (
     <div className="py-12 md:py-16 space-y-10">
       <div>
@@ -37,6 +46,24 @@ export const TravelerDNA: React.FC<TravelerDNAProps> = ({
       </div>
 
       <div className="space-y-8">
+        {/* ─── Fecha de nacimiento ─── */}
+        <div className="space-y-4">
+          <label htmlFor="birthDateInput" className="text-[10px] font-black tracking-[0.2em] text-gray-700 uppercase flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5 text-brand-500" />
+            Fecha de Nacimiento (Requerido para reservar)
+          </label>
+          <div className="relative max-w-sm">
+            <input
+              id="birthDateInput"
+              type="date"
+              max={maxDate}
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              className="w-full rounded-2xl border-2 border-gray-200 bg-white px-5 py-3.5 text-xs font-bold text-brand-navy shadow-sm transition-all duration-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/60 hover:border-brand-300"
+            />
+          </div>
+        </div>
+
         {/* ─── Intereses ─── */}
         <div className="space-y-4">
           <label className="text-[10px] font-black tracking-[0.2em] text-gray-700 uppercase">

@@ -40,7 +40,7 @@ export const PassportCompletionBanner: React.FC<PassportCompletionBannerProps> =
     {
       id: 'birthDate',
       label: 'Agregar fecha de nacimiento',
-      isComplete: profile.profile?.birthDateVerified === true,
+      isComplete: !!profile.profile?.birthDate || profile.profile?.birthDateVerified === true,
       section: 'dna'
     },
     {

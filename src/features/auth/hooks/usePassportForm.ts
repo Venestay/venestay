@@ -31,6 +31,8 @@ export interface UsePassportFormReturn {
   setDisplayName: (v: string) => void;
   bio: string;
   setBio: (v: string) => void;
+  birthDate: string;
+  setBirthDate: (v: string) => void;
   currency: CurrencyPreference;
   setCurrency: (v: CurrencyPreference) => void;
   selectedInterests: TravelInterest[];
@@ -75,6 +77,7 @@ export const usePassportForm = (): UsePassportFormReturn => {
   // ── Estado del formulario ──────────────────────────────────────────────────
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [currency, setCurrency] = useState<CurrencyPreference>('USD');
   const [selectedInterests, setSelectedInterests] = useState<TravelInterest[]>([]);
   const [languages, setLanguages] = useState<string[]>(['Español']);
@@ -108,6 +111,19 @@ export const usePassportForm = (): UsePassportFormReturn => {
     }
   }, [profile?.uid]);
 
+  const loadFromProfile = () => {
+    if (!profile) return;
+    setDisplayName(profile.displayName || '');
+    setBio(profile.bio || '');
+    setBirthDate((profile.profile?.birthDate as string) || '');
+    setCurrency(profile.currency || 'USD');
+    setSelectedInterests((profile.selectedInterests as TravelInterest[]) || []);
+    setLanguages(profile.languages || ['Español']);
+    if (profile.notifications) {
+      setNotifications(profile.notifications as NotificationPreferences);
+    }
+  };
+
   // ── Sincronización desde Firestore y Borrador Local ────────────────────────
   useEffect(() => {
     if (!profile) return;
@@ -123,42 +139,21 @@ export const usePassportForm = (): UsePassportFormReturn => {
           const draft = result.data;
           setDisplayName(draft.displayName);
           setBio(draft.bio || '');
+          setBirthDate(draft.birthDate || (profile.profile?.birthDate as string) || '');
           setCurrency(draft.currency);
           setSelectedInterests(draft.selectedInterests);
           setLanguages(draft.languages);
           setNotifications(draft.notifications);
         } else {
           console.warn('[Passport] El borrador no cumple el esquema de validación:', result.error);
-          // Fallback a Firestore
-          setDisplayName(profile.displayName || '');
-          setBio(profile.bio || '');
-          setCurrency(profile.currency || 'USD');
-          setSelectedInterests((profile.selectedInterests as TravelInterest[]) || []);
-          setLanguages(profile.languages || ['Español']);
-          if (profile.notifications) {
-            setNotifications(profile.notifications as NotificationPreferences);
-          }
+          loadFromProfile();
         }
       } catch (e) {
         console.warn('[Passport] Error al parsear el borrador local:', e);
-        setDisplayName(profile.displayName || '');
-        setBio(profile.bio || '');
-        setCurrency(profile.currency || 'USD');
-        setSelectedInterests((profile.selectedInterests as TravelInterest[]) || []);
-        setLanguages(profile.languages || ['Español']);
-        if (profile.notifications) {
-          setNotifications(profile.notifications as NotificationPreferences);
-        }
+        loadFromProfile();
       }
     } else {
-      setDisplayName(profile.displayName || '');
-      setBio(profile.bio || '');
-      setCurrency(profile.currency || 'USD');
-      setSelectedInterests((profile.selectedInterests as TravelInterest[]) || []);
-      setLanguages(profile.languages || ['Español']);
-      if (profile.notifications) {
-        setNotifications(profile.notifications as NotificationPreferences);
-      }
+      loadFromProfile();
     }
     setIsInitialized(true);
   }, [profile]);
@@ -176,12 +171,13 @@ export const usePassportForm = (): UsePassportFormReturn => {
     return (
       displayName !== (profile.displayName ?? '') ||
       bio !== (profile.bio ?? '') ||
+      birthDate !== ((profile.profile?.birthDate as string) ?? '') ||
       currency !== (profile.currency ?? 'USD') ||
       JSON.stringify(selectedInterests) !== JSON.stringify(profile.selectedInterests ?? []) ||
       JSON.stringify(languages) !== JSON.stringify(profile.languages ?? ['Español']) ||
       JSON.stringify(notifications) !== JSON.stringify(profile.notifications ?? DEFAULT_NOTIFICATIONS)
     );
-  }, [profile, isInitialized, displayName, bio, currency, selectedInterests, languages, notifications]);
+  }, [profile, isInitialized, displayName, bio, birthDate, currency, selectedInterests, languages, notifications]);
 
   // ── Guardado de Borrador Reactivo ──────────────────────────────────────────
   useEffect(() => {
@@ -193,6 +189,7 @@ export const usePassportForm = (): UsePassportFormReturn => {
       const draft = {
         displayName,
         bio,
+        birthDate,
         currency,
         selectedInterests,
         languages,
@@ -302,6 +299,7 @@ export const usePassportForm = (): UsePassportFormReturn => {
     const draft = {
       displayName,
       bio,
+      birthDate,
       currency,
       selectedInterests,
       languages,
@@ -342,6 +340,10 @@ export const usePassportForm = (): UsePassportFormReturn => {
       selectedInterests,
       languages,
       notifications,
+      profile: {
+        ...profile?.profile,
+        birthDate,
+      },
     });
 
     if (profile?.uid) {
@@ -362,6 +364,8 @@ export const usePassportForm = (): UsePassportFormReturn => {
     setDisplayName,
     bio,
     setBio,
+    birthDate,
+    setBirthDate,
     currency,
     setCurrency,
     selectedInterests,

@@ -54,6 +54,8 @@ const ProfileSettings: React.FC = () => {
     setDisplayName,
     bio,
     setBio,
+    birthDate,
+    setBirthDate,
     currency,
     setCurrency,
     selectedInterests,
@@ -317,6 +319,8 @@ const ProfileSettings: React.FC = () => {
               toggleInterest={toggleInterest}
               languages={languages}
               toggleLanguage={toggleLanguage}
+              birthDate={birthDate}
+              setBirthDate={setBirthDate}
             />
           </div>
 

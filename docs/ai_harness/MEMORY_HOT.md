@@ -52,7 +52,7 @@ Si aparece `The caller does not have permission` o error de Service Account:
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS (E2E Playwright Passport) | 2026-06-23
+QA_GATE   : PASS (Checkout KYC Unify) | 2026-06-25
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
 TURNO_REANCLA: 0
@@ -121,6 +121,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-06-25 | Fecha Nacimiento & KYC Checkout Unificación (SPEC-PASSPORT-004 / SPEC-CHECKOUT-CANBOOK-UNIFY) | COMPLETADO | PASS | Pruebas visuales en vivo exitosas en Checkout. Flujo desbloqueado. |
 | 2026-06-23 | Playwright E2E: Passport Auth | COMPLETADO | PASS | Módulo de pruebas E2E configurado y pasando exitosamente. |
 | 2026-06-23 | Fix SMTP Secrets (SPEC-AUTH-MAILER-001) | COMPLETADO | PASS | Probar manualmente el reenvío de correo (Despliegue COMPLETADO). |
 | 2026-06-23 | KYC (Auth) - Plantillas de Correo Premium | COMPLETADO | PASS | Configurar secrets de SMTP en Google Secret Manager y desplegar funciones. Realizar pruebas manuales de registro y reset de password. |

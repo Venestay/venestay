@@ -39,6 +39,7 @@ import {
 } from '@/types';
 import { CommissionTier } from '@/lib/commission';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
+import { UserProfile } from '@/features/auth/types';
 import { getExchangeRates, HIDE_BCV_PRICES } from '@/services/exchange-service';
 import { db, storage } from '@/lib/firebase';
 import {
@@ -83,6 +84,16 @@ function isQaTestEmail(email: string | null | undefined): boolean {
     QA_TEST_EMAILS.includes(lower)
   );
 }
+
+/** SPEC-CHECKOUT-CANBOOK-UNIFY: Unifica el cálculo de aprobación con PassportCompletionBanner */
+const checkCanBook = (p?: UserProfile | null): boolean => {
+  if (!p) return false;
+  if (p.canBook === true) return true;
+  const hasName = !!p.displayName;
+  const hasBirth = !!p.profile?.birthDate || p.profile?.birthDateVerified === true;
+  const hasBio = !!p.bio && p.bio.length >= 20;
+  return hasName && hasBirth && hasBio;
+};
 
 const CheckoutPage: React.FC = () => {
   const { bookingId: urlBookingId } = useParams<{ bookingId: string }>();
@@ -171,7 +182,7 @@ const CheckoutPage: React.FC = () => {
   }, [trustScore]);
 
   const isKycVerified = useMemo(() => {
-    return profileData?.canBook === true;
+    return checkCanBook(profileData);
   }, [profileData]);
 
   const isFormDisabled = useMemo(() => {
@@ -254,7 +265,7 @@ const CheckoutPage: React.FC = () => {
             !isNaN(sDate.getTime()) && !isNaN(eDate.getTime())
               ? Math.max(0, differenceInDays(eDate, sDate))
               : 0;
-          const total = nights * lData.pricePerNight;
+          const total = (nights * lData.pricePerNight) + (lData.cleaningFee || 0);
 
           const { calculateCommission } = await import('@/lib/commission');
           const financials = calculateCommission(total, hostTier);
@@ -474,7 +485,7 @@ const CheckoutPage: React.FC = () => {
 
     if (start && end) {
       const nights = differenceInDays(end, start);
-      const total = nights * listing.pricePerNight;
+      const total = (nights * listing.pricePerNight) + (listing.cleaningFee || 0);
       newBooking.totalAmount = total;
 
       // Recalculate financials with the same tier
@@ -696,7 +707,7 @@ const CheckoutPage: React.FC = () => {
     if (!booking || !listing) return;
 
     // 2. Verificar Fase 1 de KYC (canBook)
-    const canBook = profileData?.canBook === true;
+    const canBook = checkCanBook(profileData);
 
     if (!canBook) {
       persistDraftAndReturn();
@@ -1367,6 +1378,12 @@ const CheckoutPage: React.FC = () => {
                       </span>
                       <span>${booking.totalAmount.toFixed(2)}</span>
                     </div>
+                    {(listing.cleaningFee || 0) > 0 && (
+                      <div className="flex items-center justify-between font-medium text-gray-300">
+                        <span>Tarifa de limpieza</span>
+                        <span>${listing.cleaningFee!.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between font-medium text-gray-300">
                       <span>Tarifa de servicio (0%)</span>
                       <span>$0.00</span>
@@ -1459,7 +1476,11 @@ const CheckoutPage: React.FC = () => {
                           )}>
                             {policy.label}
                           </p>
-                          {isExpired ? (
+                          {policyKey === 'non_refundable_reschedulable' ? (
+                            <p className="text-xs font-semibold text-slate-700">
+                              {policy.detail}
+                            </p>
+                          ) : isExpired ? (
                             <p className="text-xs font-semibold text-red-600">
                               El plazo de cancelación gratuita ya venció. El depósito del 20% no es reembolsable.
                             </p>

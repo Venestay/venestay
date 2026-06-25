@@ -43,7 +43,7 @@ export const useAuthAction = () => {
           setErrorMessage('Acción no soportada.');
         }
       } catch (err) {
-        const error = err as any;
+        const error = err as { code?: string };
         setState('error');
         console.error('Error processing auth action:', error);
         if (error.code === 'auth/invalid-action-code') {
@@ -64,7 +64,7 @@ export const useAuthAction = () => {
       await resetPasswordWithCode(oobCode, newPassword);
       setState('success');
     } catch (err) {
-      const error = err as any;
+      const error = err as { code?: string };
       setState('error');
       if (error.code === 'auth/weak-password') {
         setErrorMessage('La contraseña debe tener al menos 6 caracteres.');
