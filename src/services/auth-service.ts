@@ -1,7 +1,10 @@
 import {
   signOut as firebaseSignOut,
   User as FirebaseUser,
-  sendEmailVerification as firebaseSendEmailVerification
+  sendEmailVerification as firebaseSendEmailVerification,
+  applyActionCode,
+  verifyPasswordResetCode,
+  confirmPasswordReset
 } from 'firebase/auth';
 import {
   doc,
@@ -28,7 +31,8 @@ export const sendVerificationEmail = async (user: FirebaseUser): Promise<void> =
     const sendCustomVerificationEmail = httpsCallable(functions, 'sendCustomVerificationEmail');
     await sendCustomVerificationEmail({ 
       email: user.email, 
-      displayName: user.displayName || 'Huésped' 
+      displayName: user.displayName || 'Huésped',
+      appBaseUrl: typeof window !== 'undefined' ? window.location.origin : 'https://venestay.com'
     });
   } catch (error) {
     console.error('Error sending custom verification email:', error);
@@ -39,7 +43,10 @@ export const sendVerificationEmail = async (user: FirebaseUser): Promise<void> =
 export const sendPasswordReset = async (email: string): Promise<void> => {
   try {
     const sendCustomPasswordResetEmail = httpsCallable(functions, 'sendCustomPasswordResetEmail');
-    await sendCustomPasswordResetEmail({ email });
+    await sendCustomPasswordResetEmail({ 
+      email,
+      appBaseUrl: typeof window !== 'undefined' ? window.location.origin : 'https://venestay.com'
+    });
   } catch (error) {
     console.error('Error sending custom password reset email:', error);
     throw error;
@@ -49,6 +56,18 @@ export const sendPasswordReset = async (email: string): Promise<void> => {
 export const isEmailVerified = (user: FirebaseUser | null): boolean => {
   if (!user) return false;
   return user.emailVerified;
+};
+
+export const confirmEmailVerification = async (oobCode: string) => {
+  return await applyActionCode(auth, oobCode);
+};
+
+export const verifyPasswordReset = async (oobCode: string) => {
+  return await verifyPasswordResetCode(auth, oobCode);
+};
+
+export const resetPasswordWithCode = async (oobCode: string, newPassword: string) => {
+  return await confirmPasswordReset(auth, oobCode, newPassword);
 };
 
 export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {

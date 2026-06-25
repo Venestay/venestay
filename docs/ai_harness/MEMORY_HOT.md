@@ -122,7 +122,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
 | 2026-06-23 | Playwright E2E: Passport Auth | COMPLETADO | PASS | Módulo de pruebas E2E configurado y pasando exitosamente. |
-| 2026-06-23 | Fix SMTP Secrets (SPEC-AUTH-MAILER-001) | COMPLETADO | PASS | Desplegar functions: `firebase deploy --only functions:sendCustomVerificationEmail,functions:sendCustomPasswordResetEmail` y probar el reenvío de correo. |
+| 2026-06-23 | Fix SMTP Secrets (SPEC-AUTH-MAILER-001) | COMPLETADO | PASS | Probar manualmente el reenvío de correo (Despliegue COMPLETADO). |
 | 2026-06-23 | KYC (Auth) - Plantillas de Correo Premium | COMPLETADO | PASS | Configurar secrets de SMTP en Google Secret Manager y desplegar funciones. Realizar pruebas manuales de registro y reset de password. |
 | 2026-06-23 | Fix Bug: AuthModal State Reset | COMPLETADO | OK | Se corrigió el bug donde AuthModal retenía el estado de unverifiedEmailWarning al reabrirse. |
 | 2026-06-22 | Push a Github QA | COMPLETADO | PASS | Push exitoso a cerz30 qa con la Fase 1 de KYC y validaciones de Auth. |

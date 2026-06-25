@@ -14,14 +14,20 @@ export const sendCustomVerificationEmail = functions
     }
 
     try {
-      const actionLink = await admin.auth().generateEmailVerificationLink(data.email, {
-        url: process.env.ACTION_CODE_URL || 'https://venestay.com',
+      const baseUrl = data.appBaseUrl || process.env.ACTION_CODE_URL || 'https://venestay.com';
+      const firebaseLink = await admin.auth().generateEmailVerificationLink(data.email, {
+        url: baseUrl,
       });
+      const actionLink = firebaseLink.replace(
+        /https:\/\/.*\.firebaseapp\.com\/__\/auth\/action/,
+        `${baseUrl}/auth/action`
+      );
+
       const html = buildEmailVerificationHTML(data.displayName || 'Huésped', actionLink);
       
       const transporter = createTransporter();
       await transporter.sendMail({
-        from: '"VeneStay" <noreply@venestay.com>',
+        from: `"VeneStay" <${process.env.SMTP_USER?.trim() || 'info@venestay.com'}>`,
         to: data.email,
         subject: 'Verifica tu correo — VeneStay',
         html,
@@ -40,14 +46,20 @@ export const sendCustomPasswordResetEmail = functions
     const email = (data.email as string).toLowerCase().trim();
 
     try {
-      const actionLink = await admin.auth().generatePasswordResetLink(email, {
-        url: process.env.ACTION_CODE_URL || 'https://venestay.com',
+      const baseUrl = data.appBaseUrl || process.env.ACTION_CODE_URL || 'https://venestay.com';
+      const firebaseLink = await admin.auth().generatePasswordResetLink(email, {
+        url: baseUrl,
       });
+      const actionLink = firebaseLink.replace(
+        /https:\/\/.*\.firebaseapp\.com\/__\/auth\/action/,
+        `${baseUrl}/auth/action`
+      );
+
       const html = buildPasswordResetHTML(data.displayName || 'Usuario', actionLink);
       
       const transporter = createTransporter();
       await transporter.sendMail({
-        from: '"VeneStay" <noreply@venestay.com>',
+        from: `"VeneStay" <${process.env.SMTP_USER?.trim() || 'info@venestay.com'}>`,
         to: email,
         subject: 'Restablece tu contraseña — VeneStay',
         html,

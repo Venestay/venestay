@@ -25,6 +25,7 @@ const HostGuide = lazy(() => import('@/pages/HostGuide'));
 const ListingDetail = lazy(() => import('@/features/listings/components/ListingDetail'));
 const ProfileSettings = lazy(() => import('@/features/auth/components/ProfileSettings'));
 const MyTrips = lazy(() => import('@/features/bookings/components/MyTrips'));
+const AuthAction = lazy(() => import('@/pages/AuthAction'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -113,6 +114,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/auth/action" element={<AuthAction />} />
         </Routes>
       </Suspense>
       <Toaster position="top-right" richColors />
