@@ -52,10 +52,10 @@ Si aparece `The caller does not have permission` o error de Service Account:
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS (Checkout KYC Unify) | 2026-06-25
+QA_GATE   : PASS (Fix Validaciones QA) | 2026-06-27
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
-TURNO_REANCLA: 0
+TURNO_REANCLA: 8
 ```
 
 ---
@@ -95,6 +95,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Módulo                                          | Archivo Objetivo                                     | Estado                            |
 | :---------------------------------------------- | :--------------------------------------------------- | :-------------------------------- |
+| **Chat Badge Mis Viajes (P1)**                  | MyTrips.tsx                                          | **COMPLETADO**                    |
 | **Flexibilización Pago (+8h) (P1)**             | MyTrips.tsx                                          | **SPEC CREADA / PEND. IMPL**      |
 | **KYC Loop & Auth Modal Redirect (P1)**         | ProfileSettings.tsx, ListingDetail.tsx               | **COMPLETADO**                    |
 | **Herramienta Limpieza Reservas (P1)**          | purgeTestBookings.ts, PurgeTestBookingsModal.tsx     | **CÓDIGO LISTO / DEPLOY FALLIDO** |
@@ -121,6 +122,9 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-06-27 | Fix Validaciones QA (G3 & G12) | COMPLETADO | PASS | Continuar con Estrategia de Auditoría Playwright. |
+| 2026-06-27 | Estrategia de Auditoría Global Playwright | PLANIFICADO | N/A | Elegir Opción A (Iterativa) u Opción B (Masiva) para ejecutar las suites. |
+| 2026-06-27 | Chat Badge Mis Viajes (SPEC-MYTRIPS-CHAT-BADGE-001) | COMPLETADO | PASS | Verificar visualmente en el browser el badge rojo en la tarjeta de reserva del huésped. |
 | 2026-06-25 | Fecha Nacimiento & KYC Checkout Unificación (SPEC-PASSPORT-004 / SPEC-CHECKOUT-CANBOOK-UNIFY) | COMPLETADO | PASS | Pruebas visuales en vivo exitosas en Checkout. Flujo desbloqueado. |
 | 2026-06-23 | Playwright E2E: Passport Auth | COMPLETADO | PASS | Módulo de pruebas E2E configurado y pasando exitosamente. |
 | 2026-06-23 | Fix SMTP Secrets (SPEC-AUTH-MAILER-001) | COMPLETADO | PASS | Probar manualmente el reenvío de correo (Despliegue COMPLETADO). |

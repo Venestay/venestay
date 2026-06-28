@@ -178,9 +178,10 @@ service cloud.firestore {
         resource.data.ownerId == request.auth.uid
       );
 
-      // Public Availability Check (Crucial fix for ListingDetail)
-      // Enforce the query uses a where filter on status to avoid leaking all bookings
-      allow list: if resource.data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'PENDING_APPROVAL'];
+      // Availability Check — requires authentication to prevent anonymous data leaks.
+      // Unauthenticated users cannot list booking documents (contains PII: guestName, totalAmount, etc.)
+      // SEC-FIX-SEC-001 · 28 Jun 2026: Removed unauthenticated allow list. Now requires isSignedIn().
+      allow list: if isSignedIn() && resource.data.status in ['PENDING_PAYMENT', 'AWAITING_VERIFICATION', 'CONFIRMED', 'PENDING_APPROVAL'];
 
       allow get: if isSignedIn() && (
         request.auth.uid == resource.data.guestId || 

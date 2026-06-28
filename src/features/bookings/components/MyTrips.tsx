@@ -740,14 +740,10 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                     <div className="flex gap-2">
                                       <button
                                         onClick={() => {
-                                          if (
-                                            booking.status === 'CONFIRMED' ||
-                                            booking.status === 'AWAITING_VERIFICATION' ||
-                                            booking.status === 'PENDING_APPROVAL'
-                                          ) {
-                                            setSummaryBooking(booking);
-                                          } else {
+                                          if (booking.status === 'PENDING_PAYMENT') {
                                             navigate(`/checkout/${booking.id}`);
+                                          } else {
+                                            setSummaryBooking(booking);
                                           }
                                         }}
                                         className="flex-1 bg-gray-100 hover:bg-gray-200 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
@@ -775,14 +771,21 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                     }
                                   }}
                                   className={cn(
-                                    "flex items-center gap-1.5 px-4 py-2 rounded-xl text-[9px] font-black tracking-wider uppercase border transition-all duration-300",
+                                    "relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-[9px] font-black tracking-wider uppercase border transition-all duration-300",
                                     activeChatId === booking.id
                                       ? "bg-brand-navy text-white border-brand-navy"
+                                      : unreadPerBooking[booking.id] > 0
+                                      ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100 shadow-sm shadow-red-100"
                                       : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
                                   )}
                                 >
-                                  <MessageSquare className="h-3 w-3" />
-                                  Chat
+                                  <MessageSquare className="h-3 w-3 shrink-0" />
+                                  <span>Chat</span>
+                                  {unreadPerBooking[booking.id] > 0 && (
+                                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white shadow-sm animate-pulse">
+                                      {unreadPerBooking[booking.id]}
+                                    </span>
+                                  )}
                                 </button>
                               </div>
                             </div>

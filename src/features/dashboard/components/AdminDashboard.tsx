@@ -60,7 +60,7 @@ const AdminDashboard: React.FC = () => {
   const LECHERIA_CENTER = { lat: 10.2167, lng: -67.95 };
 
   const [activeTab, setActiveTab] = useState<DashboardTab>(() => {
-    if (window.location.pathname === '/admin/mis-propiedades') return 'listings';
+    if (window.location.pathname === '/admin/mis-propiedades' || window.location.pathname === '/publicar-espacio') return 'listings';
     return isAdmin ? 'bookings' : 'profile';
   });
 
@@ -99,8 +99,44 @@ const AdminDashboard: React.FC = () => {
     if (initialListing) {
       setEditingListing(initialListing as Listing);
       setActiveTab('listings');
+    } else if (window.location.pathname === '/publicar-espacio') {
+      setEditingListing({
+        id: `listing-${Date.now()}`,
+        title: '',
+        description: '',
+        city: 'Caracas',
+        location: '',
+        pricePerNight: 0,
+        rating: 5,
+        reviewsCount: 0,
+        isVerified: true,
+        hostId: user?.uid || '',
+        hostName: user?.displayName || '',
+        hostAvatar: user?.photoURL || '',
+        images: [],
+        environmentPhotos: {},
+        maxGuests: 1,
+        bedrooms: 1,
+        beds: 1,
+        baths: 1,
+        buildingFloors: 1,
+        propertyFloor: 1,
+        constructionYear: new Date().getFullYear(),
+        amenities: [],
+        paymentMethods: [],
+        isPublishedFromDashboard: false,
+        minNights: 1,
+        maxNights: 30,
+        cancellationPolicy: 'flexible',
+        bookingMode: 'request',
+        propertyType: 'apartment',
+        accommodationType: 'entire',
+        cleaningFee: 0,
+        isPetFriendly: false,
+      });
+      setActiveTab('listings');
     }
-  }, [initialListing]);
+  }, [initialListing, user]);
 
   // Rule: async-parallel (Subscriptions)
   useEffect(() => {
