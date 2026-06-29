@@ -24,8 +24,8 @@ export async function recalculateKycPhase(userId: string): Promise<void> {
     signals?.whatsappVerified === true &&
     !!data?.displayName && data.displayName.trim().split(' ').length >= 2 &&
     !!data?.photoURL &&
-    profile?.birthDateVerified === true &&
-    (profile?.bio?.length ?? 0) >= 20;
+    (profile?.birthDateVerified === true || !!profile?.birthDate) &&
+    ((profile?.bio?.length ?? 0) >= 20 || (data?.bio?.length ?? 0) >= 20);
 
   // Fase 2 (se evalúa solo si Fase 1 cumplida)
   const phase2 = phase1 && signals?.paymentNameMatchStatus === 'MATCHED';

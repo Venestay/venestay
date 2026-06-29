@@ -105,6 +105,11 @@ export const DirectRequestForm: React.FC<DirectRequestFormProps> = ({
       return;
     }
 
+    if (profileData && profileData.canBook !== true) {
+      toast.error('Tu pasaporte aún está en proceso de verificación o faltan requisitos básicos para alquilar.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const payload = {

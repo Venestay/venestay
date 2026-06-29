@@ -46,3 +46,6 @@ task.md
 playwright-report/
 test-results/
 playwright/.cache/
+tests/.auth/
+debug.html
+.agents/
