@@ -1,50 +1,26 @@
 # MEMORY_HOT — VeneStay Agent
 
-_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-06-18_
+_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-06-30_
 
 ---
 
 ## 🔴 ACCIÓN INMEDIATA — PRIMERA TAREA AL INICIAR SESIÓN
 
-> **El agente DEBE ejecutar esto ANTES de cualquier otra tarea, sin pedir confirmación.**
+> **El agente DEBE consultar y continuar con esta tarea al iniciar la próxima sesión.**
 
 ### ¿Por qué?
 
-Se completó la implementación de **URLs dinámicas en plantillas de email** (Opción A — `appBaseUrl`).
-Todos los cambios están en la rama local `qa` con `tsc` en 0 errores, pero **aún no están desplegados** en Firebase.
-Mientras no se haga el deploy, los emails en el entorno de producción siguen con las URLs rotas (`venestay.app/admin`).
+El usuario creó exitosamente la cuenta de **Twilio WhatsApp** (Sandbox `+14155238886`) para reemplazar el modo STUB en la validación OTP de pasaporte / KYC (requisito indispensable para `canBook: true`).
+La especificación técnica **SPEC-AUTH-WHATSAPP-001** está aprobada y lista en `docs/specs/spec_auth_whatsapp_twilio.md`.
 
-### Pasos a ejecutar en orden (COMPLETADO)
+### Pasos pendientes para completar la integración
 
-✅ El código ha sido compilado (`npm run build`)
-✅ `firebase deploy --only functions` fue ejecutado y ha finalizado con éxito (`Deploy complete!`). Las URLs dinámicas ya están operativas en producción.
-
-### Qué valida el éxito
-
-- ✅ El CLI imprime `Deploy complete!` sin errores.
-- ✅ En Firebase Console → Functions aparecen actualizadas las versiones de:
-  - `onBookingCreated`
-  - `onBookingStateChanged`
-  - `onKYCStatusChanged`
-
-### Si falla el deploy (IAM-GCP-001)
-
-Si aparece `The caller does not have permission` o error de Service Account:
-
-1. Preguntar al usuario si ya reparó el Service Account en Google Cloud IAM.
-2. Si no puede, proponer ejecutar el deploy desde **Google Cloud Shell** en `console.cloud.google.com`.
-
-### Módulos modificados (pendientes de deploy)
-
-| Archivo                                                      | Cambio                                                                |
-| :----------------------------------------------------------- | :-------------------------------------------------------------------- |
-| `functions/src/templates/email-layout.ts`                    | `APP_BASE_URL_PRODUCTION = 'https://venestay.com'` + footer corregido |
-| `functions/src/templates/booking-emails.ts`                  | 4 botones dinámicos + `/admin` → `/dashboard`                         |
-| `functions/src/templates/kyc-emails.ts`                      | 2 botones dinámicos con `baseUrl` opcional                            |
-| `src/features/bookings/types/index.ts`                       | Campo `appBaseUrl?: string` en tipo `Booking`                         |
-| `src/services/booking-service.ts`                            | `appBaseUrl: window.location.origin` en creación de reservas          |
-| `src/features/bookings/components/checkout/CheckoutPage.tsx` | `appBaseUrl: window.location.origin` en `ensureBooking`               |
-| `index.html`                                                 | `og:url` corregido a `venestay.com`                                   |
+1. **Usuario / Pruebas:** Conectar el teléfono de pruebas al Sandbox de Twilio enviando un mensaje de WhatsApp a `+1 415 523 8886` con la palabra clave asignada en Twilio Console (ej. `join <keyword>`).
+2. **Usuario / Terminal:** Guardar los 3 secretos en Google Cloud Secret Manager usando el CLI de Firebase:
+   - `firebase functions:secrets:set TWILIO_ACCOUNT_SID`
+   - `firebase functions:secrets:set TWILIO_AUTH_TOKEN`
+   - `firebase functions:secrets:set TWILIO_WHATSAPP_NUMBER` (`+14155238886`)
+3. **Agente (Nodo 3 — Técnico):** Instalar dependencia `twilio` en `functions/package.json` (`cd functions && npm install twilio --save`), modificar `functions/src/auth.functions.ts` (`sendWhatsAppOTP` con inyección `.runWith({ secrets: [...] })` y `client.messages.create`), y desplegar con `firebase deploy --only functions:sendWhatsAppOTP`.
 
 ---
 
@@ -52,10 +28,10 @@ Si aparece `The caller does not have permission` o error de Service Account:
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS (Fix Validaciones QA) | 2026-06-27
+QA_GATE   : PASS | 2026-06-30
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
-TURNO_REANCLA: 8
+TURNO_REANCLA: 0
 ```
 
 ---
@@ -95,6 +71,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Módulo                                          | Archivo Objetivo                                     | Estado                            |
 | :---------------------------------------------- | :--------------------------------------------------- | :-------------------------------- |
+| **Twilio WhatsApp OTP Integration (P1)**        | functions/src/auth.functions.ts, package.json        | **SPEC APROBADA / PEND. IMPL**    |
 | **Chat Badge Mis Viajes (P1)**                  | MyTrips.tsx                                          | **COMPLETADO**                    |
 | **Flexibilización Pago (+8h) (P1)**             | MyTrips.tsx                                          | **SPEC CREADA / PEND. IMPL**      |
 | **KYC Loop & Auth Modal Redirect (P1)**         | ProfileSettings.tsx, ListingDetail.tsx               | **COMPLETADO**                    |
@@ -122,6 +99,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-06-30 | Twilio WhatsApp OTP Setup (SPEC-AUTH-WHATSAPP-001) | PLANIFICADO | N/A | El usuario creó cuenta Twilio Sandbox (+14155238886). Pendiente: 1) Conectar teléfono de prueba ('join <keyword>'). 2) Configurar 3 secretos en Firebase CLI (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`). 3) Activar Nodo 3 para implementar librería `twilio` en `auth.functions.ts` y desplegar. |
 | 2026-06-27 | Fix Validaciones QA (G3 & G12) | COMPLETADO | PASS | Continuar con Estrategia de Auditoría Playwright. |
 | 2026-06-27 | Estrategia de Auditoría Global Playwright | PLANIFICADO | N/A | Elegir Opción A (Iterativa) u Opción B (Masiva) para ejecutar las suites. |
 | 2026-06-27 | Chat Badge Mis Viajes (SPEC-MYTRIPS-CHAT-BADGE-001) | COMPLETADO | PASS | Verificar visualmente en el browser el badge rojo en la tarjeta de reserva del huésped. |
