@@ -69,7 +69,7 @@ test.describe('Suite 1: Autenticación y Pasaporte', () => {
       }
       await forgotBtn.click();
       
-      await page.getByLabel(/^correo electrónico$/i).fill('rodriguezzcarlose@gmail.com');
+      await page.getByLabel(/^correo electrónico$/i).fill('test-recovery-qa@venestay-test.com');
       await page.getByRole('button', { name: /enviar instrucciones/i }).click();
 
       // Verificar feedback
@@ -91,13 +91,13 @@ test.describe('Suite 1: Autenticación y Pasaporte', () => {
         await page.getByText(/iniciar sesión|ingresar/i).click();
       }
 
-      // Cambiar a tab de registro
-      const regTab = page.getByRole('tab', { name: /crear cuenta|registrar/i });
-      if (await regTab.count() === 0) {
-         console.warn('SKIP: Pestaña de registro no encontrada');
+      // Cambiar a vista de registro
+      const regBtn = page.getByRole('button', { name: /regístrate/i });
+      if (await regBtn.count() === 0) {
+         console.warn('SKIP: Botón de registro no encontrado');
          return;
       }
-      await regTab.click();
+      await regBtn.click();
 
       // Invalid email
       await page.getByLabel(/^correo electrónico$/i).fill('notanemail');

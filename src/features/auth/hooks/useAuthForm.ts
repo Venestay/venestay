@@ -158,8 +158,17 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
           email,
           password
         );
-        await updateProfile(userCredential.user, { displayName: name });
-        await sendVerificationEmail(userCredential.user);
+        try {
+          await updateProfile(userCredential.user, { displayName: name });
+        } catch (profileErr) {
+          console.warn('Advertencia al actualizar displayName tras registro:', profileErr);
+        }
+
+        try {
+          await sendVerificationEmail(userCredential.user);
+        } catch (mailErr) {
+          console.warn('Advertencia al enviar correo de verificación inicial tras registro:', mailErr);
+        }
         onClose();
       } catch (err: unknown) {
         const authErr = err as AuthError;

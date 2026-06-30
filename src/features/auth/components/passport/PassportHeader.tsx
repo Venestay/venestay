@@ -85,7 +85,8 @@ export const PassportHeader: React.FC<PassportHeaderProps> = ({
               >
                 {isPreviewMode ? 'Vista Edición' : 'Vista Pública'}
               </button>
-              {onGenerateQAProfile && (
+              {/* Función ocultada (bypassed) para usuarios en Mi Pasaporte. No eliminada. */}
+              {profile?.role === 'admin' && onGenerateQAProfile && (
                 <button
                   type="button"
                   onClick={onGenerateQAProfile}
