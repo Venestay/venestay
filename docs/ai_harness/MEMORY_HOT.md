@@ -28,10 +28,10 @@ La especificación técnica **SPEC-AUTH-WHATSAPP-001** está aprobada y lista en
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | 2026-06-30
+QA_GATE   : PASS | 2026-07-01
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
-TURNO_REANCLA: 0
+TURNO_REANCLA: 2
 ```
 
 ---
@@ -71,7 +71,8 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Módulo                                          | Archivo Objetivo                                     | Estado                            |
 | :---------------------------------------------- | :--------------------------------------------------- | :-------------------------------- |
-| **Twilio WhatsApp OTP Integration (P1)**        | functions/src/auth.functions.ts, package.json        | **SPEC APROBADA / PEND. IMPL**    |
+| **Email Verification via OTP (P1)**             | docs/specs/spec_auth_email_otp.md, SecuritySection.tsx | **SPEC CREADA / PEND. IMPL**    |
+| **Twilio WhatsApp OTP Integration (P1)**        | functions/src/auth.functions.ts, package.json        | **COMPLETADO (DEPLOY PROD OK)**   |
 | **Chat Badge Mis Viajes (P1)**                  | MyTrips.tsx                                          | **COMPLETADO**                    |
 | **Flexibilización Pago (+8h) (P1)**             | MyTrips.tsx                                          | **SPEC CREADA / PEND. IMPL**      |
 | **KYC Loop & Auth Modal Redirect (P1)**         | ProfileSettings.tsx, ListingDetail.tsx               | **COMPLETADO**                    |
@@ -99,6 +100,8 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-01 | Email Verification via OTP (SPEC-AUTH-EMAIL-OTP-001) | PLANIFICADO | N/A | Spec guardada en `docs/specs/spec_auth_email_otp.md`. Pendiente activar Nodo 3 para implementar Cloud Functions (`sendEmailOTP` / `confirmEmailOTP`) y componente UI (`EmailVerificationCard`). |
+| 2026-07-01 | Twilio WhatsApp OTP Setup (SPEC-AUTH-WHATSAPP-001) | COMPLETADO | PASS | 1) Conectar teléfono de prueba ('join <keyword>') al Sandbox Twilio (+14155238886). 2) Probar validación de número y recepción del código OTP en Pasaporte / KYC. |
 | 2026-06-30 | Twilio WhatsApp OTP Setup (SPEC-AUTH-WHATSAPP-001) | PLANIFICADO | N/A | El usuario creó cuenta Twilio Sandbox (+14155238886). Pendiente: 1) Conectar teléfono de prueba ('join <keyword>'). 2) Configurar 3 secretos en Firebase CLI (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`). 3) Activar Nodo 3 para implementar librería `twilio` en `auth.functions.ts` y desplegar. |
 | 2026-06-27 | Fix Validaciones QA (G3 & G12) | COMPLETADO | PASS | Continuar con Estrategia de Auditoría Playwright. |
 | 2026-06-27 | Estrategia de Auditoría Global Playwright | PLANIFICADO | N/A | Elegir Opción A (Iterativa) u Opción B (Masiva) para ejecutar las suites. |

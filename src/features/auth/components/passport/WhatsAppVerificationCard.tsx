@@ -37,8 +37,16 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
 
   const isVerified = profile?.trustSignals?.whatsappVerified || profile?.isPhoneVerified;
 
+  const formatPhoneNumber = () => {
+    let raw = `${countryCode}${phoneNumber.replace(/\D/g, '')}`;
+    if (/^\+54[1-8]\d{9}$/.test(raw)) {
+      raw = raw.replace(/^\+54/, '+549');
+    }
+    return raw;
+  };
+
   const handleSendOTP = async () => {
-    const fullNumber = `${countryCode}${phoneNumber.replace(/\D/g, '')}`;
+    const fullNumber = formatPhoneNumber();
     if (!phoneNumber || fullNumber.length < 10) {
       toast.error('Por favor, ingresa un número de teléfono válido.');
       return;
@@ -49,7 +57,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
       const sendOTP = httpsCallable(functions, 'sendWhatsAppOTP');
       await sendOTP({ phoneNumber: fullNumber });
       setStep('OTP_SENT');
-      toast.success('Código OTP enviado por WhatsApp (o revisa la consola local para el modo STUB).');
+      toast.success('Código OTP enviado por WhatsApp.');
     } catch (error: unknown) {
       console.error('Error sending OTP:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al enviar OTP.';
@@ -60,7 +68,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
   };
 
   const handleConfirmOTP = async () => {
-    const fullNumber = `${countryCode}${phoneNumber.replace(/\D/g, '')}`;
+    const fullNumber = formatPhoneNumber();
     if (!otp || otp.length !== 6) {
       toast.error('Por favor, ingresa el código de 6 dígitos.');
       return;

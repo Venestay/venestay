@@ -2,6 +2,8 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { db } from './config/db';
 import * as crypto from 'crypto';
+import twilio from 'twilio';
+import { z } from 'zod';
 
 // Internal idempotency function
 export async function recalculateKycPhase(userId: string): Promise<void> {
@@ -97,35 +99,96 @@ export const updateProfile = functions.https.onCall(
   }
 );
 
-export const sendWhatsAppOTP = functions.https.onCall(
-  async (data: { phoneNumber: string }, context) => {
+const sendOtpSchema = z.object({
+  phoneNumber: z
+    .string()
+    .regex(/^\+[1-9]\d{1,14}$/, 'El número debe estar en formato internacional E.164 válido.'),
+});
+
+export const sendWhatsAppOTP = functions
+  .runWith({ secrets: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_NUMBER'] })
+  .https.onCall(async (data: { phoneNumber: string }, context) => {
     if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Autenticación requerida.');
-    const uid = context.auth.uid;
     
-    // Generate 6 digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const parsed = sendOtpSchema.safeParse(data);
+    if (!parsed.success) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        parsed.error.issues[0]?.message ?? 'Número de teléfono inválido.'
+      );
+    }
+
+    const uid = context.auth.uid;
+
+    let normalizedPhone = data.phoneNumber.trim();
+    if (/^\+54[1-8]\d{9}$/.test(normalizedPhone)) {
+      normalizedPhone = normalizedPhone.replace(/^\+54/, '+549');
+    }
+
+    const existingOtp = await db.collection('otpCodes').doc(uid).get();
+    if (existingOtp.exists) {
+      const existingData = existingOtp.data()!;
+      const cooldownThreshold = new Date(Date.now() + 60 * 1000); // 1 minuto restante = cooldown
+      if (existingData.expiresAt && existingData.expiresAt.toDate() > cooldownThreshold) {
+        throw new functions.https.HttpsError(
+          'resource-exhausted',
+          'Ya enviamos un código recientemente. Espera 1 minuto antes de solicitar otro.'
+        );
+      }
+    }
+
+    // Generate 6 digit OTP securely
+    const code = crypto.randomInt(100000, 1000000).toString();
     const codeHash = crypto.createHash('sha256').update(code).digest('hex');
     
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     
     await db.collection('otpCodes').doc(uid).set({
       codeHash,
-      phoneNumber: data.phoneNumber,
+      phoneNumber: normalizedPhone,
       expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
       attempts: 0
     });
 
-    // Stub para el usuario en desarrollo local, opción sencilla y open source
-    functions.logger.info(`[STUB] OTP Code for ${data.phoneNumber} is: ${code}`);
+    try {
+      const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
+      const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
+      const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER?.trim();
 
-    return { success: true, message: "Código enviado. Revisa la consola o logs de Firebase." };
-  }
-);
+      const client = twilio(accountSid, authToken);
+      const twilioFrom = `whatsapp:${whatsappNumber}`;
+
+      await client.messages.create({
+        body: `Tu código de verificación para VeneStay es: ${code}. No lo compartas con nadie. Vence en 10 minutos.`,
+        from: twilioFrom,
+        to: `whatsapp:${normalizedPhone}`,
+      });
+    } catch (error: unknown) {
+      await db.collection('otpCodes').doc(uid).delete().catch(() => {});
+      const twilioError = error as { code?: number; message?: string };
+      functions.logger.error('[Twilio] Error al enviar OTP', {
+        code: twilioError.code,
+        message: twilioError.message,
+        to: normalizedPhone,
+      });
+      throw new functions.https.HttpsError(
+        'aborted',
+        'No se pudo enviar el mensaje de WhatsApp. Verifica que el número sea correcto y esté registrado en WhatsApp.'
+      );
+    }
+
+    return { success: true, message: "Código enviado correctamente a WhatsApp." };
+  });
 
 export const confirmWhatsAppOTP = functions.https.onCall(
   async (data: { phoneNumber: string; code: string }, context) => {
     if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Autenticación requerida.');
     const uid = context.auth.uid;
+
+    let normalizedPhone = data.phoneNumber.trim();
+    if (/^\+54[1-8]\d{9}$/.test(normalizedPhone)) {
+      normalizedPhone = normalizedPhone.replace(/^\+54/, '+549');
+    }
 
     const otpDocRef = db.collection('otpCodes').doc(uid);
     const otpDoc = await otpDocRef.get();
@@ -146,7 +209,7 @@ export const confirmWhatsAppOTP = functions.https.onCall(
     }
 
     const inputHash = crypto.createHash('sha256').update(data.code).digest('hex');
-    if (inputHash !== otpData.codeHash || otpData.phoneNumber !== data.phoneNumber) {
+    if (inputHash !== otpData.codeHash || otpData.phoneNumber !== normalizedPhone) {
        await otpDocRef.update({ attempts: admin.firestore.FieldValue.increment(1) });
        throw new functions.https.HttpsError('invalid-argument', 'Código incorrecto.');
     }
@@ -160,7 +223,7 @@ export const confirmWhatsAppOTP = functions.https.onCall(
       trustSignals: {
         ...currentTrustSignals,
         whatsappVerified: true,
-        whatsappNumber: data.phoneNumber,
+        whatsappNumber: normalizedPhone,
         whatsappVerifiedAt: new Date().toISOString()
       }
     }, { merge: true });
