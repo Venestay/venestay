@@ -1,6 +1,6 @@
 # MEMORY_HOT — VeneStay Agent
 
-_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-06-30_
+_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-07-02_
 
 ---
 
@@ -28,10 +28,10 @@ La especificación técnica **SPEC-AUTH-WHATSAPP-001** está aprobada y lista en
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | 2026-07-01
+QA_GATE   : PASS | 2026-07-02
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
-TURNO_REANCLA: 2
+TURNO_REANCLA: 3
 ```
 
 ---
@@ -100,6 +100,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-02 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde fork personal (`cerz30/qa`) a producción (`origin/main` y `cerz30/main`). Vercel desplegando en producción. |
 | 2026-07-01 | Email Verification via OTP (SPEC-AUTH-EMAIL-OTP-001) | PLANIFICADO | N/A | Spec guardada en `docs/specs/spec_auth_email_otp.md`. Pendiente activar Nodo 3 para implementar Cloud Functions (`sendEmailOTP` / `confirmEmailOTP`) y componente UI (`EmailVerificationCard`). |
 | 2026-07-01 | Twilio WhatsApp OTP Setup (SPEC-AUTH-WHATSAPP-001) | COMPLETADO | PASS | 1) Conectar teléfono de prueba ('join <keyword>') al Sandbox Twilio (+14155238886). 2) Probar validación de número y recepción del código OTP en Pasaporte / KYC. |
 | 2026-06-30 | Twilio WhatsApp OTP Setup (SPEC-AUTH-WHATSAPP-001) | PLANIFICADO | N/A | El usuario creó cuenta Twilio Sandbox (+14155238886). Pendiente: 1) Conectar teléfono de prueba ('join <keyword>'). 2) Configurar 3 secretos en Firebase CLI (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`). 3) Activar Nodo 3 para implementar librería `twilio` en `auth.functions.ts` y desplegar. |
