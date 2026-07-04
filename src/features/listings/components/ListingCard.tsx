@@ -3,8 +3,6 @@ import { Listing } from '@/types';
 import { Star, Heart, CheckCircle2, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
-import { useBcvRate } from '../hooks/useBcvRate';
-import { HIDE_BCV_PRICES } from '@/services/exchange-service';
 
 interface ListingCardProps {
   listing: Listing;
@@ -12,11 +10,9 @@ interface ListingCardProps {
 }
 
 const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
-  const { bcvRate } = useBcvRate();
-
   return (
     <Link
-      to={`/?listingId=${listing.id}`}
+      to={`/listing/${listing.id}`}
       target="_blank"
       rel="noopener noreferrer"
       className="group animate-fade-in block flex cursor-pointer flex-col space-y-3"
@@ -66,7 +62,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              window.open(`/?listingId=${listing.id}`, '_blank');
+              window.open(`/listing/${listing.id}`, '_blank');
             }}
             className="text-brand-navy w-full rounded-xl bg-white py-3 text-[10px] font-black tracking-[0.2em] uppercase shadow-2xl transition-transform active:scale-95"
           >
@@ -112,16 +108,6 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
               / noche (Anticipo 20%)
             </span>
           </div>
-          {!HIDE_BCV_PRICES && (
-            <div className="text-brand-500 mt-0.5 text-[10px] font-black tracking-widest uppercase">
-              ≈{' '}
-              {(listing.pricePerNight * bcvRate).toLocaleString('es-VE', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}{' '}
-              Bs. <span className="font-medium opacity-50">(Tasa BCV)</span>
-            </div>
-          )}
         </div>
       </div>
     </Link>

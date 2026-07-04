@@ -37,7 +37,6 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
   
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
-  const [unverifiedEmailWarning, setUnverifiedEmailWarning] = useState(false);
 
   const resetForm = React.useCallback((keepEmail: boolean = false) => {
     if (!keepEmail) {
@@ -49,7 +48,6 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
     setGeneralError(null);
     setShowPassword(false);
     setResetEmailSent(false);
-    setUnverifiedEmailWarning(false);
   }, []);
 
   const handleModeChange = (newMode: FormMode) => {
@@ -125,12 +123,8 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
       }
 
       try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        if (!userCredential.user.emailVerified) {
-          setUnverifiedEmailWarning(true);
-        } else {
-          onClose();
-        }
+        await signInWithEmailAndPassword(auth, email, password);
+        onClose();
       } catch (err: unknown) {
         const authErr = err as AuthError;
         const mappedMsg = firebaseErrorMap[authErr?.code] || 'Error al iniciar sesión. Verifica tus credenciales.';
@@ -180,20 +174,6 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
     }
   };
 
-  const handleResendVerification = async () => {
-    if (auth.currentUser) {
-      setLoading(true);
-      try {
-        await sendVerificationEmail(auth.currentUser);
-        setGeneralError('Correo de verificación reenviado con éxito.');
-      } catch (err: unknown) {
-        setGeneralError('Error al reenviar el correo. Inténtalo más tarde.');
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
   const toggleShowPassword = () => {
     setShowPassword((prev) => !prev);
   };
@@ -226,8 +206,6 @@ export function useAuthForm(onClose: () => void, initialView: 'login' | 'registe
     handleForgotPassword,
     handleSubmit,
     toggleShowPassword,
-    handleResendVerification,
-    unverifiedEmailWarning,
     passwordStrength: getPasswordStrength(),
     resetForm,
     setMode,
