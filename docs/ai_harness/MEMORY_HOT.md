@@ -102,6 +102,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-04 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde rama qa a main en repositorio fork (`cerz30/main`) con optimizaciones de rendimiento y UX en login. |
 | 2026-07-04 | Optimización Enrutamiento & Red Listings (SPEC-PERF-LISTING-OPTIMIZATION-001) | COMPLETADO | PASS | Tiempo de enrutamiento reducido en un 95.8% (de 1,787 ms a 74 ms) al navegar directo a /listing/:id. Se erradicó el 100% de las peticiones HTTP concurrentes a DolarApi desde las tarjetas. |
 | 2026-07-04 | Optimización Login KYC (SPEC-AUTH-LOGIN-FRICTION-001) | COMPLETADO | PASS | Se eliminó el bloqueo de correo no verificado en el modal al iniciar sesión, permitiendo acceso directo a la app. La verificación se mantiene centralizada en Mi Pasaporte y Checkout Guard. |
 | 2026-07-02 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde fork personal (`cerz30/qa`) a producción (`origin/main` y `cerz30/main`). Vercel desplegando en producción. |
