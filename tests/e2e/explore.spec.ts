@@ -28,8 +28,8 @@ test.describe('Suite 2: Exploración & Búsqueda', () => {
     setupErrorCapture(page, consoleErrors, networkErrors);
 
     // Seleccionamos las tarjetas de alojamiento (ListingCard)
-    // Seleccionamos las tarjetas de alojamiento (ListingCard apuntan a /?listingId=)
-    const cards = page.locator('a[href*="listingId="]');
+    // Seleccionamos las tarjetas de alojamiento
+    const cards = page.locator('a[href*="/listing/"], a[href*="listingId="]');
     
     // Verificamos que haya al menos 1 alojamiento cargado
     await expect(cards.first()).toBeVisible({ timeout: 15000 });
@@ -56,7 +56,7 @@ test.describe('Suite 2: Exploración & Búsqueda', () => {
 
       // Verificar que los listados contienen Lechería (asumiendo que muestran la ciudad)
       // Como no conocemos el HTML exacto, simplemente validamos que la grilla recargó sin errores
-      const cards = page.locator('a[href*="listingId="]');
+      const cards = page.locator('a[href*="/listing/"], a[href*="listingId="]');
       await expect(cards.first()).toBeVisible({ timeout: 10000 });
     }
 
@@ -75,7 +75,7 @@ test.describe('Suite 2: Exploración & Búsqueda', () => {
       await page.keyboard.press('Enter');
       
       await page.waitForTimeout(2000);
-      const cards = page.locator('a[href*="listingId="]');
+      const cards = page.locator('a[href*="/listing/"], a[href*="listingId="]');
       await expect(cards.first()).toBeVisible({ timeout: 10000 });
     }
 

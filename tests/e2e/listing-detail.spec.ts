@@ -43,7 +43,7 @@ test.describe('Suite 3: Detalle de Alojamiento & Reserva', () => {
       }
     });
     // Clic en el primer ListingCard
-    const firstCard = page.locator('a[href*="listingId="]').first();
+    const firstCard = page.locator('a[href*="/listing/"], a[href*="listingId="]').first();
     await expect(firstCard).toBeVisible({ timeout: 15000 });
     
     // Obtenemos el href para navegar o hacemos click
@@ -76,7 +76,7 @@ test.describe('Suite 3: Detalle de Alojamiento & Reserva', () => {
     const networkErrors: string[] = [];
     setupErrorCapture(page, consoleErrors, networkErrors);
 
-    const firstCard = page.locator('a[href*="listingId="]').first();
+    const firstCard = page.locator('a[href*="/listing/"], a[href*="listingId="]').first();
     await expect(firstCard).toBeVisible({ timeout: 15000 });
     const href = await firstCard.getAttribute('href');
     
@@ -118,7 +118,7 @@ test.describe('Suite 3: Detalle de Alojamiento & Reserva', () => {
     await page.getByRole('dialog').getByRole('button', { name: /^iniciar sesión$/i }).click();
     await expect(page.getByRole('dialog')).toBeHidden({ timeout: 15000 });
 
-    const firstCard = page.locator('a[href*="listingId="]').first();
+    const firstCard = page.locator('a[href*="/listing/"], a[href*="listingId="]').first();
     await expect(firstCard).toBeVisible({ timeout: 15000 });
     const href = await firstCard.getAttribute('href');
     
@@ -159,7 +159,7 @@ test.describe('Suite 3: Detalle de Alojamiento & Reserva', () => {
     const networkErrors: string[] = [];
     setupErrorCapture(page, consoleErrors, networkErrors);
 
-    const firstCard = page.locator('a[href*="listingId="]').first();
+    const firstCard = page.locator('a[href*="/listing/"], a[href*="listingId="]').first();
     await expect(firstCard).toBeVisible({ timeout: 15000 });
     const href = await firstCard.getAttribute('href');
     
@@ -183,7 +183,7 @@ test.describe('Suite 3: Detalle de Alojamiento & Reserva', () => {
     const networkErrors: string[] = [];
     setupErrorCapture(page, consoleErrors, networkErrors);
 
-    const firstCard = page.locator('a[href*="listingId="]').first();
+    const firstCard = page.locator('a[href*="/listing/"], a[href*="listingId="]').first();
     await expect(firstCard).toBeVisible({ timeout: 15000 });
     const href = await firstCard.getAttribute('href');
     

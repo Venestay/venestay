@@ -1,6 +1,6 @@
 # MEMORY_HOT — VeneStay Agent
 
-_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-06-30_
+_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-07-02_
 
 ---
 
@@ -28,10 +28,10 @@ La especificación técnica **SPEC-AUTH-WHATSAPP-001** está aprobada y lista en
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | 2026-07-01
+QA_GATE   : PASS | 2026-07-04
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
-TURNO_REANCLA: 2
+TURNO_REANCLA: 7
 ```
 
 ---
@@ -79,6 +79,8 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 | **Herramienta Limpieza Reservas (P1)**          | purgeTestBookings.ts, PurgeTestBookingsModal.tsx     | **CÓDIGO LISTO / DEPLOY FALLIDO** |
 | **Fix Host Email Notification (P0)**            | functions/src/booking.functions.ts, templates/       | **COMPLETADO**                    |
 | **Email Notifications & Secure Stay Flow (P0)** | functions/src/\*, useCheckout.ts, booking-service.ts | **COMPLETADO**                    |
+| **Optimización Enrutamiento & Red Listings (SPEC-PERF-LISTING-OPTIMIZATION-001) (P0)** | ListingCard.tsx, perf-listing-load.spec.ts | **COMPLETADO (PASS)** |
+| **Optimización Login KYC (SPEC-AUTH-LOGIN-FRICTION-001) (P1)** | useAuthForm.ts, AuthModal.tsx | **COMPLETADO (PASS)** |
 | **SPEC-AUTH-MODAL-OPTIMIZATION (P0)**           | AuthModal.tsx, useAuthForm.ts, auth.schema.ts        | **COMPLETADO**                    |
 
 ---
@@ -100,6 +102,10 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-04 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde rama qa a main en repositorio fork (`cerz30/main`) con optimizaciones de rendimiento y UX en login. |
+| 2026-07-04 | Optimización Enrutamiento & Red Listings (SPEC-PERF-LISTING-OPTIMIZATION-001) | COMPLETADO | PASS | Tiempo de enrutamiento reducido en un 95.8% (de 1,787 ms a 74 ms) al navegar directo a /listing/:id. Se erradicó el 100% de las peticiones HTTP concurrentes a DolarApi desde las tarjetas. |
+| 2026-07-04 | Optimización Login KYC (SPEC-AUTH-LOGIN-FRICTION-001) | COMPLETADO | PASS | Se eliminó el bloqueo de correo no verificado en el modal al iniciar sesión, permitiendo acceso directo a la app. La verificación se mantiene centralizada en Mi Pasaporte y Checkout Guard. |
+| 2026-07-02 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde fork personal (`cerz30/qa`) a producción (`origin/main` y `cerz30/main`). Vercel desplegando en producción. |
 | 2026-07-01 | Email Verification via OTP (SPEC-AUTH-EMAIL-OTP-001) | PLANIFICADO | N/A | Spec guardada en `docs/specs/spec_auth_email_otp.md`. Pendiente activar Nodo 3 para implementar Cloud Functions (`sendEmailOTP` / `confirmEmailOTP`) y componente UI (`EmailVerificationCard`). |
 | 2026-07-01 | Twilio WhatsApp OTP Setup (SPEC-AUTH-WHATSAPP-001) | COMPLETADO | PASS | 1) Conectar teléfono de prueba ('join <keyword>') al Sandbox Twilio (+14155238886). 2) Probar validación de número y recepción del código OTP en Pasaporte / KYC. |
 | 2026-06-30 | Twilio WhatsApp OTP Setup (SPEC-AUTH-WHATSAPP-001) | PLANIFICADO | N/A | El usuario creó cuenta Twilio Sandbox (+14155238886). Pendiente: 1) Conectar teléfono de prueba ('join <keyword>'). 2) Configurar 3 secretos en Firebase CLI (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`). 3) Activar Nodo 3 para implementar librería `twilio` en `auth.functions.ts` y desplegar. |

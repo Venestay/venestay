@@ -1,0 +1,115 @@
+{
+  "timestamp": "2026-07-04T20:50:11.607Z",
+  "averages": {
+    "avgRouting": 74,
+    "avgGallery": 2133,
+    "avgInteractive": 2137
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "listingUrl": "/listing/listing-1778769400229",
+      "routingTimeMs": 74,
+      "galleryRenderTimeMs": 2491,
+      "interactiveTimeMs": 2496,
+      "totalLoadTimeMs": 2496,
+      "slowestResources": [
+        {
+          "name": "channel",
+          "duration": 986,
+          "type": "fetch"
+        },
+        {
+          "name": "channel",
+          "duration": 973,
+          "type": "fetch"
+        },
+        {
+          "name": "GetViewportInfo",
+          "duration": 202,
+          "type": "xmlhttprequest"
+        },
+        {
+          "name": "channel",
+          "duration": 194,
+          "type": "fetch"
+        },
+        {
+          "name": "channel",
+          "duration": 191,
+          "type": "fetch"
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "listingUrl": "/listing/listing-1779549166840",
+      "routingTimeMs": 65,
+      "galleryRenderTimeMs": 2440,
+      "interactiveTimeMs": 2443,
+      "totalLoadTimeMs": 2443,
+      "slowestResources": [
+        {
+          "name": "listings%2Flisting-1779549166840%2F17802",
+          "duration": 1287,
+          "type": "img"
+        },
+        {
+          "name": "channel",
+          "duration": 946,
+          "type": "fetch"
+        },
+        {
+          "name": "channel",
+          "duration": 906,
+          "type": "fetch"
+        },
+        {
+          "name": "channel",
+          "duration": 187,
+          "type": "fetch"
+        },
+        {
+          "name": "channel",
+          "duration": 187,
+          "type": "fetch"
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "listingUrl": "/listing/listing-1780275845612",
+      "routingTimeMs": 82,
+      "galleryRenderTimeMs": 1467,
+      "interactiveTimeMs": 1473,
+      "totalLoadTimeMs": 1473,
+      "slowestResources": [
+        {
+          "name": "listings%2Flisting-1780275845612%2F17802",
+          "duration": 972,
+          "type": "img"
+        },
+        {
+          "name": "channel",
+          "duration": 895,
+          "type": "fetch"
+        },
+        {
+          "name": "channel",
+          "duration": 191,
+          "type": "fetch"
+        },
+        {
+          "name": "channel",
+          "duration": 187,
+          "type": "fetch"
+        },
+        {
+          "name": "channel",
+          "duration": 187,
+          "type": "fetch"
+        }
+      ]
+    }
+  ]
+}
