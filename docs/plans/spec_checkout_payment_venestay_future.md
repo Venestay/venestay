@@ -1,221 +1,307 @@
-# SPEC FUTURA — Flujo de Cobro Centralizado VeneStay (Checkout Payment Redirect)
+﻿# SPEC — Flujo de Cobro Centralizado VeneStay (SPEC-CHECKOUT-PAY-001)
 
-**ID:** SPEC-CHECKOUT-PAY-001  
-**Prioridad:** P1  
-**Estado:** PLANIFICADO — Pendiente de sprint asignado  
-**Autora:** Pipeline SDD · VeneStay Engineering  
-**Última revisión técnica:** 2026-06-20  
-
----
-
-## Contexto
-
-Actualmente, durante el flujo de checkout, el huésped visualiza y transfiere el depósito del **20%** usando los datos bancarios del **anfitrión**. Esto genera dos problemas:
-
-1. **Conciliación manual:** VeneStay no controla directamente el cobro de su comisión/aseguramiento. Depende de que el anfitrión le entregue el 20%.
-2. **Confusión del huésped:** Ver los datos del anfitrión puede llevar a transferencias totales (100%) en lugar del 20% pactado.
-
-**Objetivo:** Que el huésped siempre pague el 20% a una cuenta corporativa de **VeneStay**. Los datos del anfitrión para el cobro del **80% restante** se entregarán de forma segura y exclusiva en el **PDF de Confirmación de Reserva** adjunto al correo de confirmación.
+**ID:** SPEC-CHECKOUT-PAY-001
+**Versión:** v2.0 — Rediseño por seguridad y claridad de flujo
+**Prioridad:** P1
+**Estado:** APROBADO POR PLANNER — Pendiente Nodo 3 (Técnico)
+**Autora:** Pipeline SDD · VeneStay Engineering
+**Última revisión:** 2026-07-08
 
 ---
 
-## Alcance
+## Contexto y Problema
 
-### Incluye
-- Reemplazar el bloque de métodos de pago del anfitrión por los métodos corporativos de VeneStay en la UI del Checkout.
-- Ocultar toda referencia a datos bancarios del anfitrión en la pantalla de pago.
-- Mostrar un aviso informativo sobre el saldo del 80% y cómo se entregará.
-- Actualizar el QR de Pago Móvil para que use los datos de VeneStay, no los del anfitrión.
-- Incorporar en el PDF de confirmación la sección "Instrucciones para el pago del saldo (80%)".
-- Mantener el fetch de métodos del anfitrión en background exclusivamente para enriquecer el PDF.
+El checkout actual muestra al huésped los **datos bancarios del anfitrión** para el pago del depósito del 20%. Esto genera dos problemas críticos:
 
-### No incluye
-- Cambios en el flujo de pago del 80% el día del check-in (eso es offline).
-- Cambios en la vista de administración del anfitrión.
-- Integración con pasarela de pagos digital (Stripe, PayPal, etc.) — sigue siendo P2P manual.
-- Modificar correo de notificación al anfitrión en esta iteración.
+1. **VeneStay pierde control de su comisión:** No hay garantía de que el anfitrión entregue el 20% a VeneStay.
+2. **Riesgo de fraude y confusión:** El huésped puede transferir el 100% al anfitrión, saltando el protocolo de la plataforma.
+
+**Solución aprobada:** El huésped siempre paga el 20% a una **cuenta corporativa de VeneStay**. Los datos del anfitrión para el 80% restante se envían únicamente en el **correo de confirmación** (y su PDF adjunto) cuando la reserva es aprobada.
 
 ---
 
-## Comportamiento esperado por estado del Booking
+## Flujo Operativo Aprobado (Ciclo de vida completo)
 
-| Estado | Comportamiento en UI |
-|:-------|:---------------------|
-| Draft (pre-reserva) | Mostrar métodos de VeneStay + banner informativo del 80% |
-| `PENDING_APPROVAL` (modo solicitud) | **Ocultar sección de pago** — el huésped no paga aún. Mostrar solo el mensaje de solicitud enviada. |
-| `PENDING_PAYMENT` (solicitud aprobada) | Mostrar métodos de VeneStay. El comprobante es obligatorio. |
-| Instant Booking (modo instantáneo) | Mostrar métodos de VeneStay desde el primer paso. |
-| `CONFIRMED` | El PDF adjunto al correo contiene los datos del anfitrión para el 80%. |
-
----
-
-## Cambios Técnicos Requeridos
-
-### 1. Constantes Globales de Pago — [NEW]
-
-**Archivo:** `src/constants/venestay-payments.ts`
-
-Crear un archivo centralizado exportando `VENESTAY_PAYMENT_METHODS` que implemente la interfaz `PaymentMethod`. Debe incluir los métodos que VeneStay tenga activos (Zelle, Pago Móvil corporativo, Transferencia). Estos valores deben leerse de variables de entorno (`VITE_VENESTAY_ZELLE_EMAIL`, etc.) para evitar hardcodear datos sensibles.
-
-```typescript
-// Ejemplo de estructura esperada (valores reales en .env)
-export const VENESTAY_PAYMENT_METHODS: PaymentMethod[] = [
-  {
-    id: 'vs_zelle',
-    type: 'Zelle',
-    label: 'Zelle',
-    isVerified: true,
-    data: { email: import.meta.env.VITE_VENESTAY_ZELLE_EMAIL },
-  },
-  {
-    id: 'vs_pagomovil',
-    type: 'PagoMovil',
-    label: 'Pago Móvil',
-    isVerified: true,
-    data: {
-      phoneNumber: import.meta.env.VITE_VENESTAY_PAGOMOVIL_PHONE,
-      idNumber: import.meta.env.VITE_VENESTAY_PAGOMOVIL_RIF,
-      bankName: import.meta.env.VITE_VENESTAY_PAGOMOVIL_BANK,
-      accountHolder: 'VeneStay C.A.',
-    },
-  },
-];
+```
+HUÉSPED                        UI / CHECKOUT                 ANFITRIÓN / CLOUD FUNCTIONS
+   |                                |                                |
+   |── 1. Solicita reserva ────────>|                                |
+   |                                |── Estado: PENDING_APPROVAL     |
+   |                                |   NO muestra métodos de pago   |
+   |                                |   NO muestra comprobante       |
+   |                                |                   ────────────>|
+   |                                |                  Notificación  |
+   |                                |                                |── 2. Anfitrión acepta
+   |                                |── Estado: PENDING_PAYMENT      |
+   |<── Notificación: aprobada, puedes pagar el 20% ────────────────|
+   |── 3. Entra al Checkout ────────>|                               |
+   |                                | Muestra MÉTODOS DE VENESTAY    |
+   |                                | Banner: "80% se paga en sitio" |
+   |── 4. Transfiere y sube ────────>|                               |
+   |       comprobante               |                               |
+   |                                 |── 5. Anfitrión verifica pago  |
+   |                                 |                               |── Aprueba pago
+   |<── 6. Correo + PDF ─────────────|                               |
+   |       PDF incluye datos bancarios del anfitrión para el 80%     |
 ```
 
-> **Seguridad (6.1):** Nunca hardcodear números de cuenta, RIF o correos reales en el código fuente ni en el repositorio. Usar exclusivamente `.env` + `.env.example` (sin valores reales).
+---
+
+## Principio de Seguridad Central (INMUTABLE)
+
+Los datos bancarios del anfitrión NUNCA aparecen en el DOM del navegador durante el Checkout.
+Solo se transmiten en el PDF adjunto al correo de confirmación.
+Esto impide scraping de datos bancarios de terceros desde el cliente.
 
 ---
 
-### 2. Checkout UI — [MODIFY]
+## Donde Viven los Datos de Pago de VeneStay
+
+### Decisión Arquitectónica: Firestore `config/venestay_payments`
+
+Los datos de las cuentas corporativas de VeneStay se almacenan en un documento de Firestore, **no en variables de entorno del cliente (VITE_*)**.
+
+**Por qué Firestore y no .env:**
+
+| Criterio | .env / Vercel Vars | Firestore config/ (Elegido) |
+|:---------|:-------------------|:----------------------------|
+| Actualizar cuenta sin redeploy | No — requiere redeploy | Si — instantáneo |
+| Cambio en producción en segundos | No | Si |
+| Control de acceso granular | No | Si (Firestore Rules) |
+| Múltiples métodos sin tocar código | No | Si — solo agregar dato en Firestore |
+
+**Estructura del documento Firestore:**
+
+Colección: `config`
+Documento: `venestay_payments`
+
+```json
+{
+  "methods": [
+    {
+      "id": "vs_pagomovil",
+      "type": "PagoMovil",
+      "label": "Pago Movil VeneStay C.A.",
+      "isVerified": true,
+      "data": {
+        "phoneNumber": "04141234567",
+        "idNumber": "J-501234567",
+        "bankName": "Banco Mercantil",
+        "accountHolder": "VeneStay C.A."
+      }
+    },
+    {
+      "id": "vs_zelle",
+      "type": "Zelle",
+      "label": "Zelle VeneStay",
+      "isVerified": true,
+      "data": {
+        "email": "pagos@venestay.com",
+        "accountHolder": "VeneStay C.A."
+      }
+    }
+  ],
+  "updatedAt": "Timestamp",
+  "updatedBy": "admin_uid"
+}
+```
+
+**Regla de Firestore para `config/venestay_payments`:**
+
+```
+// firestore.rules — agregar junto a las reglas existentes
+match /config/{configId} {
+  allow read: if request.auth != null;
+  allow write: if request.auth.token.admin == true;
+}
+```
+
+---
+
+## Alcance Técnico — Archivos a Tocar
+
+### Capa 1: Firestore (Operación — sin código)
+
+| Acción | Detalle |
+|:-------|:--------|
+| Crear documento | `config/venestay_payments` con los métodos aprobados en Firebase Console |
+| Actualizar firestore.rules | Añadir regla de lectura autenticada + escritura solo admin |
+
+---
+
+### Capa 2: Services — [NUEVO]
+
+**Archivo:** `src/services/venestay-config.service.ts`
+
+```typescript
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import type { PaymentMethod } from '@/features/dashboard/types';
+
+export async function getVenestayPaymentMethods(): Promise<PaymentMethod[]> {
+  const snap = await getDoc(doc(db, 'config', 'venestay_payments'));
+  if (!snap.exists()) return [];
+  const data = snap.data();
+  return (data.methods ?? []) as PaymentMethod[];
+}
+```
+
+---
+
+### Capa 3: Custom Hook — [NUEVO]
+
+**Archivo:** `src/features/bookings/hooks/useVenestayPayments.ts`
+
+```typescript
+import { useState, useEffect } from 'react';
+import { getVenestayPaymentMethods } from '@/services/venestay-config.service';
+import type { PaymentMethod } from '@/features/dashboard/types';
+
+export function useVenestayPayments() {
+  const [methods, setMethods] = useState<PaymentMethod[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getVenestayPaymentMethods()
+      .then(setMethods)
+      .catch(() => setMethods([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { methods, loading };
+}
+```
+
+---
+
+### Capa 4: Checkout UI — [MODIFICAR]
 
 **Archivo:** `src/features/bookings/components/checkout/CheckoutPage.tsx`
 
-#### 2a. Mantener el fetch de `hostPaymentMethods` (con propósito acotado)
-
-El `useEffect` que carga los métodos del anfitrión desde Firestore (`lData.hostId`) **debe mantenerse** porque esos datos se necesitan para enriquecer el PDF vía Cloud Function. Sin embargo, deben guardarse en un state separado y **nunca** mostrarse en la UI.
+#### Cambio A — Reemplazar `availablePaymentMethods` (lineas 150-173)
 
 ```typescript
-// ✅ Mantener: el dato va al PDF vía Firestore del listing, no al UI
-const [hostPaymentMethods, setHostPaymentMethods] = useState<PaymentMethod[]>([]);
+// ANTES: mezcla datos del anfitrión con los del listing
+const availablePaymentMethods = useMemo(() => { ... }, [listing?.paymentMethods, hostPaymentMethods]);
+
+// DESPUÉS: siempre métodos corporativos de VeneStay (desde Firestore config/)
+const { methods: availablePaymentMethods, loading: loadingMethods } = useVenestayPayments();
 ```
 
-#### 2b. Reemplazar `availablePaymentMethods`
+IMPORTANTE: El estado `hostPaymentMethods` se conserva en background (useEffect lineas 239-252)
+porque sus datos alimentan el PDF via Cloud Functions.
+Agregar comentario: `// Este estado NO se renderiza — solo alimenta el PDF via Cloud Functions`
 
-El `useMemo` actual mezcla métodos del anfitrión con los del listing. Reemplazarlo para que retorne siempre `VENESTAY_PAYMENT_METHODS`:
+#### Cambio B — Ocultar sección de pago en modo PENDING_APPROVAL
 
-```typescript
-// ANTES (mezcla datos del anfitrión)
-const availablePaymentMethods = useMemo(() => {
-  const listMethods = listing?.paymentMethods || [];
-  const hMethods = hostPaymentMethods || [];
-  // ...
-}, [listing?.paymentMethods, hostPaymentMethods]);
+```tsx
+// Renderizado condicional — alrededor de linea 1521
+{!isRequestPhase && (
+  <section aria-label="Pago del depósito del 20% a VeneStay">
+    {/* tarjetas de método, subida de comprobante */}
+  </section>
+)}
 
-// DESPUÉS (solo métodos corporativos de VeneStay)
-const availablePaymentMethods = useMemo(() => {
-  return VENESTAY_PAYMENT_METHODS;
-}, []);
+{isRequestPhase && (
+  <div className="info-banner" role="status">
+    <ShieldCheck size={20} />
+    <p>Tu solicitud fue enviada. El anfitrión la revisará. Solo podrás pagar cuando sea aprobada.</p>
+  </div>
+)}
 ```
 
-#### 2c. Actualizar `isFormDisabled` para forzar selección de método
+#### Cambio C — Banner informativo del 80%
 
-Actualmente `isFormDisabled` **no valida** que haya un `selectedMethod` seleccionado. Con el nuevo flujo, el huésped debe seleccionar un método de VeneStay antes de poder avanzar:
+```tsx
+<div className="balance-banner" role="note" aria-label="Información sobre el saldo pendiente">
+  <Info size={16} />
+  <p>
+    El saldo restante ({formatCurrency(amount80Percent)} — 80%) lo pagas directamente
+    al anfitrión el día del Check-in. Sus datos de pago llegarán en el correo de
+    confirmación cuando se apruebe tu reserva.
+  </p>
+</div>
+```
+
+#### Cambio D — Validar `selectedMethod` en `isFormDisabled` (linea 203-204)
 
 ```typescript
-// Añadir esta validación en isFormDisabled (en la FASE 3, usuario verificado)
-if (!selectedMethod) return true; // Nueva línea requerida
+if (isRequestPhase) return false;
+if (!selectedMethod) return true;  // NUEVO: obliga selección de método VeneStay
 return !reference.trim() || !file;
 ```
 
-#### 2d. Ajustar títulos de sección de pago
+#### Cambio E — Eliminar fallback `listing.bankDetails` del DOM (lineas ~1812-1870)
 
-Cambiar el título "Datos de Pago" por **"Pago del Depósito (20%) a VeneStay"** para dar claridad al huésped sobre a quién le está pagando.
-
-#### 2e. Añadir banner informativo sobre el 80%
-
-Justo debajo del bloque de métodos de pago, añadir un componente de alerta informativa:
-
-```
-"El saldo restante (80%) — $X.XX — lo pagas directamente al anfitrión 
-el día del Check-in. Recibirás sus datos de pago en el PDF de confirmación 
-que se enviará a tu correo cuando la reserva sea aprobada."
-```
-
-Usar icono `ShieldCheck` o `Info` con estilo consistente con el design system (navy/gold).
-
-#### 2f. Actualizar QR de Pago Móvil
-
-El QR dinámico actual codifica el teléfono, RIF y banco del anfitrión. Si VeneStay tiene Pago Móvil corporativo, el QR debe generarse con los datos del método corporativo seleccionado (`VENESTAY_PAYMENT_METHODS`), no con los del anfitrión:
-
-```typescript
-// El QR debe leer de selectedMethod (que ahora siempre es un método de VeneStay)
-`pago_movil:tel=${selectedMethod.data.phoneNumber}&rif=${selectedMethod.data.idNumber}&...`
-// Este código ya es correcto — el problema actual es que selectedMethod puede ser del anfitrión.
-// Al reemplazar availablePaymentMethods, el QR queda automáticamente correcto.
-```
-
-#### 2g. Eliminar el fallback `listing.bankDetails` del DOM
-
-El bloque de fallback a `listing.bankDetails` (datos legacy del anfitrión) en el renderizado de `AnimatePresence` debe ser **eliminado completamente** del JSX. Esa información ya no se mostrará en pantalla; irá al PDF.
+El bloque de renderizado fallback que expone `listing.bankDetails` en pantalla debe ser
+eliminado completamente del JSX. Esta información solo irá al PDF.
 
 ---
 
-### 3. PDF de Confirmación (Cloud Functions) — [MODIFY]
+### Capa 5: PDF de Confirmación (Cloud Functions) — [MODIFICAR]
 
 **Archivo:** `functions/src/templates/booking-pdf.ts`
 
-#### Contexto habilitador (ya resuelto)
-El objeto `listing` completo ya se pasa a `buildBookingConfirmationPDF` desde `booking.functions.ts`. Esto significa que `listing.paymentMethods` y `listing.bankDetails` están disponibles sin cambios adicionales en el trigger.
+Insertar después del bloque "RESUMEN DE SALDO" (linea ~173):
 
-#### Nueva sección en el PDF
+```typescript
+const hostMethods: PaymentMethod[] = listing.paymentMethods ?? [];
+const legacyBank = listing.bankDetails;
 
-Insertar inmediatamente después del bloque **"RESUMEN DE SALDO"** una nueva caja:
+doc.fillColor(colors.gold).font('Helvetica-Bold')
+   .text('INSTRUCCIONES PARA EL PAGO DEL SALDO (80%)', 50, currentY);
+currentY += 20;
 
-**Título:** `INSTRUCCIONES PARA EL PAGO DEL SALDO (80%)`
+if (hostMethods.length > 0) {
+  hostMethods.forEach(method => {
+    doc.fillColor(colors.navy).font('Helvetica-Bold')
+       .text(`Método: ${method.type} — ${method.label}`, 70, currentY);
+    currentY += 16;
+    if (method.data?.accountHolder) { doc.text(`Titular: ${method.data.accountHolder}`, 70, currentY); currentY += 14; }
+    if (method.data?.phoneNumber)   { doc.text(`Número: ${method.data.phoneNumber}`, 70, currentY); currentY += 14; }
+    if (method.data?.bankName)      { doc.text(`Banco: ${method.data.bankName}`, 70, currentY); currentY += 14; }
+    if (method.data?.email)         { doc.text(`Correo/Zelle: ${method.data.email}`, 70, currentY); currentY += 14; }
+    if (method.data?.idNumber)      { doc.text(`RIF/Cédula: ${method.data.idNumber}`, 70, currentY); currentY += 14; }
+    currentY += 10;
+  });
+} else if (legacyBank) {
+  doc.fillColor(colors.navy).font('Helvetica')
+     .text(`Banco: ${legacyBank.bankName ?? 'No especificado'}`, 70, currentY);    currentY += 14;
+  doc.text(`Titular: ${legacyBank.accountHolder ?? 'No especificado'}`, 70, currentY); currentY += 14;
+  doc.text(`Cuenta: ${legacyBank.accountNumber ?? 'No especificado'}`, 70, currentY);
+} else {
+  doc.fillColor(colors.navy).font('Helvetica-Oblique')
+     .text('Consulta los datos de pago al anfitrión directamente por el chat de VeneStay.', 70, currentY);
+}
 
-**Lógica de renderizado:**
-1. Si `listing.paymentMethods` (formato nuevo) tiene métodos: iterar y mostrar tipo, titular, número/email, banco.
-2. Si `listing.paymentMethods` está vacío pero existe `listing.bankDetails` (formato legacy): usar esos datos.
-3. Si ninguno existe: mostrar mensaje *"Consulta los datos de pago al anfitrión directamente por el chat de VeneStay."*
-
-**Texto de descargo (obligatorio):**
-> *"Estos datos fueron proporcionados por el anfitrión al momento de publicar la propiedad. Verifica su vigencia por el chat interno de VeneStay antes de realizar cualquier transferencia el día del Check-in. VeneStay no se hace responsable de transferencias realizadas a cuentas no verificadas por este canal."*
-
----
-
-## Variables de Entorno Requeridas (`.env.example`)
-
-```bash
-# Métodos de pago corporativos de VeneStay (sin valores reales en el repo)
-VITE_VENESTAY_ZELLE_EMAIL=
-VITE_VENESTAY_PAGOMOVIL_PHONE=
-VITE_VENESTAY_PAGOMOVIL_RIF=
-VITE_VENESTAY_PAGOMOVIL_BANK=
+currentY += 12;
+doc.fillColor('#666666').fontSize(8).font('Helvetica')
+   .text(
+     'Estos datos fueron proporcionados por el anfitrión al publicar su propiedad. ' +
+     'Verifica su vigencia antes de realizar cualquier transferencia. ' +
+     'VeneStay no se hace responsable de transferencias a cuentas no verificadas por este canal.',
+     50, currentY, { width: doc.page.width - 100, align: 'justify' }
+   );
 ```
 
 ---
 
 ## Criterios de Aceptación (QA Gate)
 
-- [ ] **CA-1:** En el Checkout de cualquier propiedad, los métodos de pago mostrados pertenecen a VeneStay (no al anfitrión).
-- [ ] **CA-2:** El QR de Pago Móvil codifica los datos corporativos de VeneStay.
-- [ ] **CA-3:** No existe ningún dato bancario del anfitrión visible en la pantalla de pago.
-- [ ] **CA-4:** El banner informativo del 80% es visible y describe correctamente el flujo.
-- [ ] **CA-5:** El botón de submit está deshabilitado si no hay un `selectedMethod` activo.
-- [ ] **CA-6:** En reservas modo `PENDING_APPROVAL` (solicitud en curso), la sección de pago no muestra datos de pago.
-- [ ] **CA-7:** El PDF de confirmación contiene la sección "Instrucciones para el pago del saldo (80%)" con los datos del anfitrión.
-- [ ] **CA-8:** Si el anfitrión no tiene métodos registrados, el PDF muestra el mensaje de fallback.
-- [ ] **CA-9:** `npx tsc --noEmit` pasa con 0 errores.
-- [ ] **CA-10:** `npm run lint` pasa sin errores severos.
-- [ ] **CA-11:** Ningún dato sensible (cuentas, RIF, correos de VeneStay) está hardcodeado en el código fuente.
-
----
-
-## Dependencias
-
-- **Requiere:** Definición y aprobación de los datos de pago corporativos de VeneStay por parte de operaciones (previo a implementación).
-- **Requiere:** Agregar variables `VITE_VENESTAY_*` al `.env` local y al dashboard de Vercel antes del deploy.
-- **Bloquea:** Ningún módulo activo actualmente.
+| # | Criterio | Verificación |
+|:--|:---------|:-------------|
+| CA-1 | En PENDING_APPROVAL, no existe ninguna UI de pago visible ni campo de comprobante | Manual en browser |
+| CA-2 | En PENDING_PAYMENT, las tarjetas mostradas pertenecen a VeneStay | Manual + Devtools |
+| CA-3 | `hostPaymentMethods` existe en el state pero NUNCA se renderiza en la UI | Code review |
+| CA-4 | El QR de Pago Móvil usa datos de `config/venestay_payments` | Manual |
+| CA-5 | El banner del 80% es visible con el monto calculado correcto | Manual |
+| CA-6 | El botón de submit está deshabilitado si no hay `selectedMethod` activo | Manual |
+| CA-7 | El PDF tiene la sección "INSTRUCCIONES PARA EL PAGO DEL SALDO (80%)" con datos del anfitrión | Revisar PDF en correo |
+| CA-8 | Si el anfitrión no tiene métodos ni bankDetails, el PDF muestra el mensaje de fallback | Prueba con host sin datos |
+| CA-9 | `npx tsc --noEmit` pasa con 0 errores | Automatizado |
+| CA-10 | `npm run lint` pasa sin errores severos | Automatizado |
+| CA-11 | `config/venestay_payments` tiene regla: read = auth != null, write = admin == true | Revisar firestore.rules |
+| CA-12 | Ningún dato bancario está hardcodeado en el código fuente | Code review |
 
 ---
 
@@ -223,7 +309,38 @@ VITE_VENESTAY_PAGOMOVIL_BANK=
 
 | Riesgo | Nivel | Mitigación |
 |:-------|:------|:-----------|
-| Las variables de entorno de VeneStay no están en Vercel al momento del deploy | Alto | Verificar en Vercel Dashboard antes de cualquier push a `main` |
-| El QR de Pago Móvil podría quedar inactivo si el método de VeneStay no es `PagoMovil` | Medio | El QR solo se renderiza si `selectedMethod.type === 'PagoMovil'` — lógica ya correcta |
-| `listing.bankDetails` en formato legacy podría no tener todos los campos para el PDF | Bajo | Implementar con `?? 'No especificado'` en cada campo del PDF |
-| El fetch de hostPaymentMethods podría ser eliminado por error al refactorizar | Bajo | Comentar explícitamente en el código su propósito (enriquecimiento de PDF) |
+| El documento `config/venestay_payments` no existe en Firestore al implementar | Alto | El hook retorna [] con fallback silencioso. UI muestra "Cargando métodos..." |
+| `hostPaymentMethods` eliminado por error al refactorizar | Medio | Comentar explícitamente su propósito en el código |
+| Lectura extra de Firestore por sesión de checkout | Bajo | Documento plano (<1KB). Cachear con getDocFromCache si hay impacto |
+| Regla de Firestore incorrecta para /config/{id} bloquea checkout | Alto | Verificar regla con Emulador antes del deploy |
+
+---
+
+## Orden de Implementación para el Nodo 3 (Técnico)
+
+```
+1. (Operación) Crear documento config/venestay_payments en Firebase Console
+2. Actualizar firestore.rules (agregar regla /config/{configId})
+3. Crear src/services/venestay-config.service.ts
+4. Crear src/features/bookings/hooks/useVenestayPayments.ts
+5. Modificar CheckoutPage.tsx:
+   a. Cambio A: reemplazar availablePaymentMethods con useVenestayPayments
+   b. Cambio B: ocultar sección pago cuando isRequestPhase === true
+   c. Cambio C: agregar banner 80% debajo de los métodos de pago
+   d. Cambio D: agregar validación selectedMethod en isFormDisabled
+   e. Cambio E: eliminar bloque fallback listing.bankDetails del DOM
+6. Modificar functions/src/templates/booking-pdf.ts (insertar sección datos anfitrión)
+7. QA Gate: tsc --noEmit + npm run lint + verificación manual en browser
+```
+
+---
+
+## Dependencias
+
+- **Requiere antes de implementar:** Datos bancarios reales de VeneStay para crear el documento en Firestore Console.
+- **No bloquea:** Ningún módulo activo actualmente.
+
+---
+
+*SPEC-CHECKOUT-PAY-001 v2.0 — VeneStay SDD Pipeline — 2026-07-08*
+*Mejoras v2.0: Firestore en lugar de .env, separación service/hook/UI, orden de implementación explícito, 12 CAs medibles, regla Firestore incluida.*

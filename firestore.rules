@@ -276,5 +276,13 @@ service cloud.firestore {
     match /otpCodes/{userId} {
       allow read, write: if false; // solo Admin SDK
     }
+
+    // Config corporativa de VeneStay (métodos de pago, etc.)
+    // Lectura: cualquier usuario autenticado (necesario para el Checkout)
+    // Escritura: solo admin con Custom Claim admin=true o via Admin SDK
+    match /config/{configId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
   }
 }
