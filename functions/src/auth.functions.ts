@@ -128,12 +128,23 @@ export const sendWhatsAppOTP = functions
     const existingOtp = await db.collection('otpCodes').doc(uid).get();
     if (existingOtp.exists) {
       const existingData = existingOtp.data()!;
-      const cooldownThreshold = new Date(Date.now() + 60 * 1000); // 1 minuto restante = cooldown
-      if (existingData.expiresAt && existingData.expiresAt.toDate() > cooldownThreshold) {
-        throw new functions.https.HttpsError(
-          'resource-exhausted',
-          'Ya enviamos un código recientemente. Espera 1 minuto antes de solicitar otro.'
-        );
+      if (existingData.createdAt) {
+        const elapsedSeconds = (Date.now() - existingData.createdAt.toDate().getTime()) / 1000;
+        if (elapsedSeconds < 60) {
+          throw new functions.https.HttpsError(
+            'resource-exhausted',
+            `Ya enviamos un código recientemente. Espera ${Math.ceil(60 - elapsedSeconds)} segundos antes de solicitar otro.`
+          );
+        }
+      } else if (existingData.expiresAt) {
+        // Fallback para registros previos a este cambio (donde expiresAt era createdAt + 10 min)
+        const nineMinutesFromNow = new Date(Date.now() + 9 * 60 * 1000);
+        if (existingData.expiresAt.toDate() > nineMinutesFromNow) {
+          throw new functions.https.HttpsError(
+            'resource-exhausted',
+            'Ya enviamos un código recientemente. Espera 1 minuto antes de solicitar otro.'
+          );
+        }
       }
     }
 
@@ -146,6 +157,7 @@ export const sendWhatsAppOTP = functions
     await db.collection('otpCodes').doc(uid).set({
       codeHash,
       phoneNumber: normalizedPhone,
+      createdAt: admin.firestore.Timestamp.now(),
       expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
       attempts: 0
     });
