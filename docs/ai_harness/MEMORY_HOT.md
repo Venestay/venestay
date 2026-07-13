@@ -33,10 +33,10 @@ Frontend implementado y compilando sin errores. Queda **1 tarea técnica** y **1
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PARCIAL | tsc OK (0 errores) | lint EN CURSO | 2026-07-08
+QA_GATE   : PASS | tsc OK (0 errores) | lint OK (0 errores) | 2026-07-12
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
-TURNO_REANCLA: 10
+TURNO_REANCLA: 11
 ```
 
 ---
@@ -77,8 +77,9 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 | Módulo                                          | Archivo Objetivo                                     | Estado                            |
 | :---------------------------------------------- | :--------------------------------------------------- | :-------------------------------- |
 | **Flujo de Cobro 20/80 — VeneStay Payments (SPEC-CHECKOUT-PAY-001) (P1)** | CheckoutPage.tsx, venestay-config.service.ts, useVenestayPayments.ts, firestore.rules, booking-pdf.ts | **EN PROGRESO (frontend OK \| PDF pendiente)** |
+| **Placeholder Avatar en Perfil & Pasaporte (SPEC-PASSPORT-AVATAR-PLACEHOLDER-001) (P1)** | auth-service.ts, UserProfileSetup.tsx, PassportHeader.tsx, Navbar.tsx, ListingList.tsx | **COMPLETADO (PASS)** |
 | **Email Verification via OTP (P1)**             | docs/specs/spec_auth_email_otp.md, SecuritySection.tsx | **SPEC CREADA / PEND. IMPL**    |
-| **Twilio WhatsApp OTP Integration (P1)**        | functions/src/auth.functions.ts, package.json        | **COMPLETADO (DEPLOY PROD OK)**   |
+| **Twilio WhatsApp OTP Integration (P1)**        | functions/src/auth.functions.ts, package.json, local-server | **COMPLETADO (WABA TEMPLATE ACTIVADA)**   |
 | **Chat Badge Mis Viajes (P1)**                  | MyTrips.tsx                                          | **COMPLETADO**                    |
 | **Flexibilización Pago (+8h) (P1)**             | MyTrips.tsx                                          | **SPEC CREADA / PEND. IMPL**      |
 | **KYC Loop & Auth Modal Redirect (P1)**         | ProfileSettings.tsx, ListingDetail.tsx               | **COMPLETADO**                    |
@@ -108,6 +109,8 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-13 | Twilio WhatsApp OTP Integration (SPEC-AUTH-WHATSAPP-001) | COMPLETADO | PASS | Despliegue en vivo en Firebase Cloud Functions (`us-central1`) de `sendWhatsAppOTP` y `confirmWhatsAppOTP` usando la plantilla oficial WABA (`HXed4fa6e39943eb13205dfca6a0c05da3`). Blindaje 100% de `functions/.env` verificado en `.gitignore`. |
+| 2026-07-12 | Placeholder Avatar en Perfil & Pasaporte (SPEC-PASSPORT-AVATAR-PLACEHOLDER-001) | COMPLETADO | PASS | Se eliminó el fallback aleatorio a pravatar.cc al crear perfiles e interfaces y se implementó el placeholder premium oficial en Perfil, Pasaporte y Navbar. Verificar visualmente en browser o continuar con tareas de S05. |
 | 2026-07-08 | Flujo de Cobro 20/80 — VeneStay Payments (SPEC-CHECKOUT-PAY-001 v2.0) | EN PROGRESO | PARCIAL (tsc OK, lint en curso) | 1) Ejecutar `node scripts/seed-venestay-payments.js` para crear `config/venestay_payments` en Firestore. 2) Modificar `functions/src/templates/booking-pdf.ts` para incluir sección "INSTRUCCIONES PARA EL PAGO DEL SALDO (80%)". 3) Verificación manual en `localhost:3000`. Código de referencia en `docs/plans/spec_checkout_payment_venestay_future.md`. |
 | 2026-07-04 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde rama qa a main en repositorio fork (`cerz30/main`) con optimizaciones de rendimiento y UX en login. |
 | 2026-07-04 | Optimización Enrutamiento & Red Listings (SPEC-PERF-LISTING-OPTIMIZATION-001) | COMPLETADO | PASS | Tiempo de enrutamiento reducido en un 95.8% (de 1,787 ms a 74 ms) al navegar directo a /listing/:id. Se erradicó el 100% de las peticiones HTTP concurrentes a DolarApi desde las tarjetas. |

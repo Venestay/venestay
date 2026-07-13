@@ -107,7 +107,9 @@ const ListingList: React.FC<ListingListProps> = ({
             baths: 1,
             hostName: user?.displayName || 'Admin',
             hostAvatar:
-              user?.photoURL || 'https://i.pravatar.cc/150?u=admin',
+              (user?.photoURL && !user.photoURL.includes('pravatar.cc')
+                ? user.photoURL
+                : '') || '',
             hostId: user?.uid || 'admin',
             blockedDates: [],
             paymentInstructions: '',

@@ -146,15 +146,18 @@ const UserProfileSetup: React.FC = () => {
             {/* Avatar Section */}
             <div className="group relative">
               <div className="relative h-44 w-44 overflow-hidden rounded-[56px] border-4 border-white bg-gray-50 shadow-2xl">
-                <img
-                  src={
-                    editingProfile.photoURL ||
-                    'https://i.pravatar.cc/150?u=temp'
-                  }
-                  alt={editingProfile.displayName}
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
+                {editingProfile.photoURL && !editingProfile.photoURL.includes('pravatar.cc') ? (
+                  <img
+                    src={editingProfile.photoURL}
+                    alt={editingProfile.displayName}
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-brand-navy">
+                    <User className="h-16 w-16 text-brand-500" />
+                  </div>
+                )}
                 <AnimatePresence>
                   {isUploading && (
                     <motion.div

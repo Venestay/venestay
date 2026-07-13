@@ -104,7 +104,7 @@ export const createUserProfile = async (firebaseUser: FirebaseUser, role: 'user'
     uid: firebaseUser.uid,
     email: firebaseUser.email,
     displayName: firebaseUser.displayName || 'Usuario de VeneStay',
-    photoURL: firebaseUser.photoURL || 'https://i.pravatar.cc/150?u=' + firebaseUser.uid,
+    photoURL: firebaseUser.photoURL || '',
     createdAt: serverTimestamp(),
     role: role,
     kycStatus: 'UNVERIFIED',

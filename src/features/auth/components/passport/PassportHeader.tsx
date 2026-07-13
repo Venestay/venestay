@@ -172,7 +172,7 @@ export const PassportHeader: React.FC<PassportHeaderProps> = ({
               )}
               aria-label="Avatar del usuario"
             >
-              {profile?.photoURL ? (
+              {profile?.photoURL && !profile.photoURL.includes('pravatar.cc') ? (
                 <img
                   src={profile.photoURL}
                   alt={profile.displayName || 'Avatar'}
@@ -219,7 +219,7 @@ export const PassportHeader: React.FC<PassportHeaderProps> = ({
             </label>
 
             {/* Botón de eliminación (Solo si tiene foto y es admin/dueño autorizado) */}
-            {profile?.photoURL && (profile.email === 'anfitrionvenesta@venestay.com' || profile.email === 'admin@venestay.com' || profile.role === 'admin') && (
+            {profile?.photoURL && !profile.photoURL.includes('pravatar.cc') && (profile.email === 'anfitrionvenesta@venestay.com' || profile.email === 'admin@venestay.com' || profile.role === 'admin') && (
               <button
                 type="button"
                 onClick={onRemoveAvatar}
