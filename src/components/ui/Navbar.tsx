@@ -313,9 +313,14 @@ const Navbar: React.FC<NavbarProps> = ({
                   )}
                   {user ? (
                     <div className="border-brand-500 h-8 w-8 overflow-hidden rounded-full border-2 shadow-sm transition-transform active:scale-90">
-                      {profileData?.photoURL || user.photoURL ? (
+                      {(profileData?.photoURL && !profileData.photoURL.includes('pravatar.cc')) ||
+                      (user.photoURL && !user.photoURL.includes('pravatar.cc')) ? (
                         <img
-                          src={profileData?.photoURL || user.photoURL || ''}
+                          src={
+                            (profileData?.photoURL && !profileData.photoURL.includes('pravatar.cc')
+                              ? profileData.photoURL
+                              : user.photoURL) || ''
+                          }
                           alt="Profile"
                           className="h-full w-full object-cover"
                         />

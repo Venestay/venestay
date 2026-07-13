@@ -1,3 +1,6 @@
 # Firebase Functions local ignore
 node_modules/
 lib/
+.env
+.env.*
+

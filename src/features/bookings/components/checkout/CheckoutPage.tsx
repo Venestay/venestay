@@ -67,6 +67,7 @@ import { calculateCancellationDeadline } from '@/features/bookings/hooks/useCanc
 import { CANCELLATION_POLICIES } from '@/features/listings/utils/cancellationPolicies';
 import { CancellationPolicyType } from '@/features/listings/types';
 import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
+import { useVenestayPayments } from '@/features/bookings/hooks/useVenestayPayments';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
 // Correos de administración/QA que marcan una reserva como prueba
@@ -144,33 +145,13 @@ const CheckoutPage: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(
     null
   );
+  // Este estado NO se renderiza en la UI — solo alimenta el PDF via Cloud Functions
+  // (Firestore doc: config/venestay_payments — SPEC-CHECKOUT-PAY-001 v2.0)
   const [hostPaymentMethods, setHostPaymentMethods] = useState<PaymentMethod[]>([]);
   const [rates, setRates] = useState<ExchangeRates | null>(null);
 
-  const availablePaymentMethods = useMemo(() => {
-    const listMethods = listing?.paymentMethods || [];
-    const hMethods = hostPaymentMethods || [];
-
-    if (listMethods.length === 0 && hMethods.length === 0) return [];
-
-    const primaryMethods = listMethods.length > 0 ? listMethods : hMethods;
-
-    return primaryMethods.map(method => {
-      if (!method.data?.accountHolder) {
-        const matchingHostMethod = hMethods.find(hm => hm.type === method.type);
-        if (matchingHostMethod?.data?.accountHolder) {
-          return {
-            ...method,
-            data: {
-              ...method.data,
-              accountHolder: matchingHostMethod.data.accountHolder
-            }
-          };
-        }
-      }
-      return method;
-    });
-  }, [listing?.paymentMethods, hostPaymentMethods]);
+  // SPEC-CHECKOUT-PAY-001 v2.0: Siempre métodos corporativos de VeneStay, nunca del anfitrión
+  const { methods: availablePaymentMethods, loading: loadingPaymentMethods } = useVenestayPayments();
 
   const trustScore = useMemo(() => {
     if (!profileData) return 0;
@@ -200,9 +181,12 @@ const CheckoutPage: React.FC = () => {
     
     // Si estamos en fase de solicitud (Request), no exigimos comprobante ni referencia
     if (isRequestPhase) return false;
-    
+
+    // SPEC-CHECKOUT-PAY-001 v2.0: Obligar selección de método de pago de VeneStay
+    if (!selectedMethod) return true;
+
     return !reference.trim() || !file;
-  }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file, isRequestPhase]);
+  }, [isSubmitting, isBlockedByTrust, hasConsentedPolicy, user, isKycVerified, reference, file, isRequestPhase, selectedMethod]);
 
   useEffect(() => {
     const fetchDraftData = async () => {
@@ -1497,20 +1481,39 @@ const CheckoutPage: React.FC = () => {
                 </div>
               </section>
 
-              {/* Payment Steps Section */}
+              {/* Payment Steps Section — SPEC-CHECKOUT-PAY-001 v2.0 */}
               <section className="space-y-8">
+                {/* En modo solicitud: mostrar aviso, ocultar toda la UI de pago del DOM */}
+                {isRequestPhase && (
+                  <div className="flex items-start gap-4 rounded-[28px] border border-blue-100 bg-blue-50/70 p-6" role="status">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                      <ShieldCheck className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black tracking-widest uppercase mb-1 text-blue-700">
+                        Solicitud enviada
+                      </p>
+                      <p className="text-xs font-semibold text-slate-700">
+                        El anfitrión revisará tu solicitud. Solo podrás realizar el pago del depósito cuando sea aprobada.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {!isRequestPhase && (
+                <>
                 <div className="mb-2 flex items-center space-x-4">
                   <div className="bg-brand-navy text-brand-500 flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
                     1
                   </div>
                   <div className="flex grow items-center justify-between">
                     <h2 className="text-brand-navy text-sm font-black tracking-widest uppercase flex items-center gap-2">
-                      Datos de Pago {listing?.bookingMode === 'request' && <span className="text-[9px] text-[#b08f23] font-black italic tracking-widest lowercase bg-brand-gold/10 px-2 py-0.5 rounded-md leading-none select-none">(Opcional)</span>}
+                      Depósito del 20% a VeneStay
                     </h2>
                     <div className="bg-brand-navy/5 flex items-center gap-2 rounded-xl px-3 py-1.5">
                       <ShieldCheck className="text-brand-navy h-3 w-3" />
                       <span className="text-brand-navy text-[9px] font-black tracking-widest uppercase">
-                        Verified Host Data
+                        Pago Seguro
                       </span>
                     </div>
                   </div>
@@ -1809,89 +1812,35 @@ const CheckoutPage: React.FC = () => {
                         </p>
                       </div>
                     </motion.div>
-                  ) : listing.bankDetails ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="bg-brand-navy group relative overflow-hidden rounded-[40px] p-10 text-white shadow-2xl"
-                    >
-                      {/* Fallback to legacy bankDetails if selectedMethod is null and bankDetails exists */}
-                      <div className="relative z-10 space-y-8">
-                        <p className="mb-4 text-[10px] font-black tracking-widest text-emerald-400 uppercase">
-                          Datos Bancarios Predeterminados
-                        </p>
-                        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-                          <div className="space-y-1">
-                            <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
-                              Entidad Bancaria
-                            </p>
-                            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
-                              <p className="text-sm font-black">
-                                {listing.bankDetails.bankName}
-                              </p>
-                              <button
-                                onClick={() =>
-                                  handleCopy(
-                                    listing.bankDetails!.bankName,
-                                    'bank'
-                                  )
-                                }
-                                className="rounded-xl p-2 transition-colors hover:bg-white/10"
-                              >
-                                {isCopied === 'bank' ? (
-                                  <Check className="h-4 w-4 text-emerald-400" />
-                                ) : (
-                                  <Copy className="text-brand-500 h-4 w-4" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
-                              Titular de Cuenta
-                            </p>
-                            <div className="flex h-[52px] items-center rounded-2xl border border-white/10 bg-white/5 p-4">
-                              <p className="text-sm font-black">
-                                {listing.bankDetails.accountHolder}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="space-y-1 md:col-span-2">
-                            <p className="text-brand-500 text-[9px] font-black tracking-widest uppercase">
-                              Número de Cuenta / Pago Móvil
-                            </p>
-                            <div className="flex items-center justify-between rounded-3xl border border-white/20 bg-white/5 p-5">
-                              <p className="font-mono text-lg font-black tracking-tight">
-                                {listing.bankDetails.accountNumber}
-                              </p>
-                              <button
-                                onClick={() =>
-                                  handleCopy(
-                                    listing.bankDetails!.accountNumber,
-                                    'acc'
-                                  )
-                                }
-                                className="bg-brand-500 text-brand-navy hover:bg-brand-400 rounded-2xl p-3 shadow-lg transition-colors"
-                              >
-                                {isCopied === 'acc' ? (
-                                  <Check className="h-5 w-5" />
-                                ) : (
-                                  <Copy className="h-5 w-5" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                  ) : loadingPaymentMethods ? (
+                    <div className="rounded-3xl border border-gray-100 bg-gray-50 p-8 text-center text-sm text-slate-500">
+                      <Loader2 className="text-brand-500 mx-auto mb-3 h-6 w-6 animate-spin" />
+                      Cargando métodos de pago de VeneStay...
+                    </div>
                   ) : (
                     <div className="rounded-3xl border border-gray-100 bg-gray-50 p-8 text-sm leading-relaxed text-slate-600 italic">
                       <MessageSquare className="text-brand-500 mb-4 h-6 w-6" />
-                      {listing.paymentInstructions ||
-                        'El anfitrión no ha registrado datos bancarios específicos. Consulta instrucciones en el chat.'}
+                      No hay métodos de pago disponibles. Contacta a VeneStay por el chat.
                     </div>
                   )}
                 </AnimatePresence>
+
+                {/* Banner informativo del saldo restante del 80% */}
+                <div
+                  className="flex items-start gap-4 rounded-[28px] border border-amber-100 bg-amber-50/70 p-5"
+                  role="note"
+                  aria-label="Información sobre el saldo pendiente"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                    <Info className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-700 leading-relaxed">
+                    El <strong>saldo restante (80%)</strong> lo pagas directamente al anfitrión el día del Check-in.
+                    Sus datos de pago llegarán en el correo de confirmación cuando se apruebe tu reserva.
+                  </p>
+                </div>
+                </>
+                )}
               </section>
 
               <section className="space-y-8 pb-20">

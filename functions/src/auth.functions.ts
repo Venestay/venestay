@@ -153,16 +153,33 @@ export const sendWhatsAppOTP = functions
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
       const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
-      const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER?.trim();
+      const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER?.trim() || '+15559525528';
+      const contentSid = process.env.TWILIO_CONTENT_SID?.trim();
 
       const client = twilio(accountSid, authToken);
-      const twilioFrom = `whatsapp:${whatsappNumber}`;
+      
+      // Limpiar prefijos whatsapp: accidentales en variable de entorno y en teléfono destino
+      const cleanFrom = whatsappNumber.replace(/^whatsapp:/i, '').trim();
+      const cleanTo = normalizedPhone.replace(/^whatsapp:/i, '').trim();
 
-      await client.messages.create({
-        body: `Tu código de verificación para VeneStay es: ${code}. No lo compartas con nadie. Vence en 10 minutos.`,
-        from: twilioFrom,
-        to: `whatsapp:${normalizedPhone}`,
-      });
+      const baseOptions = {
+        from: `whatsapp:${cleanFrom}`,
+        to: `whatsapp:${cleanTo}`,
+      };
+
+      if (contentSid) {
+        // En cuenta pagada de WABA (WhatsApp Business API), si no hay chat previo en 24h, es obligatorio usar Content Template
+        await client.messages.create({
+          ...baseOptions,
+          contentSid: contentSid,
+          contentVariables: JSON.stringify({ '1': code }),
+        });
+      } else {
+        await client.messages.create({
+          ...baseOptions,
+          body: `Tu código de verificación para VeneStay es: ${code}. No lo compartas con nadie. Vence en 10 minutos.`,
+        });
+      }
     } catch (error: unknown) {
       await db.collection('otpCodes').doc(uid).delete().catch(() => {});
       const twilioError = error as { code?: number; message?: string };

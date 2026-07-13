@@ -54,8 +54,20 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
     
     setIsLoading(true);
     try {
-      const sendOTP = httpsCallable(functions, 'sendWhatsAppOTP');
-      await sendOTP({ phoneNumber: fullNumber });
+      if (import.meta.env.DEV && import.meta.env.VITE_USE_LOCAL_TWILIO_SERVER === 'true') {
+        const response = await fetch('http://localhost:3001/api/send-whatsapp-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: { phoneNumber: fullNumber } })
+        });
+        const resData = await response.json();
+        if (!response.ok || resData.error) {
+          throw new Error(resData.error?.message || 'Error al enviar OTP desde servidor local.');
+        }
+      } else {
+        const sendOTP = httpsCallable(functions, 'sendWhatsAppOTP');
+        await sendOTP({ phoneNumber: fullNumber });
+      }
       setStep('OTP_SENT');
       toast.success('Código OTP enviado por WhatsApp.');
     } catch (error: unknown) {
@@ -76,8 +88,20 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
 
     setIsLoading(true);
     try {
-      const confirmOTP = httpsCallable(functions, 'confirmWhatsAppOTP');
-      await confirmOTP({ phoneNumber: fullNumber, code: otp });
+      if (import.meta.env.DEV && import.meta.env.VITE_USE_LOCAL_TWILIO_SERVER === 'true') {
+        const response = await fetch('http://localhost:3001/api/confirm-whatsapp-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: { phoneNumber: fullNumber, code: otp, uid: profile?.uid } })
+        });
+        const resData = await response.json();
+        if (!response.ok || resData.error) {
+          throw new Error(resData.error?.message || 'Error al confirmar OTP desde servidor local.');
+        }
+      } else {
+        const confirmOTP = httpsCallable(functions, 'confirmWhatsAppOTP');
+        await confirmOTP({ phoneNumber: fullNumber, code: otp });
+      }
       toast.success('¡Número de WhatsApp verificado con éxito!');
       // El backend actualizará el documento del usuario, lo cual refrescará el perfil
       setStep('IDLE');

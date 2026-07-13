@@ -1,6 +1,6 @@
 # MEMORY_HOT — VeneStay Agent
 
-_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-07-02_
+_Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-07-08_
 
 ---
 
@@ -8,19 +8,24 @@ _Sprint: S05 — Admin Tools & Maintenance · Actualizado: 2026-07-02_
 
 > **El agente DEBE consultar y continuar con esta tarea al iniciar la próxima sesión.**
 
-### ¿Por qué?
+### SPEC-CHECKOUT-PAY-001 v2.0 — Flujo de Cobro 20%/80% (EN PROGRESO)
 
-El usuario creó exitosamente la cuenta de **Twilio WhatsApp** (Sandbox `+14155238886`) para reemplazar el modo STUB en la validación OTP de pasaporte / KYC (requisito indispensable para `canBook: true`).
-La especificación técnica **SPEC-AUTH-WHATSAPP-001** está aprobada y lista en `docs/specs/spec_auth_whatsapp_twilio.md`.
+La spec está aprobada en `docs/plans/spec_checkout_payment_venestay_future.md` (v2.0).
+Frontend implementado y compilando sin errores. Queda **1 tarea técnica** y **1 operación** pendientes:
 
-### Pasos pendientes para completar la integración
+#### Pendiente 1 — Cloud Function PDF (Nodo 3 Técnico Backend)
+- **Archivo:** `functions/src/templates/booking-pdf.ts`
+- **Acción:** Insertar sección **"INSTRUCCIONES PARA EL PAGO DEL SALDO (80%)"** después del bloque "RESUMEN DE SALDO" (~línea 173).
+- **Lógica:** Leer `listing.paymentMethods` → fallback a `listing.bankDetails` → fallback a mensaje de chat.
+- **Código de referencia:** Bloque TypeScript completo en la spec `docs/plans/spec_checkout_payment_venestay_future.md` sección "Capa 5".
 
-1. **Usuario / Pruebas:** Conectar el teléfono de pruebas al Sandbox de Twilio enviando un mensaje de WhatsApp a `+1 415 523 8886` con la palabra clave asignada en Twilio Console (ej. `join <keyword>`).
-2. **Usuario / Terminal:** Guardar los 3 secretos en Google Cloud Secret Manager usando el CLI de Firebase:
-   - `firebase functions:secrets:set TWILIO_ACCOUNT_SID`
-   - `firebase functions:secrets:set TWILIO_AUTH_TOKEN`
-   - `firebase functions:secrets:set TWILIO_WHATSAPP_NUMBER` (`+14155238886`)
-3. **Agente (Nodo 3 — Técnico):** Instalar dependencia `twilio` en `functions/package.json` (`cd functions && npm install twilio --save`), modificar `functions/src/auth.functions.ts` (`sendWhatsAppOTP` con inyección `.runWith({ secrets: [...] })` y `client.messages.create`), y desplegar con `firebase deploy --only functions:sendWhatsAppOTP`.
+#### Pendiente 2 — Seed de Firestore (Operación)
+- **Acción:** Ejecutar `node scripts/seed-venestay-payments.js` para crear `config/venestay_payments` con datos de prueba.
+- **Requisito:** Tener Firebase CLI autenticado o `GOOGLE_APPLICATION_CREDENTIALS` configurado.
+- **Nota:** Sin este documento en Firestore, el Checkout mostrará "Cargando métodos de pago..." indefinidamente.
+
+#### Pendiente 3 — Verificación manual en browser (QA CA-1 a CA-6)
+- Levantar `npm run dev` y verificar el checklist de la spec en `localhost:3000`.
 
 ---
 
@@ -28,10 +33,10 @@ La especificación técnica **SPEC-AUTH-WHATSAPP-001** está aprobada y lista en
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | 2026-07-04
+QA_GATE   : PASS | tsc OK (0 errores) | lint OK (0 errores) | 2026-07-12
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
-TURNO_REANCLA: 7
+TURNO_REANCLA: 11
 ```
 
 ---
@@ -71,8 +76,10 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Módulo                                          | Archivo Objetivo                                     | Estado                            |
 | :---------------------------------------------- | :--------------------------------------------------- | :-------------------------------- |
+| **Flujo de Cobro 20/80 — VeneStay Payments (SPEC-CHECKOUT-PAY-001) (P1)** | CheckoutPage.tsx, venestay-config.service.ts, useVenestayPayments.ts, firestore.rules, booking-pdf.ts | **EN PROGRESO (frontend OK \| PDF pendiente)** |
+| **Placeholder Avatar en Perfil & Pasaporte (SPEC-PASSPORT-AVATAR-PLACEHOLDER-001) (P1)** | auth-service.ts, UserProfileSetup.tsx, PassportHeader.tsx, Navbar.tsx, ListingList.tsx | **COMPLETADO (PASS)** |
 | **Email Verification via OTP (P1)**             | docs/specs/spec_auth_email_otp.md, SecuritySection.tsx | **SPEC CREADA / PEND. IMPL**    |
-| **Twilio WhatsApp OTP Integration (P1)**        | functions/src/auth.functions.ts, package.json        | **COMPLETADO (DEPLOY PROD OK)**   |
+| **Twilio WhatsApp OTP Integration (P1)**        | functions/src/auth.functions.ts, package.json, local-server | **COMPLETADO (WABA TEMPLATE ACTIVADA)**   |
 | **Chat Badge Mis Viajes (P1)**                  | MyTrips.tsx                                          | **COMPLETADO**                    |
 | **Flexibilización Pago (+8h) (P1)**             | MyTrips.tsx                                          | **SPEC CREADA / PEND. IMPL**      |
 | **KYC Loop & Auth Modal Redirect (P1)**         | ProfileSettings.tsx, ListingDetail.tsx               | **COMPLETADO**                    |
@@ -102,6 +109,9 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-13 | Twilio WhatsApp OTP Integration (SPEC-AUTH-WHATSAPP-001) | COMPLETADO | PASS | Despliegue en vivo en Firebase Cloud Functions (`us-central1`) de `sendWhatsAppOTP` y `confirmWhatsAppOTP` usando la plantilla oficial WABA (`HXed4fa6e39943eb13205dfca6a0c05da3`). Blindaje 100% de `functions/.env` verificado en `.gitignore`. |
+| 2026-07-12 | Placeholder Avatar en Perfil & Pasaporte (SPEC-PASSPORT-AVATAR-PLACEHOLDER-001) | COMPLETADO | PASS | Se eliminó el fallback aleatorio a pravatar.cc al crear perfiles e interfaces y se implementó el placeholder premium oficial en Perfil, Pasaporte y Navbar. Verificar visualmente en browser o continuar con tareas de S05. |
+| 2026-07-08 | Flujo de Cobro 20/80 — VeneStay Payments (SPEC-CHECKOUT-PAY-001 v2.0) | EN PROGRESO | PARCIAL (tsc OK, lint en curso) | 1) Ejecutar `node scripts/seed-venestay-payments.js` para crear `config/venestay_payments` en Firestore. 2) Modificar `functions/src/templates/booking-pdf.ts` para incluir sección "INSTRUCCIONES PARA EL PAGO DEL SALDO (80%)". 3) Verificación manual en `localhost:3000`. Código de referencia en `docs/plans/spec_checkout_payment_venestay_future.md`. |
 | 2026-07-04 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde rama qa a main en repositorio fork (`cerz30/main`) con optimizaciones de rendimiento y UX en login. |
 | 2026-07-04 | Optimización Enrutamiento & Red Listings (SPEC-PERF-LISTING-OPTIMIZATION-001) | COMPLETADO | PASS | Tiempo de enrutamiento reducido en un 95.8% (de 1,787 ms a 74 ms) al navegar directo a /listing/:id. Se erradicó el 100% de las peticiones HTTP concurrentes a DolarApi desde las tarjetas. |
 | 2026-07-04 | Optimización Login KYC (SPEC-AUTH-LOGIN-FRICTION-001) | COMPLETADO | PASS | Se eliminó el bloqueo de correo no verificado en el modal al iniciar sesión, permitiendo acceso directo a la app. La verificación se mantiene centralizada en Mi Pasaporte y Checkout Guard. |
