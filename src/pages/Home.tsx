@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import React, { useState, useMemo, useEffect, lazy } from 'react';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import Navbar from '@/components/ui/Navbar';
 import ListingCard from '@/features/listings/components/ListingCard';
 import { City, Listing } from '@/types';
@@ -558,15 +558,15 @@ const Home: React.FC = () => {
                 © 2026 Desarrollado por el equipo de ingeniería de VeneStay. Hecho en Venezuela.
               </p>
               <div className="flex items-center space-x-8 text-[10px] font-black tracking-widest text-white/40 uppercase">
-                <a href="#" className="hover:text-brand-500">
+                <Link to="/terminos" className="hover:text-brand-500">
                   Términos
-                </a>
-                <a href="#" className="hover:text-brand-500">
+                </Link>
+                <Link to="/privacidad" className="hover:text-brand-500">
                   Privacidad
-                </a>
-                <a href="#" className="hover:text-brand-500">
+                </Link>
+                <Link to="/cookies" className="hover:text-brand-500">
                   Cookies
-                </a>
+                </Link>
               </div>
             </div>
           </footer>

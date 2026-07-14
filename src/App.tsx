@@ -26,6 +26,8 @@ const ListingDetail = lazy(() => import('@/features/listings/components/ListingD
 const ProfileSettings = lazy(() => import('@/features/auth/components/ProfileSettings'));
 const MyTrips = lazy(() => import('@/features/bookings/components/MyTrips'));
 const AuthAction = lazy(() => import('@/pages/AuthAction'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
+const TermsPage = lazy(() => import('@/pages/TermsPage'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -63,6 +65,9 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/host-guide" element={<HostGuide />} />
+          <Route path="/privacidad" element={<PrivacyPolicyPage />} />
+          <Route path="/terminos" element={<TermsPage />} />
+          <Route path="/cookies" element={<PrivacyPolicyPage />} />
           <Route
             path="/publicar-espacio"
             element={

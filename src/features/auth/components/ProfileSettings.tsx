@@ -16,7 +16,7 @@ import PaymentMethodModal from './PaymentMethodModal';
 import ConfirmExitModal from './ConfirmExitModal';
 import Navbar from '@/components/ui/Navbar';
 import { motion } from 'motion/react';
-import { ShieldCheck, ChevronRight } from 'lucide-react';
+import { ShieldCheck, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
 
 // Sub-componentes
@@ -205,6 +205,18 @@ const ProfileSettings: React.FC = () => {
         onOpenAuth={() => {}}
       />
       <div className="mx-auto max-w-2xl px-6 py-12 space-y-6">
+        {/* Botón de regreso rápido al Inicio (SPEC-PASSPORT-NAV-001) */}
+        <div>
+          <button
+            type="button"
+            onClick={handleLogoClick}
+            aria-label="Volver a la página principal"
+            className="group inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/80 px-4 py-2 text-xs font-bold text-gray-600 shadow-xs backdrop-blur-md transition-all duration-300 hover:border-brand-500 hover:bg-brand-50 hover:text-brand-navy focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1 text-brand-500" />
+            <span>Volver al Inicio</span>
+          </button>
+        </div>
 
         {/* 
           ── HEADER ──

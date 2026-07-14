@@ -443,11 +443,21 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 {mode === 'register' && (
                   <div className="mt-6 text-center text-[10px] leading-relaxed text-gray-400 font-medium">
                     Al registrarte, aceptas nuestros{' '}
-                    <a href="#" className="underline hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-brand-navy rounded px-1">
+                    <a
+                      href="/terminos"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-gray-600 focus:outline-hidden focus:ring-1 focus:ring-brand-navy rounded px-1"
+                    >
                       Términos de Servicio
                     </a>{' '}
                     y{' '}
-                    <a href="#" className="underline hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-brand-navy rounded px-1">
+                    <a
+                      href="/privacidad"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-gray-600 focus:outline-hidden focus:ring-1 focus:ring-brand-navy rounded px-1"
+                    >
                       Política de Privacidad
                     </a>
                     .

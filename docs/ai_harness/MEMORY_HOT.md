@@ -33,10 +33,10 @@ Frontend implementado y compilando sin errores. Queda **1 tarea técnica** y **1
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | tsc OK (0 errores) | lint OK (0 errores) | 2026-07-12
+QA_GATE   : PASS | tsc OK (0 errores) | lint OK (0 errores) | 2026-07-14 (SPEC-LEGAL-PAGES-001)
 BLOQUEANTE: ninguno
 RAMA_LOCAL: qa
-TURNO_REANCLA: 11
+TURNO_REANCLA: 0
 ```
 
 ---
@@ -76,6 +76,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Módulo                                          | Archivo Objetivo                                     | Estado                            |
 | :---------------------------------------------- | :--------------------------------------------------- | :-------------------------------- |
+| **Páginas Legales Soft KYC & Enlaces UI (SPEC-LEGAL-PAGES-001) (P1)** | PrivacyPolicyPage.tsx, TermsPage.tsx, App.tsx, AuthModal.tsx, Home.tsx | **COMPLETADO (PASS)** |
 | **Flujo de Cobro 20/80 — VeneStay Payments (SPEC-CHECKOUT-PAY-001) (P1)** | CheckoutPage.tsx, venestay-config.service.ts, useVenestayPayments.ts, firestore.rules, booking-pdf.ts | **EN PROGRESO (frontend OK \| PDF pendiente)** |
 | **Placeholder Avatar en Perfil & Pasaporte (SPEC-PASSPORT-AVATAR-PLACEHOLDER-001) (P1)** | auth-service.ts, UserProfileSetup.tsx, PassportHeader.tsx, Navbar.tsx, ListingList.tsx | **COMPLETADO (PASS)** |
 | **Email Verification via OTP (P1)**             | docs/specs/spec_auth_email_otp.md, SecuritySection.tsx | **SPEC CREADA / PEND. IMPL**    |
@@ -109,6 +110,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-14 | Páginas Legales Soft KYC & Enlaces UI (SPEC-LEGAL-PAGES-001) | COMPLETADO | PASS (`tsc --noEmit` 0 errores, linter 0 warnings en nuevos archivos) | Módulo cerrado y verificado con éxito en terminal. Listo para continuar con siguientes prioridades de S05 o testing visual/E2E en navegador. |
 | 2026-07-13 | Twilio WhatsApp OTP Integration (SPEC-AUTH-WHATSAPP-001) | COMPLETADO | PASS | Despliegue en vivo en Firebase Cloud Functions (`us-central1`) de `sendWhatsAppOTP` y `confirmWhatsAppOTP` usando la plantilla oficial WABA (`HXed4fa6e39943eb13205dfca6a0c05da3`). Blindaje 100% de `functions/.env` verificado en `.gitignore`. |
 | 2026-07-12 | Placeholder Avatar en Perfil & Pasaporte (SPEC-PASSPORT-AVATAR-PLACEHOLDER-001) | COMPLETADO | PASS | Se eliminó el fallback aleatorio a pravatar.cc al crear perfiles e interfaces y se implementó el placeholder premium oficial en Perfil, Pasaporte y Navbar. Verificar visualmente en browser o continuar con tareas de S05. |
 | 2026-07-08 | Flujo de Cobro 20/80 — VeneStay Payments (SPEC-CHECKOUT-PAY-001 v2.0) | EN PROGRESO | PARCIAL (tsc OK, lint en curso) | 1) Ejecutar `node scripts/seed-venestay-payments.js` para crear `config/venestay_payments` en Firestore. 2) Modificar `functions/src/templates/booking-pdf.ts` para incluir sección "INSTRUCCIONES PARA EL PAGO DEL SALDO (80%)". 3) Verificación manual en `localhost:3000`. Código de referencia en `docs/plans/spec_checkout_payment_venestay_future.md`. |
