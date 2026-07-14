@@ -54,17 +54,28 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
     
     setIsLoading(true);
     try {
+      let usedLocal = false;
       if (import.meta.env.DEV && import.meta.env.VITE_USE_LOCAL_TWILIO_SERVER === 'true') {
-        const response = await fetch('http://localhost:3001/api/send-whatsapp-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: { phoneNumber: fullNumber } })
-        });
-        const resData = await response.json();
-        if (!response.ok || resData.error) {
-          throw new Error(resData.error?.message || 'Error al enviar OTP desde servidor local.');
+        try {
+          const response = await fetch('http://localhost:3001/api/send-whatsapp-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { phoneNumber: fullNumber } })
+          });
+          const resData = await response.json();
+          if (!response.ok || resData.error) {
+            throw new Error(resData.error?.message || 'Error al enviar OTP desde servidor local.');
+          }
+          usedLocal = true;
+        } catch (localErr: unknown) {
+          if (localErr instanceof TypeError || (localErr instanceof Error && localErr.message.toLowerCase().includes('fetch'))) {
+            console.warn('[WhatsApp verification] Servidor local Twilio (3001) apagado, conectando a Cloud Function en NUBE...');
+          } else {
+            throw localErr;
+          }
         }
-      } else {
+      }
+      if (!usedLocal) {
         const sendOTP = httpsCallable(functions, 'sendWhatsAppOTP');
         await sendOTP({ phoneNumber: fullNumber });
       }
@@ -88,17 +99,28 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
 
     setIsLoading(true);
     try {
+      let usedLocal = false;
       if (import.meta.env.DEV && import.meta.env.VITE_USE_LOCAL_TWILIO_SERVER === 'true') {
-        const response = await fetch('http://localhost:3001/api/confirm-whatsapp-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: { phoneNumber: fullNumber, code: otp, uid: profile?.uid } })
-        });
-        const resData = await response.json();
-        if (!response.ok || resData.error) {
-          throw new Error(resData.error?.message || 'Error al confirmar OTP desde servidor local.');
+        try {
+          const response = await fetch('http://localhost:3001/api/confirm-whatsapp-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { phoneNumber: fullNumber, code: otp, uid: profile?.uid } })
+          });
+          const resData = await response.json();
+          if (!response.ok || resData.error) {
+            throw new Error(resData.error?.message || 'Error al confirmar OTP desde servidor local.');
+          }
+          usedLocal = true;
+        } catch (localErr: unknown) {
+          if (localErr instanceof TypeError || (localErr instanceof Error && localErr.message.toLowerCase().includes('fetch'))) {
+            console.warn('[WhatsApp verification] Servidor local Twilio (3001) apagado, conectando a Cloud Function en NUBE...');
+          } else {
+            throw localErr;
+          }
         }
-      } else {
+      }
+      if (!usedLocal) {
         const confirmOTP = httpsCallable(functions, 'confirmWhatsAppOTP');
         await confirmOTP({ phoneNumber: fullNumber, code: otp });
       }

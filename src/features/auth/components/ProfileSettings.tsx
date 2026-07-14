@@ -81,6 +81,10 @@ const ProfileSettings: React.FC = () => {
     return profile?.kycStatus === 'VERIFIED' || profile?.isIdentityVerified === true;
   }, [profile]);
 
+  // RBAC: Motor Transaccional solo visible para Anfitriones y Admins
+  // spec: spec_passport_rbac_payment_methods.md — Opción B (MVP Simple)
+  const isHostOrAdmin = profile?.role === 'host' || profile?.role === 'admin';
+
   // Consultar reservas pendientes
   React.useEffect(() => {
     if (!profile?.uid) return;
@@ -271,16 +275,19 @@ const ProfileSettings: React.FC = () => {
         */}
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Sección 1 — Motor Transaccional */}
-          <div className="passport-section passport-section--d1">
-            <TransactionalEngine
-              profile={profile}
-              currency={currency}
-              setCurrency={setCurrency}
-              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-              onRemovePaymentMethod={handleRemovePaymentMethod}
-            />
-          </div>
+          {/* Sección 1 — Motor Transaccional (solo Anfitriones / Admins) */}
+          {/* spec: passport-rbac-payment-methods — Opción B MVP */}
+          {isHostOrAdmin && (
+            <div className="passport-section passport-section--d1">
+              <TransactionalEngine
+                profile={profile}
+                currency={currency}
+                setCurrency={setCurrency}
+                onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+                onRemovePaymentMethod={handleRemovePaymentMethod}
+              />
+            </div>
+          )}
 
           {/* Sección 2 — Seguridad y Respaldo */}
           <div className="passport-section passport-section--d2">
@@ -342,7 +349,6 @@ const ProfileSettings: React.FC = () => {
               profile={profile}
               notifications={notifications}
               toggleNotification={toggleNotification}
-              updateProfile={updateProfile}
             />
           </div>
 

@@ -106,7 +106,7 @@ const sendOtpSchema = z.object({
 });
 
 export const sendWhatsAppOTP = functions
-  .runWith({ secrets: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_NUMBER'] })
+  .runWith({ secrets: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_NUMBER', 'TWILIO_CONTENT_SID'] })
   .https.onCall(async (data: { phoneNumber: string }, context) => {
     if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Autenticación requerida.');
     
