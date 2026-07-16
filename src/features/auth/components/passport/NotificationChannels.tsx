@@ -24,7 +24,7 @@ interface NotificationChannelsProps {
 const CHANNELS = [
   {
     id: 'whatsapp' as keyof NotificationPreferences,
-    label: 'WhatsApp Directo',
+    label: 'Alertas Móviles (WhatsApp / SMS)',
     desc: 'Notificaciones de llaves y check-in.',
     icon: MessageSquare,
     accentColor: 'text-emerald-600',
