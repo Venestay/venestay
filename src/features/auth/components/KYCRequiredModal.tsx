@@ -16,11 +16,19 @@ import { KYCStatus } from '@/features/auth/types';
 import { cn } from '@/lib/utils';
 import { PassportCompletionBanner } from './passport/PassportCompletionBanner';
 
+export interface PendingBookingSummary {
+  listingTitle: string;
+  datesText: string;
+  totalAmount: number;
+}
+
 interface KYCRequiredModalProps {
   isOpen: boolean;
   onClose: () => void;
   kycStatus: KYCStatus | undefined;
   profile?: Partial<import('@/features/auth/types').UserProfile> | null;
+  /** Resumen del pago o reserva en borrador */
+  pendingBookingSummary?: PendingBookingSummary | null;
   /** Llamado cuando el usuario hace clic en "Completar verificación" */
   onGoToPassport: (section?: string) => void;
 }
@@ -37,7 +45,7 @@ interface KYCStateConfig {
   canContinue: boolean;
 }
 
-const getKYCConfig = (status: KYCStatus | undefined): KYCStateConfig => {
+export const getKYCConfig = (status: KYCStatus | undefined, hasPendingBooking?: boolean): KYCStateConfig => {
   switch (status) {
     case 'REJECTED':
       return {
@@ -60,7 +68,7 @@ const getKYCConfig = (status: KYCStatus | undefined): KYCStateConfig => {
         badgeColor: 'text-amber-700 bg-amber-50 border-amber-100',
         title: 'Tu verificación está en revisión',
         description:
-          'Nuestro equipo está revisando tu información. Esto puede tomar entre 2 y 24 horas. Mientras tanto, puedes continuar con tu reserva.',
+          'Nuestro equipo está revisando tu información. Esto puede tomar entre 2 y 24 horas. Mientras tanto, tus fechas y borrador están guardados.',
         ctaLabel: 'Ver estado de verificación',
         showCTA: true,
         canContinue: true,
@@ -70,12 +78,13 @@ const getKYCConfig = (status: KYCStatus | undefined): KYCStateConfig => {
       return {
         icon: <ShieldCheck className="h-8 w-8 text-white" />,
         iconBg: 'bg-brand-navy',
-        badge: 'Verificación requerida',
-        badgeColor: 'text-brand-navy bg-blue-50 border-blue-100',
-        title: 'Completa tu verificación para reservar',
-        description:
-          'VeneStay requiere verificar tu identidad antes de realizar tu primera reserva. Es un proceso rápido que protege tanto a huéspedes como anfitriones.',
-        ctaLabel: 'Completar verificación ahora',
+        badge: hasPendingBooking ? '🔒 Pago Pendiente Guardado' : 'Verificación rápida',
+        badgeColor: hasPendingBooking ? 'text-brand-gold bg-amber-50/80 border-amber-200' : 'text-brand-navy bg-blue-50 border-blue-100',
+        title: hasPendingBooking ? '¡Casi listo para asegurar tu estadía! 🌴' : 'Completa tu verificación para reservar',
+        description: hasPendingBooking
+          ? 'Tus fechas y precios están guardados en borrador. Para proteger tu dinero y dar confianza mutua al anfitrión, completa dos pasos rápidos en tu Pasaporte (menos de 1 minuto).'
+          : 'VeneStay requiere verificar tu identidad antes de realizar tu primera reserva. Es un proceso rápido que protege tanto a huéspedes como anfitriones.',
+        ctaLabel: hasPendingBooking ? 'Completar en Mi Pasaporte y Continuar Pago' : 'Completar verificación ahora',
         showCTA: true,
         canContinue: false,
       };
@@ -97,9 +106,10 @@ const KYCRequiredModal: React.FC<KYCRequiredModalProps> = ({
   onClose,
   kycStatus,
   profile,
+  pendingBookingSummary,
   onGoToPassport,
 }) => {
-  const config = getKYCConfig(kycStatus);
+  const config = getKYCConfig(kycStatus, !!pendingBookingSummary);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Focus trap + Escape key (WCAG 2.2 §4.1.2)
@@ -220,6 +230,29 @@ const KYCRequiredModal: React.FC<KYCRequiredModalProps> = ({
               <p className="mb-6 text-center text-sm leading-relaxed text-gray-500">
                 {config.description}
               </p>
+
+              {/* Pending booking card */}
+              {pendingBookingSummary && (
+                <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-2 border-b border-amber-200/60 pb-2 mb-2">
+                    <span className="text-[11px] font-black tracking-widest text-brand-navy uppercase">
+                      Reserva en borrador
+                    </span>
+                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-800">
+                      ⏱️ Guardada (4h)
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-gray-800 truncate">
+                    {pendingBookingSummary.listingTitle}
+                  </p>
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-gray-600">
+                    <span>{pendingBookingSummary.datesText}</span>
+                    <span className="font-extrabold text-brand-navy">
+                      ${pendingBookingSummary.totalAmount} USD
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* PENDING_REVIEW info chip */}
               {kycStatus === 'PENDING_REVIEW' && (

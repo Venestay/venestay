@@ -103,11 +103,12 @@ const sendOtpSchema = z.object({
   phoneNumber: z
     .string()
     .regex(/^\+[1-9]\d{1,14}$/, 'El número debe estar en formato internacional E.164 válido.'),
+  channel: z.enum(['whatsapp', 'sms', 'auto']).optional().default('auto'),
 });
 
 export const sendWhatsAppOTP = functions
-  .runWith({ secrets: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_NUMBER'] })
-  .https.onCall(async (data: { phoneNumber: string }, context) => {
+  .runWith({ secrets: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_NUMBER', 'TWILIO_CONTENT_SID'] })
+  .https.onCall(async (data: { phoneNumber: string; channel?: 'whatsapp' | 'sms' | 'auto' }, context) => {
     if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Autenticación requerida.');
     
     const parsed = sendOtpSchema.safeParse(data);
@@ -118,9 +119,10 @@ export const sendWhatsAppOTP = functions
       );
     }
 
+    const { phoneNumber, channel } = parsed.data;
     const uid = context.auth.uid;
 
-    let normalizedPhone = data.phoneNumber.trim();
+    let normalizedPhone = phoneNumber.trim();
     if (/^\+54[1-8]\d{9}$/.test(normalizedPhone)) {
       normalizedPhone = normalizedPhone.replace(/^\+54/, '+549');
     }
@@ -162,51 +164,93 @@ export const sendWhatsAppOTP = functions
       attempts: 0
     });
 
+    let channelUsed: 'whatsapp' | 'sms' = 'whatsapp';
+    let messageResult = '';
+
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
       const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
       const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER?.trim() || '+15559525528';
       const contentSid = process.env.TWILIO_CONTENT_SID?.trim();
+      const smsNumber = process.env.TWILIO_SMS_NUMBER?.trim() || '+14177645823';
 
       const client = twilio(accountSid, authToken);
-      
-      // Limpiar prefijos whatsapp: accidentales en variable de entorno y en teléfono destino
-      const cleanFrom = whatsappNumber.replace(/^whatsapp:/i, '').trim();
       const cleanTo = normalizedPhone.replace(/^whatsapp:/i, '').trim();
 
-      const baseOptions = {
-        from: `whatsapp:${cleanFrom}`,
-        to: `whatsapp:${cleanTo}`,
-      };
-
-      if (contentSid) {
-        // En cuenta pagada de WABA (WhatsApp Business API), si no hay chat previo en 24h, es obligatorio usar Content Template
+      // Si se pidió explícitamente SMS
+      if (channel === 'sms') {
         await client.messages.create({
-          ...baseOptions,
-          contentSid: contentSid,
-          contentVariables: JSON.stringify({ '1': code }),
-        });
-      } else {
-        await client.messages.create({
-          ...baseOptions,
+          from: smsNumber,
+          to: cleanTo,
           body: `Tu código de verificación para VeneStay es: ${code}. No lo compartas con nadie. Vence en 10 minutos.`,
         });
+        channelUsed = 'sms';
+        messageResult = 'Código enviado por SMS convencional.';
+      } else {
+        // Intentar WhatsApp por defecto (o 'auto')
+        const cleanFrom = whatsappNumber.replace(/^whatsapp:/i, '').trim();
+        const baseOptions = {
+          from: `whatsapp:${cleanFrom}`,
+          to: `whatsapp:${cleanTo}`,
+        };
+
+        try {
+          let waMsg;
+          if (contentSid) {
+            waMsg = await client.messages.create({
+              ...baseOptions,
+              contentSid: contentSid,
+              contentVariables: JSON.stringify({ '1': code }),
+            });
+          } else {
+            waMsg = await client.messages.create({
+              ...baseOptions,
+              body: `Tu código de verificación para VeneStay es: ${code}. No lo compartas con nadie. Vence en 10 minutos.`,
+            });
+          }
+
+          // Inspeccionar entrega asíncrona tras 1.5 segundos para capturar rechazos de plantilla de Meta (63112 / 63016)
+          await new Promise(r => setTimeout(r, 1500));
+          const checked = await client.messages(waMsg.sid).fetch();
+          if (checked.status === 'failed' || checked.status === 'undelivered') {
+            throw { code: checked.errorCode, message: checked.errorMessage || `WhatsApp falló asíncronamente (código ${checked.errorCode})` };
+          }
+
+          channelUsed = 'whatsapp';
+          messageResult = 'Código enviado correctamente a WhatsApp.';
+        } catch (waError: unknown) {
+          const waErr = waError as { code?: number; message?: string };
+          functions.logger.warn('[Twilio] Falló envío por WhatsApp, aplicando fallback automático a SMS', {
+            code: waErr.code,
+            message: waErr.message,
+            to: cleanTo,
+          });
+
+          // Fallback resiliente a SMS
+          await client.messages.create({
+            from: smsNumber,
+            to: cleanTo,
+            body: `Tu código de verificación para VeneStay es: ${code}. No lo compartas con nadie. Vence en 10 minutos.`,
+          });
+          channelUsed = 'sms';
+          messageResult = 'Código enviado por SMS convencional (fallback automático al no poder entregar por WhatsApp).';
+        }
       }
     } catch (error: unknown) {
       await db.collection('otpCodes').doc(uid).delete().catch(() => {});
       const twilioError = error as { code?: number; message?: string };
-      functions.logger.error('[Twilio] Error al enviar OTP', {
+      functions.logger.error('[Twilio] Error al enviar OTP por todos los canales', {
         code: twilioError.code,
         message: twilioError.message,
         to: normalizedPhone,
       });
       throw new functions.https.HttpsError(
         'aborted',
-        'No se pudo enviar el mensaje de WhatsApp. Verifica que el número sea correcto y esté registrado en WhatsApp.'
+        'No se pudo enviar el mensaje de verificación (ni por WhatsApp ni por SMS). Verifica el número ingresado.'
       );
     }
 
-    return { success: true, message: "Código enviado correctamente a WhatsApp." };
+    return { success: true, message: messageResult, channelUsed };
   });
 
 export const confirmWhatsAppOTP = functions.https.onCall(

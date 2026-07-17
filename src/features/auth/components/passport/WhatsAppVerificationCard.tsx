@@ -32,6 +32,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
   const [countryCode, setCountryCode] = useState(initialCode);
   const [phoneNumber, setPhoneNumber] = useState(initialLocalNumber);
   const [step, setStep] = useState<'IDLE' | 'OTP_SENT'>('IDLE');
+  const [channelUsed, setChannelUsed] = useState<'whatsapp' | 'sms' | null>(null);
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,7 +46,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
     return raw;
   };
 
-  const handleSendOTP = async () => {
+  const handleSendOTP = async (preferredChannel: 'auto' | 'whatsapp' | 'sms' = 'auto') => {
     const fullNumber = formatPhoneNumber();
     if (!phoneNumber || fullNumber.length < 10) {
       toast.error('Por favor, ingresa un número de teléfono válido.');
@@ -54,22 +55,43 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
     
     setIsLoading(true);
     try {
+      let usedLocal = false;
+      let returnedChannel: 'whatsapp' | 'sms' = preferredChannel === 'sms' ? 'sms' : 'whatsapp';
+
       if (import.meta.env.DEV && import.meta.env.VITE_USE_LOCAL_TWILIO_SERVER === 'true') {
-        const response = await fetch('http://localhost:3001/api/send-whatsapp-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: { phoneNumber: fullNumber } })
-        });
-        const resData = await response.json();
-        if (!response.ok || resData.error) {
-          throw new Error(resData.error?.message || 'Error al enviar OTP desde servidor local.');
+        try {
+          const response = await fetch('http://localhost:3001/api/send-whatsapp-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { phoneNumber: fullNumber, channel: preferredChannel } })
+          });
+          const resData = await response.json();
+          if (!response.ok || resData.error) {
+            throw new Error(resData.error?.message || 'Error al enviar OTP desde servidor local.');
+          }
+          if (resData.data?.channelUsed) returnedChannel = resData.data.channelUsed;
+          usedLocal = true;
+        } catch (localErr: unknown) {
+          if (localErr instanceof TypeError || (localErr instanceof Error && localErr.message.toLowerCase().includes('fetch'))) {
+            console.warn('[WhatsApp verification] Servidor local Twilio (3001) apagado, conectando a Cloud Function en NUBE...');
+          } else {
+            throw localErr;
+          }
         }
-      } else {
-        const sendOTP = httpsCallable(functions, 'sendWhatsAppOTP');
-        await sendOTP({ phoneNumber: fullNumber });
       }
+      if (!usedLocal) {
+        const sendOTP = httpsCallable<{ phoneNumber: string; channel?: 'whatsapp' | 'sms' | 'auto' }, { success: boolean; message: string; channelUsed?: 'whatsapp' | 'sms' }>(functions, 'sendWhatsAppOTP');
+        const res = await sendOTP({ phoneNumber: fullNumber, channel: preferredChannel });
+        if (res.data?.channelUsed) returnedChannel = res.data.channelUsed;
+      }
+      
+      setChannelUsed(returnedChannel);
       setStep('OTP_SENT');
-      toast.success('Código OTP enviado por WhatsApp.');
+      if (returnedChannel === 'sms') {
+        toast.success('Código de verificación enviado por SMS al instante.');
+      } else {
+        toast.success('Código de verificación enviado por WhatsApp.');
+      }
     } catch (error: unknown) {
       console.error('Error sending OTP:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al enviar OTP.';
@@ -88,22 +110,32 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
 
     setIsLoading(true);
     try {
+      let usedLocal = false;
       if (import.meta.env.DEV && import.meta.env.VITE_USE_LOCAL_TWILIO_SERVER === 'true') {
-        const response = await fetch('http://localhost:3001/api/confirm-whatsapp-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: { phoneNumber: fullNumber, code: otp, uid: profile?.uid } })
-        });
-        const resData = await response.json();
-        if (!response.ok || resData.error) {
-          throw new Error(resData.error?.message || 'Error al confirmar OTP desde servidor local.');
+        try {
+          const response = await fetch('http://localhost:3001/api/confirm-whatsapp-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { phoneNumber: fullNumber, code: otp, uid: profile?.uid } })
+          });
+          const resData = await response.json();
+          if (!response.ok || resData.error) {
+            throw new Error(resData.error?.message || 'Error al confirmar OTP desde servidor local.');
+          }
+          usedLocal = true;
+        } catch (localErr: unknown) {
+          if (localErr instanceof TypeError || (localErr instanceof Error && localErr.message.toLowerCase().includes('fetch'))) {
+            console.warn('[WhatsApp verification] Servidor local Twilio (3001) apagado, conectando a Cloud Function en NUBE...');
+          } else {
+            throw localErr;
+          }
         }
-      } else {
+      }
+      if (!usedLocal) {
         const confirmOTP = httpsCallable(functions, 'confirmWhatsAppOTP');
         await confirmOTP({ phoneNumber: fullNumber, code: otp });
       }
-      toast.success('¡Número de WhatsApp verificado con éxito!');
-      // El backend actualizará el documento del usuario, lo cual refrescará el perfil
+      toast.success('¡Número de teléfono verificado con éxito!');
       setStep('IDLE');
     } catch (error: unknown) {
       console.error('Error confirming OTP:', error);
@@ -122,11 +154,11 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
             <Smartphone className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-black text-brand-navy">WhatsApp / Teléfono</p>
+            <p className="text-sm font-black text-brand-navy">Verificación Telefónica</p>
             {isVerified ? (
               <p className="text-xs text-gray-600 font-medium">{profile?.trustSignals?.whatsappNumber || profile?.phoneNumber || 'Número verificado'}</p>
             ) : (
-              <p className="text-xs text-gray-500 font-medium">Verifica tu número para reservar</p>
+              <p className="text-xs text-gray-500 font-medium">Verifica tu número para asegurar tus reservas y alertas</p>
             )}
           </div>
         </div>
@@ -149,7 +181,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
             <>
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-brand-navy">
-                  Número de WhatsApp
+                  Número de Teléfono Móvil
                 </label>
                 <div className="flex gap-2">
                   <div className="flex items-center rounded-lg border border-gray-200 bg-white px-2 focus-within:border-brand-500 overflow-hidden">
@@ -174,17 +206,33 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
                     />
                   </div>
                   <button
-                    onClick={handleSendOTP}
+                    onClick={() => handleSendOTP('auto')}
                     disabled={isLoading}
-                    className="flex min-w-[100px] items-center justify-center rounded-lg bg-brand-navy px-4 py-2 text-xs font-black tracking-widest text-white uppercase transition-colors hover:bg-brand-navy/90 disabled:opacity-50"
+                    className="flex min-w-[110px] items-center justify-center rounded-lg bg-brand-navy px-4 py-2 text-xs font-black tracking-widest text-white uppercase transition-colors hover:bg-brand-navy/90 disabled:opacity-50"
                   >
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enviar OTP'}
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'ENVIAR CÓDIGO'}
                   </button>
                 </div>
               </div>
             </>
           ) : (
             <>
+              <div className="rounded-lg bg-white p-3 border border-gray-200 text-xs text-gray-700">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-brand-navy">
+                    {channelUsed === 'sms' ? '💬 Entregado por SMS' : '🟢 Entregado por WhatsApp'}
+                  </span>
+                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono">
+                    {formatPhoneNumber()}
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500">
+                  {channelUsed === 'sms'
+                    ? 'Hemos enviado un SMS a tu teléfono móvil. El código caduca en 10 minutos.'
+                    : 'Si no recibiste el mensaje de WhatsApp, puedes reintentar y te lo enviaremos por SMS al instante.'}
+                </p>
+              </div>
+
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-brand-navy">
                   Código de 6 dígitos
@@ -207,12 +255,26 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
                   </button>
                 </div>
               </div>
-              <button
-                onClick={() => setStep('IDLE')}
-                className="text-[10px] font-bold text-gray-400 hover:text-gray-600 underline"
-              >
-                Cambiar número
-              </button>
+
+              <div className="flex items-center justify-between pt-1 border-t border-gray-200/60 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setStep('IDLE')}
+                  className="font-bold text-gray-400 hover:text-gray-600 underline"
+                >
+                  Cambiar número
+                </button>
+                {channelUsed !== 'sms' && (
+                  <button
+                    type="button"
+                    onClick={() => handleSendOTP('sms')}
+                    disabled={isLoading}
+                    className="font-bold text-brand-navy hover:text-brand-500 underline transition-colors"
+                  >
+                    💬 ¿No lo recibiste? Reintentar por SMS
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>

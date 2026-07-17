@@ -2254,6 +2254,15 @@ const CheckoutPage: React.FC = () => {
         onClose={() => setShowKYCModal(false)}
         kycStatus={profileData?.kycStatus}
         profile={profileData}
+        pendingBookingSummary={
+          listing && booking
+            ? {
+                listingTitle: listing.title,
+                datesText: `${booking.startDate} al ${booking.endDate}`,
+                totalAmount: booking.totalAmount || 0,
+              }
+            : null
+        }
         onGoToPassport={handleGoToPassport}
       />
 

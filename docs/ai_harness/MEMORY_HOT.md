@@ -33,10 +33,10 @@ Frontend implementado y compilando sin errores. Queda **1 tarea técnica** y **1
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | tsc OK (0 errores) | lint OK (0 errores) | 2026-07-14 (SPEC-LEGAL-PAGES-001)
+QA_GATE   : PASS | tsc OK (0 errores) | lint OK | Vitest OK (3/3) | Playwright OK (2/2) | 2026-07-14 (SPEC-CHECKOUT-SOFT-CONSULTA-001)
 BLOQUEANTE: ninguno
-RAMA_LOCAL: qa
-TURNO_REANCLA: 0
+RAMA_LOCAL: main
+TURNO_REANCLA: 2
 ```
 
 ---
@@ -111,7 +111,9 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-17 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde rama `qa` a `main` en repositorio fork (`cerz30/main`) y producción (`origin/main`). Incluye unificación de UX a Verificación Telefónica con fallback automático a SMS (`SPEC-AUTH-UNIFIED-PHONE-VERIFICATION-002`) y consulta pre-reserva sin fricción (`SPEC-CHECKOUT-SOFT-CONSULTA-001`). Vercel desplegando en producción. |
 | 2026-07-14 | Integración a Main & Dominio Custom Autenticación (`venestay.com`) | COMPLETADO | PASS | Push exitoso a `main` en repositorios `cerz30/VeneStay` y `Venestay/venestay`. Regla de reescritura en `vercel.json` (`/__/auth/:path*`) y `VITE_FIREBASE_AUTH_DOMAIN=venestay.com` verificados en producción con candado SSL sin alertas de seguridad. |
+| 2026-07-14 | Consulta y Pago sin Fricción + Modal P2P (SPEC-CHECKOUT-SOFT-CONSULTA-001) | COMPLETADO | PASS (`tsc` 0 errores, `Vitest` 3/3, `Playwright` 2/2, `run-validation.cjs` 12 PASS) | Módulo validado autónomamente en terminal y E2E sin regresiones. Listo para merge a rama `qa` o continuar con siguientes tareas en S05. |
 | 2026-07-14 | Páginas Legales Soft KYC & Enlaces UI (SPEC-LEGAL-PAGES-001) | COMPLETADO | PASS (`tsc --noEmit` 0 errores, linter 0 warnings en nuevos archivos) | Módulo cerrado y verificado en producción `main`. Listo para continuar con siguientes prioridades de S05. |
 | 2026-07-13 | Twilio WhatsApp OTP Integration (SPEC-AUTH-WHATSAPP-001) | COMPLETADO | PASS | Despliegue en vivo en Firebase Cloud Functions (`us-central1`) de `sendWhatsAppOTP` y `confirmWhatsAppOTP` usando la plantilla oficial WABA (`HXed4fa6e39943eb13205dfca6a0c05da3`). Blindaje 100% de `functions/.env` verificado en `.gitignore`. |
 | 2026-07-12 | Placeholder Avatar en Perfil & Pasaporte (SPEC-PASSPORT-AVATAR-PLACEHOLDER-001) | COMPLETADO | PASS | Se eliminó el fallback aleatorio a pravatar.cc al crear perfiles e interfaces y se implementó el placeholder premium oficial en Perfil, Pasaporte y Navbar. Verificar visualmente en browser o continuar con tareas de S05. |

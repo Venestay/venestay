@@ -21,7 +21,7 @@ export const PassportCompletionBanner: React.FC<PassportCompletionBannerProps> =
     },
     {
       id: 'whatsapp',
-      label: 'Verificar WhatsApp',
+      label: 'Verificar Teléfono',
       isComplete: profile.trustSignals?.whatsappVerified || profile.isPhoneVerified,
       section: 'security'
     },

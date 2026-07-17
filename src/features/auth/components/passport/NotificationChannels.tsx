@@ -19,13 +19,12 @@ interface NotificationChannelsProps {
   profile: UserProfile | null;
   notifications: NotificationPreferences;
   toggleNotification: (channel: keyof NotificationPreferences) => void;
-  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
 }
 
 const CHANNELS = [
   {
     id: 'whatsapp' as keyof NotificationPreferences,
-    label: 'WhatsApp Directo',
+    label: 'Alertas Móviles (WhatsApp / SMS)',
     desc: 'Notificaciones de llaves y check-in.',
     icon: MessageSquare,
     accentColor: 'text-emerald-600',
@@ -53,7 +52,6 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
   profile,
   notifications,
   toggleNotification,
-  updateProfile,
 }) => {
   const isPhoneVerified = profile?.isPhoneVerified;
   const isEmailVerified = profile?.isEmailVerified;
@@ -114,15 +112,15 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
                   </div>
                   <p className="text-[10px] font-semibold text-gray-500">{channel.desc}</p>
 
-                  {/* Enlace de verificación de WhatsApp */}
+                  {/* SECURITY FIX: VULN-PASSPORT-WHATSAPP-BYPASS-001
+                      La verificación de WhatsApp requiere OTP real (Twilio).
+                      El botón previo escribía isPhoneVerified:true directamente sin autenticidad.
+                      Se dirige al usuario a la Sección de Seguridad donde está el flujo OTP correcto. */}
                   {channel.id === 'whatsapp' && !isVerified && (
-                    <button
-                      type="button"
-                      onClick={() => updateProfile({ isPhoneVerified: true })}
-                      className="mt-0.5 text-[9px] font-black uppercase tracking-widest text-brand-500 hover:text-brand-600 hover:underline focus:outline-none focus:underline"
-                    >
-                      Verificar Número
-                    </button>
+                    <p className="mt-0.5 text-[9px] font-semibold text-gray-400">
+                      Verifica en{' '}
+                      <span className="font-black text-brand-500">Seguridad y Respaldo</span>
+                    </p>
                   )}
                 </div>
               </div>
