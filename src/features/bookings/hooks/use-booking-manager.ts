@@ -28,7 +28,7 @@ export const useBookingManager = () => {
       q,
       async (snapshot) => {
         const now = new Date();
-        const EXPIRE_TIME_MINUTES = 30; // Standard VeneStay expiration
+        const EXPIRE_TIME_MINUTES = 1440; // 24 hours expiration (SPEC-BOOKING-TIMEOUT-24H)
         const batch = writeBatch(db);
         let hasChanges = false;
 
