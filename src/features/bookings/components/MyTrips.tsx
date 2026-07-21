@@ -350,7 +350,11 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
       try {
         const ucpPayload = {
           bookingId,
-          amount: booking.totalAmount * 0.20, // 20% seña UCP
+          transactionId: paymentRef,
+          amounts: { total: booking.totalAmount * 0.20 }, // 20% seña UCP
+          currency: 'USD',
+          intent: 'deposit',
+          metadata: {},
           reference: paymentRef,
           proofUrl,
           method: booking.hostSelectedPaymentMethod?.type || 'P2P',

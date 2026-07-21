@@ -111,6 +111,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-21 | Subida de Pagos Mis Viajes (MyTrips) | COMPLETADO | PASS | Prueba local de envío de comprobantes de pago por parte del usuario y verificación de subcolección `payments`. |
 | 2026-07-17 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde rama `qa` a `main` en repositorio fork (`cerz30/main`) y producción (`origin/main`). Incluye unificación de UX a Verificación Telefónica con fallback automático a SMS (`SPEC-AUTH-UNIFIED-PHONE-VERIFICATION-002`) y consulta pre-reserva sin fricción (`SPEC-CHECKOUT-SOFT-CONSULTA-001`). Vercel desplegando en producción. |
 | 2026-07-14 | Integración a Main & Dominio Custom Autenticación (`venestay.com`) | COMPLETADO | PASS | Push exitoso a `main` en repositorios `cerz30/VeneStay` y `Venestay/venestay`. Regla de reescritura en `vercel.json` (`/__/auth/:path*`) y `VITE_FIREBASE_AUTH_DOMAIN=venestay.com` verificados en producción con candado SSL sin alertas de seguridad. |
 | 2026-07-14 | Consulta y Pago sin Fricción + Modal P2P (SPEC-CHECKOUT-SOFT-CONSULTA-001) | COMPLETADO | PASS (`tsc` 0 errores, `Vitest` 3/3, `Playwright` 2/2, `run-validation.cjs` 12 PASS) | Módulo validado autónomamente en terminal y E2E sin regresiones. Listo para merge a rama `qa` o continuar con siguientes tareas en S05. |

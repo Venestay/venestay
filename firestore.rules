@@ -224,7 +224,6 @@ service cloud.firestore {
            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'guestMessage', 'bookingMode', 'expiresAt', 'updatedAt', 'statusHistory', 'proofUrl', 'paymentReference', 'financials'])) ||
           // Action: Submit Payment info (con financials para almacenar el desglose UCP)
           (incoming().status == 'AWAITING_VERIFICATION' &&
-           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.canBook == true &&
            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'proofUrl', 'paymentReference', 'paymentSubmittedAt', 'updatedAt', 'statusHistory', 'financials'])) ||
           // Action: Cancel
           (incoming().status in ['CANCELLED', 'CANCELLED_BY_GUEST'] &&
