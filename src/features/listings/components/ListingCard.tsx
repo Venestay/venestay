@@ -9,6 +9,27 @@ interface ListingCardProps {
   onClick: (listing: Listing) => void;
 }
 
+const isHighlyDemanded = (blockedDates?: string[]): boolean => {
+  if (!blockedDates || blockedDates.length === 0) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let blockedInNext30Days = 0;
+  const THRESHOLD = 15; // 50% de 30 días
+
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const dateString = d.toISOString().split('T')[0];
+    if (blockedDates.includes(dateString)) {
+      blockedInNext30Days++;
+    }
+  }
+
+  return blockedInNext30Days >= THRESHOLD;
+};
+
 const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
   return (
     <Link
@@ -44,9 +65,11 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
         </button>
 
         <div className="absolute top-4 left-4 z-10 flex flex-col items-start gap-2">
-          <div className="flex items-center gap-1 rounded-md bg-orange-50/90 px-2 py-1 text-[11px] font-semibold text-orange-700 shadow-sm backdrop-blur-sm sm:text-xs">
-            <span>🔥</span> Muy solicitado: Pocas fechas disponibles
-          </div>
+          {isHighlyDemanded(listing.blockedDates) && (
+            <div className="flex items-center gap-1 rounded-md bg-orange-50/90 px-2 py-1 text-[11px] font-semibold text-orange-700 shadow-sm backdrop-blur-sm sm:text-xs">
+              <span>🔥</span> Muy solicitado: Pocas fechas disponibles
+            </div>
+          )}
           {listing.isVerified && (
             <div className="bg-brand-navy/80 animate-slide-up flex items-center rounded-md border border-white/20 px-2 py-1 shadow-md backdrop-blur-md">
               <CheckCircle2 className="text-brand-500 mr-1 h-3 w-3" />

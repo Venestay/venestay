@@ -36,7 +36,7 @@ SPRINT    : S05 — Admin Tools & Maintenance
 QA_GATE   : PASS | tsc OK (0 errores) | lint OK | Vitest OK (3/3) | Playwright OK (2/2) | 2026-07-14 (SPEC-CHECKOUT-SOFT-CONSULTA-001)
 BLOQUEANTE: ninguno
 RAMA_LOCAL: main
-TURNO_REANCLA: 2
+TURNO_REANCLA: 6
 ```
 
 ---
@@ -88,7 +88,9 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 | **Herramienta Limpieza Reservas (P1)**          | purgeTestBookings.ts, PurgeTestBookingsModal.tsx     | **CÓDIGO LISTO / DEPLOY FALLIDO** |
 | **Fix Host Email Notification (P0)**            | functions/src/booking.functions.ts, templates/       | **COMPLETADO**                    |
 | **Email Notifications & Secure Stay Flow (P0)** | functions/src/\*, useCheckout.ts, booking-service.ts | **COMPLETADO**                    |
-| **Optimización Enrutamiento & Red Listings (SPEC-PERF-LISTING-OPTIMIZATION-001) (P0)** | ListingCard.tsx, perf-listing-load.spec.ts | **COMPLETADO (PASS)** |
+| **Badge Ocupación Realista (SPEC-LISTINGS-DEMAND-BADGE-001) (P2)** | ListingCard.tsx | **COMPLETADO (PASS)** |
+| **Optimización UX Móvil ListingDetail (SPEC-LISTING-MOBILE-UX-001) (P2)** | BookingPanel.tsx | **COMPLETADO (PASS)** |
+| **Flujo Completo de Reseñas (SPEC-REVIEWS-WORKFLOW-001) (P1)** | booking.functions.ts, booking-emails.ts, review-service.ts, useListingDetail.ts, MyTrips.tsx, bookings/types/index.ts | **PLANIFICADO — BLOQUEADO (requiere Firebase CLI)** |
 | **Optimización Login KYC (SPEC-AUTH-LOGIN-FRICTION-001) (P1)** | useAuthForm.ts, AuthModal.tsx | **COMPLETADO (PASS)** |
 | **SPEC-AUTH-MODAL-OPTIMIZATION (P0)**           | AuthModal.tsx, useAuthForm.ts, auth.schema.ts        | **COMPLETADO**                    |
 
@@ -111,6 +113,9 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-23 | Optimización UX Móvil ListingDetail (SPEC-LISTING-MOBILE-UX-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Eliminados controles redundantes en sección 04 móvil y reemplazados por tarjeta informativa del modelo de pago 20%/80%. |
+| 2026-07-23 | Flujo Completo de Reseñas (SPEC-REVIEWS-WORKFLOW-001) | PLANIFICADO | N/A | Spec guardada en `docs/plans/spec_reviews_workflow_001.md`. Pendiente equipo con Firebase CLI para implementar cron `cronCompleteBookings` y trigger `COMPLETED`. El frontend (tipos, hook, MyTrips) puede implementarse en paralelo sin CLI. |
+| 2026-07-23 | Badge Ocupación Realista (SPEC-LISTINGS-DEMAND-BADGE-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Badge "Muy solicitado" renderiza condicionalmente si la ocupación proyectada a 30 días es ≥50%. |
 | 2026-07-23 | Verificación Telefónica (Cambio a SMS Principal) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores, linter 0 errores). Componente renombrado a PhoneVerificationCard y SMS configurado como principal. |
 | 2026-07-21 | Ampliación Timeout Pago (SPEC-BOOKING-TIMEOUT-24H) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores, `lint` 0 errores). Transición de auto-cancelación ampliada a 24h. |
 | 2026-07-21 | Subida de Pagos Mis Viajes (MyTrips) | COMPLETADO | PASS | Prueba local de envío de comprobantes de pago por parte del usuario y verificación de subcolección `payments`. |
