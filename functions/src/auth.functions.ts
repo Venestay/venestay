@@ -177,8 +177,8 @@ export const sendWhatsAppOTP = functions
       const client = twilio(accountSid, authToken);
       const cleanTo = normalizedPhone.replace(/^whatsapp:/i, '').trim();
 
-      // Si se pidió explícitamente SMS
-      if (channel === 'sms') {
+      // Si se pidió explícitamente SMS o auto
+      if (channel === 'sms' || channel === 'auto') {
         await client.messages.create({
           from: smsNumber,
           to: cleanTo,
@@ -187,7 +187,7 @@ export const sendWhatsAppOTP = functions
         channelUsed = 'sms';
         messageResult = 'Código enviado por SMS convencional.';
       } else {
-        // Intentar WhatsApp por defecto (o 'auto')
+        // Intentar WhatsApp (solo si se pide explícitamente)
         const cleanFrom = whatsappNumber.replace(/^whatsapp:/i, '').trim();
         const baseOptions = {
           from: `whatsapp:${cleanFrom}`,

@@ -111,6 +111,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-23 | Verificación Telefónica (Cambio a SMS Principal) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores, linter 0 errores). Componente renombrado a PhoneVerificationCard y SMS configurado como principal. |
 | 2026-07-21 | Ampliación Timeout Pago (SPEC-BOOKING-TIMEOUT-24H) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores, `lint` 0 errores). Transición de auto-cancelación ampliada a 24h. |
 | 2026-07-21 | Subida de Pagos Mis Viajes (MyTrips) | COMPLETADO | PASS | Prueba local de envío de comprobantes de pago por parte del usuario y verificación de subcolección `payments`. |
 | 2026-07-17 | Integración de QA a Main | COMPLETADO | PASS | Push exitoso desde rama `qa` a `main` en repositorio fork (`cerz30/main`) y producción (`origin/main`). Incluye unificación de UX a Verificación Telefónica con fallback automático a SMS (`SPEC-AUTH-UNIFIED-PHONE-VERIFICATION-002`) y consulta pre-reserva sin fricción (`SPEC-CHECKOUT-SOFT-CONSULTA-001`). Vercel desplegando en producción. |

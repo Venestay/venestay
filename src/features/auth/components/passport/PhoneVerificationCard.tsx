@@ -5,7 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
 
-interface WhatsAppVerificationCardProps {
+interface PhoneVerificationCardProps {
   profile: Partial<UserProfile> | null;
 }
 
@@ -22,7 +22,7 @@ const COUNTRIES = [
   { code: '+507', flag: '🇵🇦', label: 'Panamá' },
 ];
 
-export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> = ({ profile }) => {
+export const PhoneVerificationCard: React.FC<PhoneVerificationCardProps> = ({ profile }) => {
   // Parse existing phone number
   const initialPhone = profile?.trustSignals?.whatsappNumber || profile?.phoneNumber || '';
   const matchedCountry = COUNTRIES.find(c => initialPhone.startsWith(c.code));
@@ -206,7 +206,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
                     />
                   </div>
                   <button
-                    onClick={() => handleSendOTP('auto')}
+                    onClick={() => handleSendOTP('sms')}
                     disabled={isLoading}
                     className="flex min-w-[110px] items-center justify-center rounded-lg bg-brand-navy px-4 py-2 text-xs font-black tracking-widest text-white uppercase transition-colors hover:bg-brand-navy/90 disabled:opacity-50"
                   >
@@ -227,9 +227,9 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-500">
-                  {channelUsed === 'sms'
-                    ? 'Hemos enviado un SMS a tu teléfono móvil. El código caduca en 10 minutos.'
-                    : 'Si no recibiste el mensaje de WhatsApp, puedes reintentar y te lo enviaremos por SMS al instante.'}
+                  {channelUsed === 'whatsapp'
+                    ? 'Si no recibiste el mensaje de WhatsApp, puedes reintentar y te lo enviaremos por SMS al instante.'
+                    : 'Hemos enviado un SMS a tu teléfono móvil. El código caduca en 10 minutos.'}
                 </p>
               </div>
 
@@ -264,6 +264,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
                 >
                   Cambiar número
                 </button>
+                {/* Botón de reintento comentado a petición del usuario
                 {channelUsed !== 'sms' && (
                   <button
                     type="button"
@@ -274,6 +275,7 @@ export const WhatsAppVerificationCard: React.FC<WhatsAppVerificationCardProps> =
                     💬 ¿No lo recibiste? Reintentar por SMS
                   </button>
                 )}
+                */}
               </div>
             </>
           )}

@@ -5,7 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
-import { WhatsAppVerificationCard } from './WhatsAppVerificationCard';
+import { PhoneVerificationCard } from './PhoneVerificationCard';
 import { sendVerificationEmail } from '@/services/auth-service';
 
 interface SecuritySectionProps {
@@ -139,7 +139,7 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
           </div>
         )}
 
-        <WhatsAppVerificationCard profile={profile} />
+        <PhoneVerificationCard profile={profile} />
 
       </div>
     </div>
