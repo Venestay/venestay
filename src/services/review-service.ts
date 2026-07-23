@@ -5,6 +5,7 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
   Timestamp,
@@ -100,6 +101,36 @@ export const getPendingReviewSession = async (userId: string, bookingId: string)
     id: querySnapshot.docs[0].id,
     ...querySnapshot.docs[0].data()
   } as ReviewSession;
+};
+
+/**
+ * Obtiene una sesión de reseña por su token (ID de documento de reviewSessions).
+ * Valida estado PENDING y vigencia (no expirada).
+ */
+export const getPendingReviewSessionByToken = async (sessionId: string): Promise<ReviewSession | null> => {
+  try {
+    const docRef = doc(db, 'reviewSessions', sessionId);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) return null;
+
+    const session = { id: docSnap.id, ...docSnap.data() } as ReviewSession;
+    if (session.status !== 'PENDING') return null;
+
+    if (session.expiresAt) {
+      const expiresAtDate =
+        typeof (session.expiresAt as Timestamp)?.toDate === 'function'
+          ? (session.expiresAt as Timestamp).toDate()
+          : new Date(session.expiresAt as unknown as string | number);
+      if (expiresAtDate < new Date()) {
+        console.warn(`ReviewSession ${sessionId} ha expirado.`);
+        return null;
+      }
+    }
+    return session;
+  } catch (error) {
+    console.error('Error fetching review session by token:', error);
+    return null;
+  }
 };
 
 /**

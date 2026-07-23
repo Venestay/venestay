@@ -6,7 +6,8 @@ import {
   buildBookingRequestEmailHTML,
   buildPaymentInstructionsEmailHTML,
   buildPaymentSubmittedEmailHTML,
-  buildRejectionEmailHTML
+  buildRejectionEmailHTML,
+  buildReviewRequestEmailHTML
 } from './templates/booking-emails';
 import { buildBookingConfirmationPDF } from './templates/booking-pdf';
 
@@ -68,6 +69,48 @@ export const cronCancelExpiredBookings = functions.pubsub.schedule('every 15 min
   console.log(`Cancelled ${snapshot.docs.length} expired bookings.`);
   return null;
 });
+
+/**
+ * CRON JOB: Autocompletado de estadías finalizadas
+ * Se ejecuta diariamente a las 06:00 AM (Caracas) para buscar reservas CONFIRMED
+ * cuya fecha de fin (endDate) haya pasado, y transiciona su estado a COMPLETED.
+ */
+export const cronCompleteBookings = functions.pubsub
+  .schedule('0 6 * * *')
+  .timeZone('America/Caracas')
+  .onRun(async () => {
+    const today = new Date().toISOString().split('T')[0];
+
+    const snapshot = await db.collection('bookings')
+      .where('status', '==', 'CONFIRMED')
+      .where('endDate', '<', today)
+      .get();
+
+    if (snapshot.empty) {
+      console.log('No completed bookings to update.');
+      return null;
+    }
+
+    const batch = db.batch();
+
+    snapshot.docs.forEach(docSnap => {
+      batch.update(docSnap.ref, {
+        status: 'COMPLETED',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        statusHistory: admin.firestore.FieldValue.arrayUnion({
+          status: 'COMPLETED',
+          timestamp: new Date().toISOString(),
+          actorId: 'system',
+          actorName: 'Sistema VeneStay',
+          note: 'Estadía finalizada automáticamente por el sistema.'
+        })
+      });
+    });
+
+    await batch.commit();
+    console.log(`${snapshot.docs.length} reservas marcadas como COMPLETED.`);
+    return null;
+  });
 
 /**
  * TRIGGER v2: Nueva solicitud de reserva
@@ -301,6 +344,66 @@ export const onBookingStateChanged = onDocumentUpdated(
           }
         } catch (err) {
           console.error('Error queueing rejection email:', err);
+        }
+      }
+    }
+
+    // Transición a COMPLETED: Generar ReviewSession y enviar email de invitación
+    if (after.status === 'COMPLETED' && before.status !== 'COMPLETED') {
+      if (!after.reviewSessionCreatedAt) {
+        try {
+          const existingSession = await db.collection('reviewSessions')
+            .where('bookingId', '==', bookingId)
+            .limit(1)
+            .get();
+
+          if (existingSession.empty) {
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 30);
+
+            const sessionRef = await db.collection('reviewSessions').add({
+              bookingId,
+              guestId: after.guestId,
+              propertyId: after.listingId,
+              status: 'PENDING',
+              ucpVerified: true,
+              expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+            const guestSnap = await db.collection('users').doc(after.guestId).get();
+            const guest = guestSnap.data();
+            const listingSnap = await db.collection('listings').doc(after.listingId).get();
+            const listing = listingSnap.data();
+
+            if (guest?.email) {
+              await db.collection('mail').add({
+                to: guest.email,
+                message: {
+                  subject: `¿Cómo estuvo tu estadía en ${listing?.title || 'VeneStay'}? ⭐`,
+                  html: buildReviewRequestEmailHTML(after, guest, listing || {}, sessionRef.id),
+                },
+              });
+            }
+
+            await db.collection('messages').add({
+              bookingId,
+              senderId: 'system',
+              senderName: 'Sistema VeneStay',
+              text: '🌟 ¡Esperamos que hayas disfrutado tu estadía! Te hemos enviado un correo y habilitado el formulario para dejar tu reseña.',
+              type: 'text',
+              status: 'sent',
+              createdAt: new Date().toISOString(),
+            });
+
+            await db.collection('bookings').doc(bookingId).update({
+              reviewSessionCreatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            console.log(`Review session ${sessionRef.id} and email queued for booking ${bookingId}`);
+          }
+        } catch (err) {
+          console.error('Error generating review session for completed booking:', err);
         }
       }
     }

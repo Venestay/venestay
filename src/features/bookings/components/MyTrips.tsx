@@ -31,6 +31,7 @@ import {
   Upload,
   ChevronDown,
   ChevronUp,
+  Star,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -420,6 +421,12 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
           icon: <CheckCircle2 className="h-3 w-3" />,
           color: 'text-emerald-500 bg-emerald-50 border-emerald-100',
         };
+      case 'COMPLETED':
+        return {
+          label: 'Estadía Finalizada',
+          icon: <CheckCircle2 className="h-3 w-3 text-brand-gold" />,
+          color: 'text-[#b08f23] bg-brand-gold/[0.08] border-brand-gold/30',
+        };
       case 'REJECTED':
         return {
           label: 'Solicitud Rechazada',
@@ -760,6 +767,15 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                           className="flex-1 border border-[#C5A059] hover:bg-[#C5A059]/10 text-[#C5A059] rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
                                         >
                                           Reprogramar
+                                        </button>
+                                      )}
+                                      {booking.status === 'COMPLETED' && (
+                                        <button
+                                          onClick={() => navigate(`/listing/${booking.listingId}`)}
+                                          className="flex-1 bg-brand-gold hover:bg-brand-gold/90 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                                        >
+                                          <Star className="h-3 w-3 fill-current text-brand-navy" />
+                                          Dejar Reseña
                                         </button>
                                       )}
                                     </div>

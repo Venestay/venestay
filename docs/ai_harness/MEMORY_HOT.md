@@ -114,7 +114,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
 | 2026-07-23 | Optimización UX Móvil ListingDetail (SPEC-LISTING-MOBILE-UX-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Eliminados controles redundantes en sección 04 móvil y reemplazados por tarjeta informativa del modelo de pago 20%/80%. |
-| 2026-07-23 | Flujo Completo de Reseñas (SPEC-REVIEWS-WORKFLOW-001) | PLANIFICADO | N/A | Spec guardada en `docs/plans/spec_reviews_workflow_001.md`. Pendiente equipo con Firebase CLI para implementar cron `cronCompleteBookings` y trigger `COMPLETED`. El frontend (tipos, hook, MyTrips) puede implementarse en paralelo sin CLI. |
+| 2026-07-23 | Flujo Completo de Reseñas (SPEC-REVIEWS-WORKFLOW-001) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores en frontend y functions). Implementados tipos COMPLETED, getPendingReviewSessionByToken, hook URL listener (?review=id), botón en MyTrips, cronCompleteBookings y trigger Cloud Function. |
 | 2026-07-23 | Badge Ocupación Realista (SPEC-LISTINGS-DEMAND-BADGE-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Badge "Muy solicitado" renderiza condicionalmente si la ocupación proyectada a 30 días es ≥50%. |
 | 2026-07-23 | Verificación Telefónica (Cambio a SMS Principal) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores, linter 0 errores). Componente renombrado a PhoneVerificationCard y SMS configurado como principal. |
 | 2026-07-21 | Ampliación Timeout Pago (SPEC-BOOKING-TIMEOUT-24H) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores, `lint` 0 errores). Transición de auto-cancelación ampliada a 24h. |

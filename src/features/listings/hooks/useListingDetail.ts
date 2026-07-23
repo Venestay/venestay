@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { format, differenceInDays, parseISO } from 'date-fns';
+import { toast } from 'sonner';
 import * as bookingService from '@/services/booking-service';
 import * as authService from '@/services/auth-service';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
@@ -30,6 +31,7 @@ export function useListingDetail({
 }: UseListingDetailProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const [currentListing, setCurrentListing] = useState<Listing | null>(listing || null);
   const [isLoadingListing, setIsLoadingListing] = useState(!listing);
@@ -117,6 +119,37 @@ export function useListingDetail({
       isMounted = false;
     };
   }, [currentListing?.id]);
+
+  // Fetch pending review session from URL parameter (?review=SESSION_ID)
+  useEffect(() => {
+    let isMounted = true;
+    const reviewToken = searchParams.get('review');
+    if (!reviewToken) return;
+
+    async function fetchReviewSession() {
+      try {
+        const session = await reviewService.getPendingReviewSessionByToken(reviewToken as string);
+        if (!isMounted) return;
+        if (session) {
+          setActiveReviewSession(session);
+        } else {
+          toast.error('El enlace de reseña ha expirado o ya fue utilizado.');
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.delete('review');
+            return next;
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching review session by token:', error);
+      }
+    }
+
+    fetchReviewSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [searchParams, setSearchParams]);
 
   // Sync title and meta tags
   useEffect(() => {

@@ -1,6 +1,6 @@
-﻿# Plan de Implementación: Flujo Completo de Reseñas (Guest -> Property)
+# Plan de Implementación: Flujo Completo de Reseñas (Guest -> Property)
 **ID:** SPEC-REVIEWS-WORKFLOW-001 | **Sprint:** S05 | **Prioridad:** P1
-**Estado:** PLANIFICADO — BLOQUEADO (requiere Firebase CLI en equipo de desarrollo)
+**Estado:** COMPLETADO (Código Frontend + Backend implementado)
 **Creado:** 2026-07-23
 
 ---

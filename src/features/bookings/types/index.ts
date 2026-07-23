@@ -15,7 +15,8 @@ export type BookingStatus =
   | 'CANCELLED_BY_GUEST'
   | 'CANCELLED_BY_ADMIN'
   | 'RESCHEDULE_REQUESTED'
-  | 'RESCHEDULE_PENDING';
+  | 'RESCHEDULE_PENDING'
+  | 'COMPLETED';
 
 export interface DirectBookingRequestPayload {
   listingId: string;

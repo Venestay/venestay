@@ -297,3 +297,40 @@ export function buildRejectionEmailHTML(
   
   return buildEmailWrapper('Actualización sobre tu reserva', content);
 }
+
+export function buildReviewRequestEmailHTML(
+  booking: EmailBooking,
+  guest: EmailGuest,
+  listing: EmailListing,
+  sessionId: string
+): string {
+  const baseUrl = booking.appBaseUrl || APP_BASE_URL_PRODUCTION;
+  const targetListingId = (booking as any).listingId || (booking as any).propertyId || '';
+  const reviewUrl = `${baseUrl}/listing/${targetListingId}?review=${sessionId}`;
+
+  const content = `
+    <div class="title">¿Cómo estuvo tu estadía? ⭐</div>
+    <div class="subtitle" style="font-size: 14px; color: #666; margin-bottom: 24px;">Hola ${guest.displayName || 'Huésped'}, tu estadía en <strong>${listing.title || 'VeneStay'}</strong> ha finalizado. Tu opinión ayuda a otros viajeros.</div>
+    
+    <div class="details-box" style="background-color: #ffffff; border: 1px solid #e5e5e5; padding: 16px 20px;">
+      <div class="details-title" style="color: #999;">Tu estadía</div>
+      <div class="row" style="border-bottom: none; padding: 4px 0;">
+        <span class="row-label" style="font-weight: normal; color: #333;">Propiedad</span>
+        <span class="row-value" style="font-weight: bold; color: #333;">${listing.title || '—'}</span>
+      </div>
+      <div class="row" style="border-bottom: none; padding: 4px 0;">
+        <span class="row-label" style="font-weight: normal; color: #333;">Fechas</span>
+        <span class="row-value" style="font-weight: normal; color: #333;">${formatDate(booking.startDate || '')} al ${formatDate(booking.endDate || '')}</span>
+      </div>
+    </div>
+    
+    <div class="button-container" style="text-align: center; margin-top: 24px;">
+      <a href="${reviewUrl}" class="btn-primary" style="background-color: #C5A059; color: #0b1120; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 12px; display: inline-block;">Evaluar mi Estadía</a>
+    </div>
+    
+    <div class="text" style="font-size: 12px; color: #999; text-align: center; margin-top: 16px;">
+      Este enlace es válido por 30 días.
+    </div>
+  `;
+  return buildEmailWrapper('Déjanos tu reseña', content);
+}
