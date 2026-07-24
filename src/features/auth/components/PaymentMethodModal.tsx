@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, CreditCard, Globe, Sparkles, Landmark, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, Landmark, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PaymentMethodType } from '@/types';
 import { PaymentMethod } from '@/features/auth/types';

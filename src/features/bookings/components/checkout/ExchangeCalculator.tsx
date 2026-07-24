@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ExchangeRates, PaymentMethod } from '@/types';
-import { ShieldCheck, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { getExchangeRates, HIDE_BCV_PRICES } from '@/services/exchange-service';
 
 interface ExchangeCalculatorProps {

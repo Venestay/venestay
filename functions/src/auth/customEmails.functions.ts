@@ -42,7 +42,7 @@ export const sendCustomVerificationEmail = functions
 
 export const sendCustomPasswordResetEmail = functions
   .runWith({ secrets: ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'] })
-  .https.onCall(async (data, _context) => {
+  .https.onCall(async (data) => {
     const email = (data.email as string).toLowerCase().trim();
 
     try {

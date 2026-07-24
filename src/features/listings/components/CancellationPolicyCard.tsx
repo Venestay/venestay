@@ -1,7 +1,7 @@
 import React from 'react';
 import { CancellationPolicyType } from '../types';
 import { CANCELLATION_POLICIES, POLICY_TIMELINE } from '../utils/cancellationPolicies';
-import { Calendar, HelpCircle, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Calendar, ShieldCheck, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CancellationPolicyCardProps {

@@ -25,12 +25,8 @@ import {
   Calendar,
   Users,
   CreditCard,
-  ChevronRight,
-  Hash,
   MessageSquare,
   Upload,
-  ChevronDown,
-  ChevronUp,
   Star,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -38,7 +34,6 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import Chat from '@/components/Chat';
-import FloatingChat from '@/components/FloatingChat';
 import { useTripFilters } from '../hooks/useTripFilters';
 import { TripFilterBar } from './TripFilterBar';
 import { useChatNotifications } from '../hooks/useChatNotifications';

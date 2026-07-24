@@ -1,7 +1,6 @@
 import {
   signOut as firebaseSignOut,
   User as FirebaseUser,
-  sendEmailVerification as firebaseSendEmailVerification,
   applyActionCode,
   verifyPasswordResetCode,
   confirmPasswordReset

@@ -332,3 +332,48 @@ export const syncEmailVerification = functions.https.onCall(
     return { success: true, verified: false };
   }
 );
+
+export const exportUsersToCSV = functions.https.onCall(
+  async (data, context) => {
+    if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Autenticación requerida.');
+    
+    const uid = context.auth.uid;
+    const email = context.auth.token.email || '';
+    
+    const adminEmails = [
+      'rodriguezzcarlose@gmail.com',
+      'zabalareduardoc@gmail.com',
+      'anfitrionvenestay@venestay.com',
+    ];
+    
+    const isHardcodedAdmin = adminEmails.includes(email.toLowerCase());
+    
+    const userDoc = await db.collection('users').doc(uid).get();
+    const role = userDoc.data()?.role;
+    
+    if (!isHardcodedAdmin && role !== 'admin') {
+      throw new functions.https.HttpsError('permission-denied', 'No tienes permisos de administrador.');
+    }
+    
+    let allUsers: admin.auth.UserRecord[] = [];
+    let pageToken: string | undefined = undefined;
+    
+    do {
+      const result = await admin.auth().listUsers(1000, pageToken);
+      allUsers = allUsers.concat(result.users);
+      pageToken = result.pageToken;
+    } while (pageToken);
+    
+    const csvHeader = 'Nombre,Email,UID,Fecha de Registro,Verificado\n';
+    const csvRows = allUsers.map(user => {
+      const name = user.displayName ? `"${user.displayName.replace(/"/g, '""')}"` : 'Sin nombre';
+      const userEmail = user.email ? `"${user.email}"` : 'Sin email';
+      const userUid = `"${user.uid}"`;
+      const creationTime = user.metadata.creationTime ? `"${new Date(user.metadata.creationTime).toLocaleString()}"` : 'Desconocida';
+      const verified = user.emailVerified ? 'Sí' : 'No';
+      return `${name},${userEmail},${userUid},${creationTime},${verified}`;
+    });
+    
+    return { csv: csvHeader + csvRows.join('\n') };
+  }
+);

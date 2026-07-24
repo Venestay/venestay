@@ -1,11 +1,8 @@
 import React, { Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Loader2,
-  ArrowLeft,
   Star,
   MapPin,
   Users,
@@ -16,8 +13,6 @@ import {
   Hash,
   CalendarDays,
   PawPrint,
-  Info,
-  Globe,
   CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,7 +27,6 @@ import { ListingReviews } from './ListingReviews';
 import { BookingPanel } from './BookingPanel';
 import { Listing, BookingDetails } from '@/types';
 import { CancellationPolicyType } from '../types';
-import { CANCELLATION_POLICIES } from '../utils/cancellationPolicies';
 import * as reviewService from '@/services/review-service';
 import { toast } from 'sonner';
 import { clearListingCalendar } from '@/services/listing-service';

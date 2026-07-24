@@ -4,10 +4,8 @@ import {
   query,
   where,
   onSnapshot,
-  orderBy,
   addDoc,
   serverTimestamp,
-  updateDoc,
   doc,
   writeBatch,
 } from 'firebase/firestore';
@@ -15,11 +13,9 @@ import { db, storage } from '@/lib/firebase';
 import { Message } from '@/types';
 import {
   Send,
-  User,
   ShieldCheck,
   Loader2,
   MessageSquare,
-  Image as ImageIcon,
   Check,
   CheckCheck,
   Paperclip,

@@ -14,9 +14,10 @@ import {
 import { Booking, BookingStatus } from '@/features/bookings/types';
 import { Listing } from '@/features/listings/types';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, storage, functions } from '@/lib/firebase';
 import { ENVIRONMENTS } from '../constants/dashboard.constants';
-import { Search, ShieldCheck, RefreshCcw, Clock } from 'lucide-react';
+import { Search, ShieldCheck, RefreshCcw, Clock, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -84,6 +85,7 @@ const AdminDashboard: React.FC = () => {
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
   const [isSyncConfirmOpen, setIsSyncConfirmOpen] = useState(false);
   const [kycPendingCount, setKycPendingCount] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
 
 
   const location = useLocation();
@@ -222,7 +224,7 @@ const AdminDashboard: React.FC = () => {
     }
   }, [editingListing]);
 
-  const reorderImagesWithPrimary = useCallback((images: string[], envPhotos?: Record<string, string>): string[] => {
+  const reorderImagesWithPrimary = useCallback((images: string[]): string[] => {
     // Retornamos el array libre de duplicados y valores nulos sin alterar el orden del usuario
     return Array.from(new Set(images.filter(Boolean)));
   }, []);
@@ -282,7 +284,7 @@ const AdminDashboard: React.FC = () => {
                 newEnvPhotos[environmentId] = downloadURL;
               }
 
-              nextImages = reorderImagesWithPrimary(nextImages, newEnvPhotos);
+              nextImages = reorderImagesWithPrimary(nextImages);
 
               return {
                 ...prev,
@@ -312,7 +314,7 @@ const AdminDashboard: React.FC = () => {
                   newEnvPhotos[environmentId] = downloadURL;
                 }
 
-                nextImages = reorderImagesWithPrimary(nextImages, newEnvPhotos);
+                nextImages = reorderImagesWithPrimary(nextImages);
 
                 const updates = {
                   images: nextImages,
@@ -338,7 +340,7 @@ const AdminDashboard: React.FC = () => {
           console.error('Upload error:', err);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('Error crítico en el proceso de subida');
     } finally {
       setIsUploading(false);
@@ -365,7 +367,7 @@ const AdminDashboard: React.FC = () => {
       }
 
       // Reordenar las imágenes restantes
-      const nextImages = reorderImagesWithPrimary(newImages, envPhotosChanged ? newEnvPhotos : prev.environmentPhotos);
+      const nextImages = reorderImagesWithPrimary(newImages);
 
       return {
         ...prev,
@@ -413,7 +415,7 @@ const AdminDashboard: React.FC = () => {
       const isNew = id.startsWith('listing-');
       
       // Asegurar que las imágenes estén ordenadas correctamente con Habitación Principal en el índice 0
-      const finalImages = reorderImagesWithPrimary(data.images, data.environmentPhotos);
+      const finalImages = reorderImagesWithPrimary(data.images);
 
       const payload: Partial<Listing> & { isPublishedFromDashboard: boolean } = { 
         ...data, 
@@ -427,7 +429,7 @@ const AdminDashboard: React.FC = () => {
       if (isNew) {
         await setDoc(listingRef, { ...payload, id });
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         const { id: _, ...updateData } = payload;
         await updateDoc(listingRef, updateData as unknown as Record<string, string | number | boolean>);
       }
@@ -499,6 +501,33 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    const toastId = toast.loading('Generando reporte CSV de usuarios...');
+    try {
+      const exportUsers = httpsCallable(functions, 'exportUsersToCSV');
+      const response = await exportUsers();
+      const csvString = (response.data as { csv: string }).csv;
+      
+      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `venestay_usuarios_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Reporte exportado con éxito', { id: toastId });
+    } catch (err: unknown) {
+      console.error(err);
+      toast.error('Error al exportar usuarios. Verifica tus permisos.', { id: toastId });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const filteredBookings = useMemo(() => {
     const base = bookings.filter((b) => {
       if (!isAdmin && b.ownerId !== user?.uid) return false;
@@ -542,15 +571,28 @@ const AdminDashboard: React.FC = () => {
 
         {/* Toolbar */}
         <div className="flex flex-col gap-4 border-b border-gray-100 bg-gray-50/50 p-6 lg:flex-row">
-          <div className="relative grow">
-            <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={activeTab === 'bookings' ? 'Buscar reservas...' : 'Buscar propiedades...'}
-              className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-200 bg-white py-3 pr-4 pl-12 text-sm font-bold transition-all focus:outline-none"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="relative grow flex items-center gap-4">
+            <div className="relative grow">
+              <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder={activeTab === 'bookings' ? 'Buscar reservas...' : 'Buscar propiedades...'}
+                className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-200 bg-white py-3 pr-4 pl-12 text-sm font-bold transition-all focus:outline-none"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            {isAdmin && (
+              <button
+                onClick={handleExportCSV}
+                disabled={isExporting}
+                className="flex items-center gap-2 bg-brand-navy hover:bg-brand-500 text-white hover:text-brand-navy px-5 py-3 rounded-2xl text-xs font-black tracking-widest uppercase transition-all shadow-md disabled:opacity-50 shrink-0"
+              >
+                {isExporting ? <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></span> : <Download className="h-4 w-4" />}
+                <span className="hidden sm:inline">Exportar Usuarios CSV</span>
+                <span className="sm:hidden">CSV</span>
+              </button>
+            )}
           </div>
 
           {activeTab === 'bookings' && (
@@ -560,7 +602,7 @@ const AdminDashboard: React.FC = () => {
                   key={f}
                   onClick={() => setFilter(f)}
                   className={cn(
-                    'rounded-xl border px-4 py-2.5 text-[10px] font-black tracking-widest whitespace-nowrap uppercase transition-all',
+                    'rounded-xl border px-4 py-2.5 text-xs font-black tracking-widest whitespace-nowrap uppercase transition-all',
                     filter === f ? 'bg-brand-navy border-brand-navy text-white' : 'hover:border-brand-500 hover:text-brand-navy border-gray-100 bg-white text-gray-500'
                   )}
                 >
@@ -575,7 +617,7 @@ const AdminDashboard: React.FC = () => {
                 <button
                   onClick={() => setShowHistory(!showHistory)}
                   className={cn(
-                    'flex items-center gap-2 rounded-xl px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all',
+                    'flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black tracking-widest uppercase transition-all',
                     showHistory 
                       ? 'bg-amber-50 text-amber-600 border border-amber-100' 
                       : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
@@ -600,38 +642,38 @@ const AdminDashboard: React.FC = () => {
 
         {/* List Content */}
         <div className="no-scrollbar grow overflow-y-auto bg-gray-50/20 p-6 md:p-8">
-          <AnimatePresence mode="wait">
-            {/* Herramienta de Migración Temporal - Visible para Admins y Hosts en cualquier pestaña */}
-            {(isAdmin || isHost) && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="mb-8 overflow-hidden"
-              >
-                <div className="rounded-3xl border-2 border-dashed border-brand-500/20 bg-brand-500/5 p-6 text-center">
-                  <div className="flex flex-col items-center justify-between gap-4 md:flex-row md:text-left">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/20">
-                        <RefreshCcw className="text-brand-500 h-5 w-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-brand-navy text-sm font-black">¿No ves tus propiedades?</h4>
-                        <p className="text-[10px] font-medium text-gray-500">
-                          Usa esta utilidad para activar la visibilidad de listados antiguos en el nuevo sistema.
-                        </p>
-                      </div>
+          {/* Herramienta de Migración Temporal - fuera de AnimatePresence para evitar conflicto con mode="wait" */}
+          {(isAdmin || isHost) && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-8 overflow-hidden"
+            >
+              <div className="rounded-3xl border-2 border-dashed border-brand-500/20 bg-brand-500/5 p-6 text-center">
+                <div className="flex flex-col items-center justify-between gap-4 md:flex-row md:text-left">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/20">
+                      <RefreshCcw className="text-brand-500 h-5 w-5" />
                     </div>
-                    <button
-                      onClick={() => setIsSyncConfirmOpen(true)}
-                      className="bg-brand-navy text-white whitespace-nowrap rounded-xl px-6 py-2 text-[10px] font-black tracking-widest uppercase shadow-md hover:bg-brand-500 hover:text-brand-navy transition-all"
-                    >
-                      Sincronizar Visibilidad
-                    </button>
+                    <div>
+                      <h4 className="text-brand-navy text-sm font-black">¿No ves tus propiedades?</h4>
+                      <p className="text-xs font-medium text-gray-500">
+                        Usa esta utilidad para activar la visibilidad de listados antiguos en el nuevo sistema.
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => setIsSyncConfirmOpen(true)}
+                    className="bg-brand-navy text-white whitespace-nowrap rounded-xl px-6 py-2 text-xs font-black tracking-widest uppercase shadow-md hover:bg-brand-500 hover:text-brand-navy transition-all"
+                  >
+                    Sincronizar Visibilidad
+                  </button>
                 </div>
-              </motion.div>
-            )}
+              </div>
+            </motion.div>
+          )}
 
+          <AnimatePresence mode="wait">
             {loading ? (
               <motion.div
                 key="loading"
@@ -658,7 +700,6 @@ const AdminDashboard: React.FC = () => {
               >
                 <BookingList
                   bookings={filteredBookings}
-                  isAdmin={isAdmin || false}
                   user={user}
                   handleUpdateStatus={handleUpdateStatus}
                   setActiveChatId={setActiveChatId}

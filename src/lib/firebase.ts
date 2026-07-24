@@ -18,7 +18,7 @@ let finalConfig = firebaseConfig;
 if (!firebaseConfig.apiKey && import.meta.env.VITE_FIREBASE_CONFIG_JSON) {
   try {
     finalConfig = JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG_JSON);
-  } catch (e) {
+  } catch {
     console.error('[Firebase] Failed to parse VITE_FIREBASE_CONFIG_JSON');
   }
 }
@@ -46,7 +46,7 @@ try {
     firestoreSettings,
     (firebaseConfig as Record<string, unknown>).firestoreDatabaseId as string || '(default)'
   );
-} catch (error) {
+} catch {
   // Safe fallback for Vite HMR if Firestore was already initialized on this app instance
   db = getFirestore(app, (firebaseConfig as Record<string, unknown>).firestoreDatabaseId as string || '(default)');
 }

@@ -12,7 +12,6 @@ import {
   Users,
   Globe,
   ShieldAlert,
-  CreditCard,
   Upload,
   Loader2,
   CheckCircle2,
@@ -31,7 +30,6 @@ import {
 import {
   Listing,
   Booking,
-  BookingDetails,
   BookingStatus,
   PaymentMethod,
   ExchangeRates,
@@ -52,7 +50,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { cn, safeFormat, calculatePaymentBreakdown, parseLocalDate } from '@/lib/utils';
+import { cn, calculatePaymentBreakdown, parseLocalDate } from '@/lib/utils';
 import { toast } from 'sonner';
 import Chat from '@/components/Chat';
 import { calculateTrustScore } from '@/services/user-service';

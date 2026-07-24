@@ -7,19 +7,17 @@ import {
   AlertCircle, 
   Calendar, 
   Users, 
-  Hash, 
   MessageSquare, 
   Shield, 
   Mail, 
-  Phone, 
-  Award,
+  Phone,
   Clock,
   AlertTriangle,
   UserCheck
 } from 'lucide-react';
 import { format, parseISO, isWithinInterval, startOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Booking, BookingStatus } from '@/types';
+import { Booking } from '@/types';
 import { calculateCommission, CommissionTier } from '@/lib/commission';
 import { useGuestProfile } from '../hooks/useGuestProfile';
 import { useListingPaymentMethods } from '@/features/listings/hooks/useListingPaymentMethods';

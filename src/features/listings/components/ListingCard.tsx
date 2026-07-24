@@ -1,7 +1,6 @@
 import React from 'react';
 import { Listing } from '@/types';
 import { Star, Heart, CheckCircle2, MapPin } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 
 interface ListingCardProps {

@@ -13,7 +13,7 @@ import {
 import { format, parseISO, isWithinInterval, startOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Booking, BookingStatus } from '@/types';
-import { calculateCommission, getCommissionTier, CommissionTier } from '@/lib/commission';
+import { calculateCommission, CommissionTier } from '@/lib/commission';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
@@ -70,7 +70,6 @@ const CountdownTimer: React.FC<{ expiresAt?: string }> = ({ expiresAt }) => {
 
 interface BookingListProps {
   bookings: Booking[];
-  isAdmin: boolean;
   user: { uid: string; displayName?: string | null; email?: string | null } | null;
   handleUpdateStatus: (booking: Booking, newStatus: BookingStatus, note?: string) => Promise<void>;
   setActiveChatId: (id: string | null) => void;
@@ -81,7 +80,6 @@ interface BookingListProps {
 
 const BookingList: React.FC<BookingListProps> = ({
   bookings,
-  isAdmin,
   user,
   handleUpdateStatus,
   setActiveChatId,

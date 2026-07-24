@@ -14,7 +14,7 @@ export const useExchangeRate = () => {
         setLoading(true);
         const realRates = await getExchangeRates();
         setRates(realRates);
-      } catch (err) {
+      } catch {
         setError('Error al cargar las tasas de cambio');
       } finally {
         setLoading(false);

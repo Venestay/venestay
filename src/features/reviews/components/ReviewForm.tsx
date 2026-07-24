@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Star, Send, Loader2, MessageSquareText } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { submitVerifiedReview } from '@/services/review-service';
 import { toast } from 'sonner';
 

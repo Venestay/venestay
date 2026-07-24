@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfile } from '@/types';
-import { Star, MessageCircle, Clock, Heart, Globe, MapPin, Languages, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Star, MessageCircle, Clock, Heart, MapPin, Languages, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import Skeleton from '@/components/ui/Skeleton';
 
 interface HostContactCardProps {

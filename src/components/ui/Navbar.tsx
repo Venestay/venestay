@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { City } from '@/types';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
 import { useChatNotifications } from '@/features/bookings/hooks/useChatNotifications';
-import AuthModal from '@/features/auth/components/AuthModal';
 import CalendarComponent from '@/features/bookings/components/Calendar';
 
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -18,11 +16,8 @@ import {
   Wind,
   Ship,
   Navigation,
-  Dog,
   LogOut,
-  Heart,
   Calendar,
-  ChevronDown,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';

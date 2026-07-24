@@ -305,7 +305,7 @@ export function buildReviewRequestEmailHTML(
   sessionId: string
 ): string {
   const baseUrl = booking.appBaseUrl || APP_BASE_URL_PRODUCTION;
-  const targetListingId = (booking as any).listingId || (booking as any).propertyId || '';
+  const targetListingId = (booking as Record<string, unknown>).listingId || (booking as Record<string, unknown>).propertyId || '';
   const reviewUrl = `${baseUrl}/listing/${targetListingId}?review=${sessionId}`;
 
   const content = `

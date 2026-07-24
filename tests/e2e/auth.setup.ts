@@ -1,5 +1,4 @@
 import { test as setup, expect } from '@playwright/test';
-import path from 'path';
 
 const GUEST_FILE = 'tests/.auth/guest.json';
 const GUEST_EMAIL = 'rodriguezzcarlose@gmail.com';

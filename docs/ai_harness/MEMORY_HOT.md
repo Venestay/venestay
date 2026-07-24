@@ -33,10 +33,10 @@ Frontend implementado y compilando sin errores. Queda **1 tarea técnica** y **1
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | tsc OK (0 errores) | lint OK | Vitest OK (3/3) | Playwright OK (2/2) | 2026-07-14 (SPEC-CHECKOUT-SOFT-CONSULTA-001)
+QA_GATE   : PASS | tsc OK (0 errores) | lint OK | Vitest OK (3/3) | Playwright OK (2/2) | 2026-07-24 (cronCompleteBookings DEPLOYED)
 BLOQUEANTE: ninguno
 RAMA_LOCAL: main
-TURNO_REANCLA: 6
+TURNO_REANCLA: 0
 ```
 
 ---
@@ -76,6 +76,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 
 | Módulo                                          | Archivo Objetivo                                     | Estado                            |
 | :---------------------------------------------- | :--------------------------------------------------- | :-------------------------------- |
+| **Exportar Usuarios CSV (SPEC-ADMIN-EXPORT-USERS-001) (P2)** | auth.functions.ts, KYCAuditPanel.tsx | **COMPLETADO (PASS)** |
 | **Dominio Custom Autenticación & SSL Proxy (SPEC-AUTH-DOMAIN-001) (P0)** | vercel.json, VITE_FIREBASE_AUTH_DOMAIN | **COMPLETADO (PASS EN PROD)** |
 | **Páginas Legales Soft KYC & Enlaces UI (SPEC-LEGAL-PAGES-001) (P1)** | PrivacyPolicyPage.tsx, TermsPage.tsx, App.tsx, AuthModal.tsx, Home.tsx | **COMPLETADO (PASS)** |
 | **Flujo de Cobro 20/80 — VeneStay Payments (SPEC-CHECKOUT-PAY-001) (P1)** | CheckoutPage.tsx, venestay-config.service.ts, useVenestayPayments.ts, firestore.rules, booking-pdf.ts | **EN PROGRESO (frontend OK \| PDF pendiente)** |
@@ -90,7 +91,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 | **Email Notifications & Secure Stay Flow (P0)** | functions/src/\*, useCheckout.ts, booking-service.ts | **COMPLETADO**                    |
 | **Badge Ocupación Realista (SPEC-LISTINGS-DEMAND-BADGE-001) (P2)** | ListingCard.tsx | **COMPLETADO (PASS)** |
 | **Optimización UX Móvil ListingDetail (SPEC-LISTING-MOBILE-UX-001) (P2)** | BookingPanel.tsx | **COMPLETADO (PASS)** |
-| **Flujo Completo de Reseñas (SPEC-REVIEWS-WORKFLOW-001) (P1)** | booking.functions.ts, booking-emails.ts, review-service.ts, useListingDetail.ts, MyTrips.tsx, bookings/types/index.ts | **PLANIFICADO — BLOQUEADO (requiere Firebase CLI)** |
+| **Flujo Completo de Reseñas (SPEC-REVIEWS-WORKFLOW-001) (P1)** | booking.functions.ts, booking-emails.ts, review-service.ts, useListingDetail.ts, MyTrips.tsx, bookings/types/index.ts | **COMPLETADO — PASS (cronCompleteBookings DESPLEGADA 2026-07-24)** |
 | **Optimización Login KYC (SPEC-AUTH-LOGIN-FRICTION-001) (P1)** | useAuthForm.ts, AuthModal.tsx | **COMPLETADO (PASS)** |
 | **SPEC-AUTH-MODAL-OPTIMIZATION (P0)**           | AuthModal.tsx, useAuthForm.ts, auth.schema.ts        | **COMPLETADO**                    |
 
@@ -113,6 +114,7 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-24 | Exportar Usuarios CSV (SPEC-ADMIN-EXPORT-USERS-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Botón implementado en Admin Dashboard (KYCAuditPanel) con Cloud Function paginada para administradores. |
 | 2026-07-23 | Optimización UX Móvil ListingDetail (SPEC-LISTING-MOBILE-UX-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Eliminados controles redundantes en sección 04 móvil y reemplazados por tarjeta informativa del modelo de pago 20%/80%. |
 | 2026-07-23 | Flujo Completo de Reseñas (SPEC-REVIEWS-WORKFLOW-001) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores en frontend y functions). Implementados tipos COMPLETED, getPendingReviewSessionByToken, hook URL listener (?review=id), botón en MyTrips, cronCompleteBookings y trigger Cloud Function. |
 | 2026-07-23 | Badge Ocupación Realista (SPEC-LISTINGS-DEMAND-BADGE-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Badge "Muy solicitado" renderiza condicionalmente si la ocupación proyectada a 30 días es ≥50%. |

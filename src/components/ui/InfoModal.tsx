@@ -8,10 +8,8 @@ import {
   MessageSquare,
   Briefcase,
   Zap,
-  CheckCircle2,
   StepForward,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { CONTACT_CONFIG } from '@/shared/config/contact';
 
 export type InfoKey =

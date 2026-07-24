@@ -540,6 +540,7 @@ Si la solicitud implica tecnología fuera del stack definido en Bloque 1:
 
 - **Trazabilidad Cruzada:** Antes de programar, mapear cada requerimiento del plan al archivo y línea exacta.
 - **Auditoría de Configuración:** Revisar `firestore.rules`, `storage.rules`, `.env` antes de dar una tarea por terminada.
+- **Despliegues en la Nube (Firebase):** Toda tarea que involucre crear o modificar Cloud Functions, Reglas de Seguridad (Firestore/Storage), o cambios en permisos de usuarios **exige obligatoriamente un paso final de despliegue real** (ej. `firebase deploy --only functions`). Nunca dar la tarea por terminada sin haber comprobado que el código backend está desplegado y activo en la nube para evitar errores de CORS o acceso denegado en el cliente.
 - **Validación del QA Gate:** Cada CA verificado con `npx tsc --noEmit` y `npm run lint`.
 - **Verificación de Skills existentes:** Antes de crear una nueva skill en `.claude/skills/`, verificar que no existe ya en ese directorio o en un nivel superior. La duplicación de skills fue el error documentado en el post-mortem del 23 de junio de 2026.
 

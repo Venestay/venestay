@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Globe,
   Sparkles,
@@ -11,10 +11,7 @@ import {
   AlertCircle,
   Loader2,
   ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { PaymentMethod, PaymentMethodType, Listing } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';

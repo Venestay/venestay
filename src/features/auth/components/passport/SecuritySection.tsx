@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Check, Info, Loader2, User } from 'lucide-react';
+import { Mail, Check, Info, Loader2 } from 'lucide-react';
 import { UserProfile } from '@/features/auth/types';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';

@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, MessageSquare, ShieldCheck, ExternalLink } from 'lucide-react';
+import { X, ShieldCheck } from 'lucide-react';
 import Chat from '@/components/Chat';
-import { cn } from '@/lib/utils';
+
 
 interface FloatingChatProps {
   isOpen: boolean;

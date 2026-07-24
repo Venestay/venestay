@@ -5,7 +5,7 @@ import {
   onSnapshot 
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { UserProfile, TravelInterest } from '@/features/auth/types';
+import { UserProfile } from '@/features/auth/types';
 
 /**
  * Calculates trust score based on profile completion
