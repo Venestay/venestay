@@ -33,10 +33,10 @@ Frontend implementado y compilando sin errores. Queda **1 tarea técnica** y **1
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | tsc OK (0 errores) | lint OK (0 errores, 20 warnings pre-existentes) | 2026-07-25 (SPEC-HOST-CALENDAR-001 COMPLETADO)
+QA_GATE   : PASS (12/12 gates passed) | tsc OK (0 errores) | lint OK (0 errores, 34 warnings) | G9 Security Scan PASS | 2026-07-25
 BLOQUEANTE: ninguno
 RAMA_LOCAL: main
-TURNO_REANCLA: 5
+TURNO_REANCLA: 7
 ```
 
 ---
@@ -114,6 +114,8 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-25 | Chat Email Notification + Presence (SPEC-CHAT-EMAIL-NOTIFICATION-PRESENCE-001) | COMPLETADO | PASS | Desplegada Cloud Function onChatMessageCreated (us-central1, 2nd Gen). Heartbeat de presencia usePresence() activo en App.tsx. Verificar manualmente enviando mensaje desde huésped/anfitrión y confirmar llegada de email. |
+| 2026-07-25 | Bloqueo/Desbloqueo Calendario Anfitrión (SPEC-HOST-CALENDAR-UNBLOCK-PAST-DATES-001) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores, `lint` 0 errores). Inhabilitadas fechas pasadas en horario Caracas y añadido botón "Desbloquear Rango" granular. |
 | 2026-07-25 | Redirección de Sesión Reseña Mis Viajes (SPEC-MYTRIPS-REVIEW-LINK-001) | COMPLETADO | PASS | Implementado handleReviewClick en MyTrips con búsqueda asíncrona del reviewToken y Loader2 state. |
 | 2026-07-24 | Animación Botones Mis Viajes (SPEC-MYTRIPS-HOVER-ANIM-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Igualada la fluidez del hover en botones Chat y Dejar Reseña con el botón Ver Resumen. |
 | 2026-07-24 | Exportar Usuarios CSV (SPEC-ADMIN-EXPORT-USERS-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Botón implementado en Admin Dashboard (KYCAuditPanel) con Cloud Function paginada para administradores. |

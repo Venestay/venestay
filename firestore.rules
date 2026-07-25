@@ -82,7 +82,10 @@ service cloud.firestore {
              (data.senderId == request.auth.uid || data.senderId == 'system') &&
              data.bookingId is string &&
              data.type in ['text', 'image'] &&
-             data.status in ['sent', 'read'];
+             data.status in ['sent', 'read'] &&
+             // emailNotified: campo opcional escrito por Cloud Function (Admin SDK).
+             // Validado aquí por compatibilidad y consistencia de tipos.
+             (!('emailNotified' in data.keys()) || data.emailNotified is bool);
     }
 
     function isValidPayment(data) {

@@ -22,10 +22,13 @@ export interface Message {
   bookingId: string;
   senderId: string;
   senderName: string;
+  recipientId?: string;
   text?: string;
   imageUrl?: string;
   type: 'text' | 'image';
   status: 'sent' | 'read';
+  /** Marcado como true por Cloud Function tras enviar email de notificación al destinatario. Anti-spam: solo se notifica por el primer mensaje del hilo. */
+  emailNotified?: boolean;
   createdAt: string | Date;
 }
 

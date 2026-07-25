@@ -29,6 +29,7 @@ export interface CalendarDayState {
   isInRange: boolean;   // entre rangeStart y rangeEnd (highlight visual)
   isCurrentMonth: boolean;
   dayOfMonth: number;
+  isPast: boolean;      // true si la fecha es anterior a hoy en Caracas (America/Caracas)
 }
 
 export interface UseHostCalendarReturn {
@@ -38,8 +39,11 @@ export interface UseHostCalendarReturn {
   goToNextMonth: () => void;
   rangeStart: string | null;
   rangeEnd: string | null;
+  hasBlockedInRange: boolean;
+  hasAvailableInRange: boolean;
   handleDayClick: (dateStr: string) => void;
   blockSelectedRange: () => Promise<void>;
+  unblockSelectedRange: () => Promise<void>;
   clearAll: () => Promise<void>;
   resetRange: () => void;
   isLoading: boolean;
@@ -48,6 +52,16 @@ export interface UseHostCalendarReturn {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+export const getTodayCaracasStr = (): string => {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Caracas',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  return formatter.format(new Date()); // 'YYYY-MM-DD'
+};
 
 const toDateStr = (d: Date): string => d.toISOString().split('T')[0];
 
@@ -71,6 +85,7 @@ const buildMonthDays = (
 ): CalendarDayState[] => {
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
+  const todayCaracas = getTodayCaracasStr();
 
   // First day of month, then pad to Monday
   const firstDay = new Date(year, monthIndex, 1);
@@ -94,6 +109,7 @@ const buildMonthDays = (
       isInRange: false,
       isCurrentMonth: false,
       dayOfMonth: d.getDate(),
+      isPast: dateStr < todayCaracas,
     });
   }
 
@@ -117,6 +133,7 @@ const buildMonthDays = (
       isInRange: inRange,
       isCurrentMonth: true,
       dayOfMonth: day,
+      isPast: dateStr < todayCaracas,
     });
   }
 
@@ -132,6 +149,7 @@ const buildMonthDays = (
       isInRange: false,
       isCurrentMonth: false,
       dayOfMonth: d.getDate(),
+      isPast: dateStr < todayCaracas,
     });
   }
 
@@ -193,6 +211,22 @@ export const useHostCalendar = (listing: Listing): UseHostCalendarReturn => {
     [currentMonth, blockedDates, reservedDates, rangeStart, rangeEnd]
   );
 
+  const selectedRangeDays = useMemo(() => {
+    if (!rangeStart) return [];
+    const end = rangeEnd ?? rangeStart;
+    return getDaysInRange(rangeStart, end);
+  }, [rangeStart, rangeEnd]);
+
+  const hasBlockedInRange = useMemo(() => {
+    if (selectedRangeDays.length === 0) return false;
+    return selectedRangeDays.some((d) => blockedDates.has(d));
+  }, [selectedRangeDays, blockedDates]);
+
+  const hasAvailableInRange = useMemo(() => {
+    if (selectedRangeDays.length === 0) return false;
+    return selectedRangeDays.some((d) => !blockedDates.has(d) && !reservedDates.has(d));
+  }, [selectedRangeDays, blockedDates, reservedDates]);
+
   const goToPrevMonth = useCallback(() => {
     setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   }, []);
@@ -202,8 +236,9 @@ export const useHostCalendar = (listing: Listing): UseHostCalendarReturn => {
   }, []);
 
   const handleDayClick = useCallback((dateStr: string) => {
-    // Día reservado → no hacer nada
-    if (reservedDates.has(dateStr)) return;
+    const todayCaracas = getTodayCaracasStr();
+    // Día pasado o reservado → no hacer nada
+    if (dateStr < todayCaracas || reservedDates.has(dateStr)) return;
 
     setRangeStart((prevStart) => {
       if (prevStart === null) {
@@ -233,17 +268,21 @@ export const useHostCalendar = (listing: Listing): UseHostCalendarReturn => {
   }, []);
 
   const blockSelectedRange = useCallback(async () => {
+    const startDate = rangeStart;
+    const endDate = rangeEnd ?? rangeStart;
+
+    if (!startDate) return;
+
     const validation = BlockRangeSchema.safeParse({
-      startDate: rangeStart,
-      endDate: rangeEnd,
+      startDate,
+      endDate,
     });
 
     if (!validation.success) {
-      toast.error(validation.error.errors[0].message);
+      toast.error(validation.error.issues[0].message);
       return;
     }
 
-    const { startDate, endDate } = validation.data;
     const newDays = getDaysInRange(startDate, endDate);
     const merged = new Set([...blockedDates, ...newDays]);
 
@@ -261,6 +300,48 @@ export const useHostCalendar = (listing: Listing): UseHostCalendarReturn => {
     } catch (err) {
       console.error('useHostCalendar: Error guardando bloqueo', err);
       toast.error('Error al guardar el bloqueo. Inténtalo de nuevo.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [rangeStart, rangeEnd, blockedDates, listing.id]);
+
+  const unblockSelectedRange = useCallback(async () => {
+    const startDate = rangeStart;
+    const endDate = rangeEnd ?? rangeStart;
+
+    if (!startDate) return;
+
+    const validation = BlockRangeSchema.safeParse({
+      startDate,
+      endDate,
+    });
+
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
+      return;
+    }
+
+    const daysToUnblock = getDaysInRange(startDate, endDate);
+    const updatedSet = new Set(blockedDates);
+    daysToUnblock.forEach((d) => updatedSet.delete(d));
+
+    setIsSaving(true);
+    try {
+      const docRef = doc(db, 'listings', listing.id);
+      await updateDoc(docRef, { blockedDates: [...updatedSet] });
+      setBlockedDates(updatedSet);
+      setRangeStart(null);
+      setRangeEnd(null);
+      toast.success(
+        `${daysToUnblock.length} día${daysToUnblock.length !== 1 ? 's' : ''} desbloqueado${daysToUnblock.length !== 1 ? 's' : ''} correctamente`,
+        {
+          description: `Del ${startDate} al ${endDate}`,
+          style: { background: '#0b1120', color: '#c5a059', border: '1px solid #c5a059' },
+        }
+      );
+    } catch (err) {
+      console.error('useHostCalendar: Error guardando desbloqueo', err);
+      toast.error('Error al desbloquear el rango. Inténtalo de nuevo.');
     } finally {
       setIsSaving(false);
     }
@@ -291,8 +372,11 @@ export const useHostCalendar = (listing: Listing): UseHostCalendarReturn => {
     goToNextMonth,
     rangeStart,
     rangeEnd,
+    hasBlockedInRange,
+    hasAvailableInRange,
     handleDayClick,
     blockSelectedRange,
+    unblockSelectedRange,
     clearAll,
     resetRange,
     isLoading,

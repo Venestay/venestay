@@ -10,8 +10,10 @@ import {
   buildReviewRequestEmailHTML
 } from './templates/booking-emails';
 import { buildBookingConfirmationPDF } from './templates/booking-pdf';
+import { buildChatMessageEmailHTML } from './templates/chat-emails';
 
 import { db, DATABASE_ID } from './config/db';
+
 
 
 
@@ -474,3 +476,133 @@ export const getProofSignedURL = functions.https.onCall(
     }
   }
 );
+
+/**
+ * TRIGGER v2: Notificación por email al recibir el primer mensaje en el chat.
+ * SPEC-CHAT-EMAIL-NOTIFICATION-PRESENCE-001
+ *
+ * Reglas de envío:
+ *  1. Solo mensajes de tipo 'text' (no imágenes, no mensajes del sistema).
+ *  2. Solo si es el PRIMER mensaje de texto del remitente en ese hilo (anti-spam).
+ *  3. Solo si el destinatario está OFFLINE (onlineAt > 60 segundos antes del momento actual).
+ *  4. Marca emailNotified: true en el mensaje para evitar re-envíos.
+ */
+export const onChatMessageCreated = onDocumentCreated(
+  { document: 'messages/{messageId}', database: DATABASE_ID },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const message = snap.data();
+    const messageId = event.params.messageId;
+
+    // Regla 1: Solo mensajes de texto de usuarios reales
+    if (message.type !== 'text' || message.senderId === 'system') {
+      console.log(`[onChatMessageCreated] Skipping non-text or system message: ${messageId}`);
+      return;
+    }
+
+    if (!message.text || !message.bookingId) {
+      console.log(`[onChatMessageCreated] Missing text or bookingId on message: ${messageId}`);
+      return;
+    }
+
+    const bookingId: string = message.bookingId;
+    const senderId: string = message.senderId;
+
+    // Regla 2: Anti-spam — verificar si es el PRIMER mensaje de texto de este remitente en el hilo
+    const previousMessagesSnap = await db.collection('messages')
+      .where('bookingId', '==', bookingId)
+      .where('senderId', '==', senderId)
+      .where('type', '==', 'text')
+      .get();
+
+    // El mensaje actual ya fue creado, así que si hay más de 1 doc, no es el primero
+    if (previousMessagesSnap.size > 1) {
+      console.log(`[onChatMessageCreated] Not first message from sender ${senderId} in booking ${bookingId}. Skipping.`);
+      return;
+    }
+
+    // Obtener datos del booking
+    const bookingSnap = await db.collection('bookings').doc(bookingId).get();
+    if (!bookingSnap.exists) {
+      console.warn(`[onChatMessageCreated] Booking ${bookingId} not found.`);
+      return;
+    }
+    const booking = bookingSnap.data()!;
+
+    // Determinar el destinatario según quién envió
+    let recipientId: string;
+    if (senderId === booking.guestId) {
+      recipientId = booking.ownerId;
+    } else if (senderId === booking.ownerId) {
+      recipientId = booking.guestId;
+    } else {
+      console.warn(`[onChatMessageCreated] Sender ${senderId} is neither guest nor owner of booking ${bookingId}.`);
+      return;
+    }
+
+    // Regla 3: Verificar presencia — si el destinatario está online (<60s), no enviar email
+    const recipientSnap = await db.collection('users').doc(recipientId).get();
+    if (!recipientSnap.exists) {
+      console.warn(`[onChatMessageCreated] Recipient user ${recipientId} not found.`);
+      return;
+    }
+    const recipient = recipientSnap.data()!;
+
+    if (recipient.onlineAt) {
+      const onlineAtMs: number = typeof recipient.onlineAt.toMillis === 'function'
+        ? recipient.onlineAt.toMillis()
+        : new Date(recipient.onlineAt).getTime();
+      const nowMs = Date.now();
+      const secondsSinceOnline = (nowMs - onlineAtMs) / 1000;
+
+      if (secondsSinceOnline < 60) {
+        console.log(`[onChatMessageCreated] Recipient ${recipientId} is online (${secondsSinceOnline.toFixed(1)}s ago). No email sent.`);
+        return;
+      }
+    }
+
+    // Obtener datos del listing para el título
+    const listingSnap = await db.collection('listings').doc(booking.listingId).get();
+    const listing = listingSnap.data();
+    const listingTitle = listing?.title || 'la propiedad';
+
+    const senderSnap = await db.collection('users').doc(senderId).get();
+    const senderData = senderSnap.data();
+    const senderName: string = senderData?.displayName || message.senderName || 'Alguien';
+
+    const recipientEmail: string = recipient.email;
+    const recipientName: string = recipient.displayName || 'Usuario';
+
+    if (!recipientEmail) {
+      console.warn(`[onChatMessageCreated] Recipient ${recipientId} has no email. Skipping notification.`);
+      return;
+    }
+
+    // Enviar email via Firebase Extension (colección 'mail')
+    try {
+      await db.collection('mail').add({
+        to: recipientEmail,
+        message: {
+          subject: `💬 ${senderName} te ha enviado un mensaje — VeneStay`,
+          html: buildChatMessageEmailHTML({
+            senderName,
+            recipientName,
+            messageText: message.text,
+            bookingId,
+            listingTitle,
+            appBaseUrl: booking.appBaseUrl,
+          }),
+        },
+      });
+
+      // Marcar el mensaje como notificado (anti-duplicado)
+      await snap.ref.update({ emailNotified: true });
+
+      console.log(`[onChatMessageCreated] Email sent to ${recipientEmail} for booking ${bookingId}. Message: ${messageId}`);
+    } catch (err) {
+      console.error('[onChatMessageCreated] Error sending chat notification email:', err);
+    }
+  }
+);
+

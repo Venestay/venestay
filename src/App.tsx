@@ -13,6 +13,7 @@ import { useBookingManager } from '@/features/bookings/hooks/use-booking-manager
 import { useDatabaseSeeder } from '@/lib/hooks/use-database-seeder';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ChatNotificationProvider } from '@/features/bookings/hooks/useChatNotifications';
+import { usePresence } from '@/features/bookings/hooks/usePresence';
 
 // 🚀 CODE SPLITTING: Lazy Load de componentes pesados
 const AdminDashboard = lazy(
@@ -49,6 +50,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App: React.FC = () => {
   useBookingManager();
   useDatabaseSeeder();
+  usePresence();
 
   return (
     <ErrorBoundary>

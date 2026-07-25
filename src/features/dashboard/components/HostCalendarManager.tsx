@@ -6,6 +6,7 @@ import {
   ChevronRight,
   X,
   Lock,
+  Unlock,
   CheckCircle,
   CalendarX,
   CalendarCheck,
@@ -48,8 +49,11 @@ const HostCalendarManager: React.FC<HostCalendarManagerProps> = ({
     goToNextMonth,
     rangeStart,
     rangeEnd,
+    hasBlockedInRange,
+    hasAvailableInRange,
     handleDayClick,
     blockSelectedRange,
+    unblockSelectedRange,
     clearAll,
     resetRange,
     isLoading,
@@ -63,12 +67,12 @@ const HostCalendarManager: React.FC<HostCalendarManagerProps> = ({
     : listing.title;
 
   const blockedCount = listing.blockedDates?.length ?? 0;
-  const canBlock = rangeStart !== null && rangeEnd !== null && !isSaving;
 
-  const getDayAriaLabel = (date: string, isReserved: boolean, isBlocked: boolean) => {
+  const getDayAriaLabel = (date: string, isReserved: boolean, isBlocked: boolean, isPast: boolean) => {
     const [year, month, day] = date.split('-').map(Number);
     const d = new Date(year, month - 1, day);
     const formatted = d.toLocaleDateString('es-VE', { day: 'numeric', month: 'long', year: 'numeric' });
+    if (isPast) return `Fecha pasada (${formatted})`;
     if (isReserved) return `Reservado el ${formatted}`;
     if (isBlocked) return `Bloqueado manualmente el ${formatted}`;
     return `Seleccionar ${formatted}`;
@@ -187,9 +191,9 @@ const HostCalendarManager: React.FC<HostCalendarManagerProps> = ({
               ) : (
                 <div className="grid grid-cols-7 gap-1">
                   {days.map((day) => {
-                    const isDisabled = !day.isCurrentMonth || day.isReserved;
+                    const isDisabled = !day.isCurrentMonth || day.isReserved || day.isPast;
                     const ariaLabel = day.isCurrentMonth
-                      ? getDayAriaLabel(day.date, day.isReserved, day.isBlocked)
+                      ? getDayAriaLabel(day.date, day.isReserved, day.isBlocked, day.isPast)
                       : undefined;
 
                     return (
@@ -204,33 +208,37 @@ const HostCalendarManager: React.FC<HostCalendarManagerProps> = ({
                           'aspect-square text-xs font-bold',
                           // Not current month
                           !day.isCurrentMonth && 'cursor-default opacity-20',
+                          // Past date
+                          day.isCurrentMonth && day.isPast && [
+                            'cursor-not-allowed opacity-30 text-gray-400 bg-gray-50',
+                          ],
                           // Reserved (read-only)
-                          day.isCurrentMonth && day.isReserved && [
+                          day.isCurrentMonth && !day.isPast && day.isReserved && [
                             'cursor-not-allowed bg-[#0b1120] text-white',
                           ],
                           // Blocked manually
-                          day.isCurrentMonth && day.isBlocked && !day.isReserved && [
-                            'bg-[#c5a059] text-[#0b1120] cursor-pointer',
+                          day.isCurrentMonth && !day.isPast && day.isBlocked && !day.isReserved && [
+                            'bg-[#c5a059] text-[#0b1120] cursor-pointer hover:bg-[#b58f48]',
                           ],
                           // Selected endpoints
-                          day.isCurrentMonth && day.isSelected && !day.isReserved && [
+                          day.isCurrentMonth && !day.isPast && day.isSelected && !day.isReserved && [
                             'bg-[#0b1120] text-white ring-2 ring-[#c5a059] ring-offset-1 scale-110 z-10',
                           ],
                           // In range (between start and end)
-                          day.isCurrentMonth && day.isInRange && !day.isSelected && !day.isReserved && !day.isBlocked && [
+                          day.isCurrentMonth && !day.isPast && day.isInRange && !day.isSelected && !day.isReserved && !day.isBlocked && [
                             'bg-[#c5a059]/20 text-[#0b1120]',
                           ],
                           // Available
-                          day.isCurrentMonth && !day.isBlocked && !day.isReserved && !day.isSelected && !day.isInRange && [
+                          day.isCurrentMonth && !day.isPast && !day.isBlocked && !day.isReserved && !day.isSelected && !day.isInRange && [
                             'hover:bg-gray-100 text-gray-700 cursor-pointer',
                           ],
                         )}
                       >
                         <span>{day.dayOfMonth}</span>
-                        {day.isCurrentMonth && day.isReserved && (
+                        {day.isCurrentMonth && !day.isPast && day.isReserved && (
                           <CheckCircle className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5" aria-hidden="true" />
                         )}
-                        {day.isCurrentMonth && day.isBlocked && !day.isReserved && (
+                        {day.isCurrentMonth && !day.isPast && day.isBlocked && !day.isReserved && (
                           <Lock className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5" aria-hidden="true" />
                         )}
                       </button>
@@ -294,14 +302,14 @@ const HostCalendarManager: React.FC<HostCalendarManagerProps> = ({
 
             {/* ── Footer actions ── */}
             <div className="shrink-0 border-t border-gray-100 px-6 py-4 pb-safe">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 {/* Clear all */}
                 <button
                   onClick={clearAll}
                   disabled={isSaving || blockedCount === 0}
                   aria-label={`Limpiar los ${blockedCount} bloqueos manuales de esta propiedad`}
                   className={cn(
-                    'flex items-center gap-2 rounded-2xl border px-5 py-3 text-[11px] font-black tracking-widest uppercase transition-all',
+                    'flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-[11px] font-black tracking-widest uppercase transition-all',
                     blockedCount === 0
                       ? 'border-gray-100 text-gray-300 cursor-not-allowed'
                       : 'border-red-200 text-red-500 hover:bg-red-50'
@@ -312,7 +320,7 @@ const HostCalendarManager: React.FC<HostCalendarManagerProps> = ({
                   ) : (
                     <CalendarX className="h-4 w-4" />
                   )}
-                  <span className="hidden sm:inline">Limpiar todo</span>
+                  <span>Limpiar todo</span>
                   {blockedCount > 0 && (
                     <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-black text-red-500">
                       {blockedCount}
@@ -320,25 +328,48 @@ const HostCalendarManager: React.FC<HostCalendarManagerProps> = ({
                   )}
                 </button>
 
-                {/* Block range */}
-                <button
-                  onClick={blockSelectedRange}
-                  disabled={!canBlock}
-                  aria-label="Bloquear el rango de fechas seleccionado"
-                  className={cn(
-                    'flex flex-1 items-center justify-center gap-2 rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest uppercase transition-all shadow-sm',
-                    canBlock
-                      ? 'bg-[#0b1120] text-white hover:bg-[#c5a059] hover:text-[#0b1120]'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  )}
-                >
-                  {isSaving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <CalendarCheck className="h-4 w-4" />
-                  )}
-                  Bloquear Rango
-                </button>
+                {/* Range actions */}
+                <div className="flex flex-1 gap-2">
+                  {/* Unblock range */}
+                  <button
+                    onClick={unblockSelectedRange}
+                    disabled={isSaving || !rangeStart || !hasBlockedInRange}
+                    aria-label="Desbloquear el rango de fechas seleccionado"
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-[11px] font-black tracking-widest uppercase transition-all shadow-sm border',
+                      rangeStart && hasBlockedInRange && !isSaving
+                        ? 'border-amber-500 bg-amber-50 text-amber-900 hover:bg-amber-100'
+                        : 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed'
+                    )}
+                  >
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Unlock className="h-4 w-4" />
+                    )}
+                    <span>Desbloquear Rango</span>
+                  </button>
+
+                  {/* Block range */}
+                  <button
+                    onClick={blockSelectedRange}
+                    disabled={isSaving || !rangeStart || !hasAvailableInRange}
+                    aria-label="Bloquear el rango de fechas seleccionado"
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-[11px] font-black tracking-widest uppercase transition-all shadow-sm',
+                      rangeStart && hasAvailableInRange && !isSaving
+                        ? 'bg-[#0b1120] text-white hover:bg-[#c5a059] hover:text-[#0b1120]'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    )}
+                  >
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CalendarCheck className="h-4 w-4" />
+                    )}
+                    <span>Bloquear Rango</span>
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -351,3 +382,4 @@ const HostCalendarManager: React.FC<HostCalendarManagerProps> = ({
 };
 
 export default HostCalendarManager;
+
