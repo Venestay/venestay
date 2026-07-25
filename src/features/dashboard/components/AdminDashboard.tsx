@@ -17,7 +17,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, functions } from '@/lib/firebase';
 import { ENVIRONMENTS } from '../constants/dashboard.constants';
-import { Search, ShieldCheck, RefreshCcw, Clock, Download } from 'lucide-react';
+import { Search, ShieldCheck, Clock, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -40,7 +40,6 @@ import BookingList from './BookingList';
 import ListingList from './ListingList';
 import StatsCards from './StatsCards';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import GuestRequestVerificationDrawer from './GuestRequestVerificationDrawer';
 
 // Rule: bundle-dynamic-imports
@@ -83,7 +82,6 @@ const AdminDashboard: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
-  const [isSyncConfirmOpen, setIsSyncConfirmOpen] = useState(false);
   const [kycPendingCount, setKycPendingCount] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -454,53 +452,6 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleSyncListings = async () => {
-    const toastId = toast.loading('Sincronizando visibilidad...');
-    try {
-      const { getDocs, collection, updateDoc, doc } = await import('firebase/firestore');
-      const snapshot = await getDocs(collection(db, 'listings'));
-      let updated = 0;
-      let errors = 0;
-      
-      for (const lDoc of snapshot.docs) {
-        const data = lDoc.data();
-        if (!data.isPublishedFromDashboard) {
-          try {
-            // Asegurar que el documento cumple con isValidListing de firestore.rules
-            const updatePayload: Record<string, unknown> = {
-              isPublishedFromDashboard: true,
-              updatedAt: new Date().toISOString()
-            };
-
-            // Rellenar campos críticos si faltan (para pasar isValidListing)
-            if (!data.city) updatePayload.city = 'Caracas';
-            if (!data.images) updatePayload.images = [];
-            if (!data.maxGuests) updatePayload.maxGuests = 1;
-            if (!data.description) updatePayload.description = 'Propiedad importada';
-            if (!data.location) updatePayload.location = 'Ubicación no especificada';
-            if (!data.pricePerNight) updatePayload.pricePerNight = 0;
-            if (!data.hostId && user) updatePayload.hostId = user.uid;
-
-            await updateDoc(doc(db, 'listings', lDoc.id), updatePayload);
-            updated++;
-          } catch (e) {
-            console.error(`Error migrando ${lDoc.id}:`, e);
-            errors++;
-          }
-        }
-      }
-      
-      if (errors > 0) {
-        toast.error(`Sincronización parcial: ${updated} éxito, ${errors} fallos. Verifica tus permisos de Admin.`, { id: toastId });
-      } else {
-        toast.success(`Sincronización completada: ${updated} listados actualizados`, { id: toastId });
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Error crítico al acceder a la base de datos', { id: toastId });
-    }
-  };
-
   const handleExportCSV = async () => {
     setIsExporting(true);
     const toastId = toast.loading('Generando reporte CSV de usuarios...');
@@ -547,7 +498,7 @@ const AdminDashboard: React.FC = () => {
   }, [listings, isAdmin, user?.uid, searchTerm]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 pt-16">
+    <div className="flex min-h-screen flex-col bg-gray-50">
       <div className="animate-slide-up relative flex w-full grow flex-col overflow-hidden bg-white shadow-2xl">
         <DashboardHeader
           activeTab={activeTab}
@@ -569,15 +520,17 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Toolbar */}
-        <div className="flex flex-col gap-4 border-b border-gray-100 bg-gray-50/50 p-6 lg:flex-row">
-          <div className="relative grow flex items-center gap-4">
-            <div className="relative grow">
+        {/* Toolbar — Stack de 2 filas para mejor jerarquía visual */}
+        <div className="flex flex-col gap-3 border-b border-gray-100 bg-gray-50/50 px-6 pt-5 pb-4">
+
+          {/* Fila 1: Búsqueda global + Acción de sistema */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="relative w-full max-w-md">
               <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder={activeTab === 'bookings' ? 'Buscar reservas...' : 'Buscar propiedades...'}
-                className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-200 bg-white py-3 pr-4 pl-12 text-sm font-bold transition-all focus:outline-none"
+                className="text-brand-navy focus:border-brand-500 w-full rounded-2xl border border-gray-200 bg-white py-2.5 pr-4 pl-12 text-sm font-bold transition-all focus:outline-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -586,24 +539,29 @@ const AdminDashboard: React.FC = () => {
               <button
                 onClick={handleExportCSV}
                 disabled={isExporting}
-                className="flex items-center gap-2 bg-brand-navy hover:bg-brand-500 text-white hover:text-brand-navy px-5 py-3 rounded-2xl text-xs font-black tracking-widest uppercase transition-all shadow-md disabled:opacity-50 shrink-0"
+                className="flex shrink-0 items-center gap-2 rounded-2xl bg-brand-navy px-5 py-2.5 text-xs font-black tracking-widest uppercase text-white shadow-md transition-all hover:bg-brand-500 hover:text-brand-navy disabled:opacity-50"
               >
-                {isExporting ? <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></span> : <Download className="h-4 w-4" />}
+                {isExporting
+                  ? <span className="h-4 w-4 animate-spin rounded-full border-b-2 border-current" />
+                  : <Download className="h-4 w-4" />}
                 <span className="hidden sm:inline">Exportar Usuarios CSV</span>
                 <span className="sm:hidden">CSV</span>
               </button>
             )}
           </div>
 
+          {/* Fila 2: Filtros contextuales de estado + Toggle histórico */}
           {activeTab === 'bookings' && (
-            <div className="no-scrollbar flex items-center space-x-2 overflow-x-auto pb-2 lg:pb-0">
+            <div className="no-scrollbar flex items-center gap-2 overflow-x-auto">
               {(['ALL', 'PENDING_APPROVAL', 'AWAITING_VERIFICATION', 'CONFIRMED', 'PENDING_PAYMENT'] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
                   className={cn(
-                    'rounded-xl border px-4 py-2.5 text-xs font-black tracking-widest whitespace-nowrap uppercase transition-all',
-                    filter === f ? 'bg-brand-navy border-brand-navy text-white' : 'hover:border-brand-500 hover:text-brand-navy border-gray-100 bg-white text-gray-500'
+                    'shrink-0 rounded-full border px-4 py-1.5 text-[11px] font-bold tracking-wide whitespace-nowrap uppercase transition-all',
+                    filter === f
+                      ? 'bg-brand-navy border-brand-navy text-white shadow-sm'
+                      : 'border-gray-200 bg-white text-gray-400 hover:border-brand-500 hover:text-brand-navy'
                   )}
                 >
                   {f === 'ALL' ? 'Todos'
@@ -613,27 +571,19 @@ const AdminDashboard: React.FC = () => {
                     : 'Pendientes'}
                 </button>
               ))}
-              <div className="ml-auto flex items-center border-l border-gray-200 pl-4">
+
+              <div className="ml-auto shrink-0 border-l border-gray-200 pl-3">
                 <button
                   onClick={() => setShowHistory(!showHistory)}
                   className={cn(
-                    'flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black tracking-widest uppercase transition-all',
-                    showHistory 
-                      ? 'bg-amber-50 text-amber-600 border border-amber-100' 
-                      : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                    'flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-[11px] font-bold tracking-wide uppercase transition-all',
+                    showHistory
+                      ? 'border-amber-200 bg-amber-50 text-amber-600'
+                      : 'border-emerald-200 bg-emerald-50 text-emerald-600'
                   )}
                 >
-                  {showHistory ? (
-                    <>
-                      <Clock className="h-3.5 w-3.5" />
-                      Ocultar Histórico
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="h-3.5 w-3.5" />
-                      Ver Histórico ({bookings.length})
-                    </>
-                  )}
+                  <Clock className="h-3 w-3" />
+                  {showHistory ? 'Ocultar Histórico' : `Ver Histórico (${bookings.length})`}
                 </button>
               </div>
             </div>
@@ -642,37 +592,6 @@ const AdminDashboard: React.FC = () => {
 
         {/* List Content */}
         <div className="no-scrollbar grow overflow-y-auto bg-gray-50/20 p-6 md:p-8">
-          {/* Herramienta de Migración Temporal - fuera de AnimatePresence para evitar conflicto con mode="wait" */}
-          {(isAdmin || isHost) && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mb-8 overflow-hidden"
-            >
-              <div className="rounded-3xl border-2 border-dashed border-brand-500/20 bg-brand-500/5 p-6 text-center">
-                <div className="flex flex-col items-center justify-between gap-4 md:flex-row md:text-left">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/20">
-                      <RefreshCcw className="text-brand-500 h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-brand-navy text-sm font-black">¿No ves tus propiedades?</h4>
-                      <p className="text-xs font-medium text-gray-500">
-                        Usa esta utilidad para activar la visibilidad de listados antiguos en el nuevo sistema.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setIsSyncConfirmOpen(true)}
-                    className="bg-brand-navy text-white whitespace-nowrap rounded-xl px-6 py-2 text-xs font-black tracking-widest uppercase shadow-md hover:bg-brand-500 hover:text-brand-navy transition-all"
-                  >
-                    Sincronizar Visibilidad
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
           <AnimatePresence mode="wait">
             {loading ? (
               <motion.div
@@ -816,14 +735,6 @@ const AdminDashboard: React.FC = () => {
         onClose={() => setListingToDelete(null)}
         onConfirm={() => listingToDelete && handleDeleteListing(listingToDelete.id)}
         itemTitle={listingToDelete?.title || ''}
-      />
-
-      <ConfirmDialog
-        isOpen={isSyncConfirmOpen}
-        onClose={() => setIsSyncConfirmOpen(false)}
-        onConfirm={handleSyncListings}
-        title="Sincronizar Visibilidad"
-        message="¿Deseas migrar todos los listados para asegurar su visibilidad en la nueva plataforma? Esto actualizará la base de datos."
       />
     </div>
   );

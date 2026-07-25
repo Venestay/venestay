@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { MapPin, Edit2, Trash2, Plus } from 'lucide-react';
+import { MapPin, Edit2, Trash2, Plus, CalendarDays } from 'lucide-react';
 import { Listing } from '@/types';
+import HostCalendarManager from './HostCalendarManager';
 
 interface ListingListProps {
   listings: Listing[];
@@ -17,6 +18,7 @@ const ListingList: React.FC<ListingListProps> = ({
   user,
 }) => {
   const [now] = useState(() => Date.now());
+  const [calendarListing, setCalendarListing] = useState<Listing | null>(null);
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -68,8 +70,17 @@ const ListingList: React.FC<ListingListProps> = ({
               </div>
               <div className="flex gap-2">
                 <button
+                  onClick={() => setCalendarListing(listing)}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#c5a059] py-2.5 px-4 text-[10px] font-black tracking-widest text-[#0b1120] uppercase transition-colors hover:bg-[#b08d4b]"
+                  title="Gestionar disponibilidad"
+                  aria-label={`Gestionar calendario de disponibilidad de ${listing.title}`}
+                >
+                  <CalendarDays className="h-3 w-3" /> Calendario
+                </button>
+                <button
                   onClick={() => setEditingListing(listing)}
                   className="bg-brand-navy hover:bg-brand-500 flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-[10px] font-black tracking-widest text-white uppercase transition-colors"
+                  aria-label={`Editar propiedad ${listing.title}`}
                 >
                   <Edit2 className="h-3 w-3" /> Editar
                 </button>
@@ -77,6 +88,7 @@ const ListingList: React.FC<ListingListProps> = ({
                   onClick={() => handleDeleteListing(listing.id)}
                   className="flex items-center justify-center rounded-xl bg-gray-50 p-2.5 text-red-500 transition-colors hover:bg-red-50"
                   title="Eliminar propiedad"
+                  aria-label={`Eliminar propiedad ${listing.title}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -85,6 +97,15 @@ const ListingList: React.FC<ListingListProps> = ({
           </div>
         </div>
       ))}
+      {/* Calendar Manager Modal */}
+      {calendarListing && (
+        <HostCalendarManager
+          listing={calendarListing}
+          isOpen={!!calendarListing}
+          onClose={() => setCalendarListing(null)}
+        />
+      )}
+
       <button
         onClick={() => {
           localStorage.removeItem('venestay_draft_listing');

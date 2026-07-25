@@ -33,10 +33,10 @@ Frontend implementado y compilando sin errores. Queda **1 tarea técnica** y **1
 
 ```text
 SPRINT    : S05 — Admin Tools & Maintenance
-QA_GATE   : PASS | tsc OK (0 errores) | lint OK | Vitest OK (3/3) | Playwright OK (2/2) | 2026-07-24 (cronCompleteBookings DEPLOYED)
+QA_GATE   : PASS | tsc OK (0 errores) | lint OK (0 errores, 20 warnings pre-existentes) | 2026-07-25 (SPEC-HOST-CALENDAR-001 COMPLETADO)
 BLOQUEANTE: ninguno
 RAMA_LOCAL: main
-TURNO_REANCLA: 0
+TURNO_REANCLA: 5
 ```
 
 ---
@@ -114,6 +114,8 @@ DEV (local, npm run dev) → QA (cerz30/qa, branch en fork) → PRD (origin/main
 > Usar la plantilla en `./docs/ai_harness/MEMORY_CHECKPOINT_TEMPLATE.md`.
 
 | Fecha | Módulo | Estado | QA Gate | Próxima acción |
+| 2026-07-25 | Redirección de Sesión Reseña Mis Viajes (SPEC-MYTRIPS-REVIEW-LINK-001) | COMPLETADO | PASS | Implementado handleReviewClick en MyTrips con búsqueda asíncrona del reviewToken y Loader2 state. |
+| 2026-07-24 | Animación Botones Mis Viajes (SPEC-MYTRIPS-HOVER-ANIM-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Igualada la fluidez del hover en botones Chat y Dejar Reseña con el botón Ver Resumen. |
 | 2026-07-24 | Exportar Usuarios CSV (SPEC-ADMIN-EXPORT-USERS-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Botón implementado en Admin Dashboard (KYCAuditPanel) con Cloud Function paginada para administradores. |
 | 2026-07-23 | Optimización UX Móvil ListingDetail (SPEC-LISTING-MOBILE-UX-001) | COMPLETADO | PASS | Módulo cerrado y verificado. Eliminados controles redundantes en sección 04 móvil y reemplazados por tarjeta informativa del modelo de pago 20%/80%. |
 | 2026-07-23 | Flujo Completo de Reseñas (SPEC-REVIEWS-WORKFLOW-001) | COMPLETADO | PASS | Módulo cerrado y verificado (`tsc` 0 errores en frontend y functions). Implementados tipos COMPLETED, getPendingReviewSessionByToken, hook URL listener (?review=id), botón en MyTrips, cronCompleteBookings y trigger Cloud Function. |

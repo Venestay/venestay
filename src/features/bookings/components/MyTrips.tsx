@@ -12,6 +12,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import { db } from '@/lib/firebase';
+import { getPendingReviewSession } from '@/services/review-service';
 import { useAuth } from '@/features/auth/hooks/AuthContext';
 import { useGuestProfile } from '@/features/dashboard/hooks/useGuestProfile';
 import { Booking } from '@/types';
@@ -28,6 +29,7 @@ import {
   MessageSquare,
   Upload,
   Star,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -110,6 +112,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
   const [mobileTab, setMobileTab] = useState<'reservas' | 'chat'>('reservas');
   const [rescheduleBookingId, setRescheduleBookingId] = useState<string | null>(null);
   const [summaryBooking, setSummaryBooking] = useState<Booking | null>(null);
+  const [isNavigatingReview, setIsNavigatingReview] = useState(false);
   const navigate = useNavigate();
 
   // Stable snapshot of "now" for the 48-hour threshold comparison.
@@ -373,6 +376,25 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
       toast.error('Hubo un error al subir el comprobante. Inténtalo de nuevo.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleReviewClick = async (booking: Booking) => {
+    if (!user) return;
+    setIsNavigatingReview(true);
+    try {
+      const session = await getPendingReviewSession(user.uid, booking.id);
+      if (session) {
+        navigate(`/listing/${booking.listingId}?review=${session.id}`);
+      } else {
+        toast.error('No se encontró una sesión de reseña pendiente o ya ha expirado.');
+        navigate(`/listing/${booking.listingId}`);
+      }
+    } catch (error) {
+      console.error('Error fetching review session:', error);
+      navigate(`/listing/${booking.listingId}`);
+    } finally {
+      setIsNavigatingReview(false);
     }
   };
 
@@ -766,11 +788,16 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                       )}
                                       {booking.status === 'COMPLETED' && (
                                         <button
-                                          onClick={() => navigate(`/listing/${booking.listingId}`)}
-                                          className="flex-1 bg-brand-gold hover:bg-brand-gold/90 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                                          onClick={() => handleReviewClick(booking)}
+                                          disabled={isNavigatingReview}
+                                          className="flex-1 bg-brand-gold hover:opacity-80 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
                                         >
-                                          <Star className="h-3 w-3 fill-current text-brand-navy" />
-                                          Dejar Reseña
+                                          {isNavigatingReview ? (
+                                            <Loader2 className="h-3 w-3 animate-spin text-brand-navy" />
+                                          ) : (
+                                            <Star className="h-3 w-3 fill-current text-brand-navy" />
+                                          )}
+                                          {isNavigatingReview ? 'Cargando...' : 'Dejar Reseña'}
                                         </button>
                                       )}
                                     </div>
@@ -786,12 +813,12 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                     }
                                   }}
                                   className={cn(
-                                    "relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-[9px] font-black tracking-wider uppercase border transition-all duration-300",
+                                    "relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-[9px] font-black tracking-wider uppercase border transition-all",
                                     activeChatId === booking.id
                                       ? "bg-brand-navy text-white border-brand-navy"
                                       : unreadPerBooking[booking.id] > 0
                                       ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100 shadow-sm shadow-red-100"
-                                      : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                                      : "bg-white text-gray-500 border-gray-200 hover:bg-gray-100"
                                   )}
                                 >
                                   <MessageSquare className="h-3 w-3 shrink-0" />

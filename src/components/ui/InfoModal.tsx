@@ -257,10 +257,10 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, tab }) => {
           <div className="space-y-3">
             <div className="rounded-xl border border-gray-100 p-3">
               <span className="text-brand-navy mb-1 block text-xs font-black">
-                Validación de Identidad (KYC)
+                Verificación de Contacto
               </span>
               <p className="text-[10px] text-gray-400">
-                Todo huésped pasa por un sistema de verificación por fases antes de poder confirmar una reserva.
+                Todo huésped debe verificar su correo electrónico y número de teléfono antes de poder confirmar una reserva.
               </p>
             </div>
             <div className="rounded-xl border border-gray-100 p-3">

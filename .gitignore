@@ -49,3 +49,6 @@ playwright/.cache/
 tests/.auth/
 debug.html
 .agents/
+
+# Local npm config
+.npmrc

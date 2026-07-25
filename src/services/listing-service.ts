@@ -42,10 +42,23 @@ export const getListingById = async (id: string): Promise<Listing | null> => {
 
 /**
  * Limpia todas las fechas bloqueadas de una propiedad.
- * USO EXCLUSIVO: administradores (verificar rol en el componente).
+ * USO EXCLUSIVO: administradores o el propietario del listing.
  * NO borra reservas de la colección `bookings`.
  */
 export const clearListingCalendar = async (listingId: string): Promise<void> => {
   const docRef = doc(db, 'listings', listingId);
   await updateDoc(docRef, { blockedDates: [] });
+};
+
+/**
+ * Reemplaza el array completo de blockedDates de una propiedad.
+ * Solo el propietario o un admin deben invocar esta función (verificar en el componente llamante).
+ * No cancela ni modifica reservas activas en la colección `bookings`.
+ */
+export const updateBlockedDates = async (
+  listingId: string,
+  blockedDates: string[]
+): Promise<void> => {
+  const docRef = doc(db, 'listings', listingId);
+  await updateDoc(docRef, { blockedDates });
 };
