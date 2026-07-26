@@ -577,7 +577,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                     localStorage.removeItem('venestay_draft_listing');
                     setEditingListing(null);
                   }}
-                  className="w-full py-4 bg-gray-100 text-gray-500 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-red-50 hover:text-red-500 transition-colors"
+                  className="w-full py-4 bg-zinc-100 text-black rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-red-600 hover:text-white transition-colors"
                 >
                   Salir sin guardar
                 </button>

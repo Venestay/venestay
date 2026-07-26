@@ -516,7 +516,7 @@ const Navbar: React.FC<NavbarProps> = ({
               )}
             >
               {!city.isAvailable && (
-                <span className="absolute -top-1 -right-1 z-10 rounded-full bg-amber-500 px-1.5 py-0.5 text-[6px] font-black tracking-tighter text-gray-900 shadow-sm transition-transform group-hover:scale-110">
+                <span className="absolute -top-1 -right-1 z-10 rounded-full bg-amber-500 px-1.5 py-0.5 text-[6px] font-black tracking-tighter text-[#0b1120] shadow-sm transition-transform group-hover:scale-110">
                   PRÓXIMAMENTE
                 </span>
               )}

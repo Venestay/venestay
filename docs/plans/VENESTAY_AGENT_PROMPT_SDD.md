@@ -408,9 +408,9 @@ El usuario puede emitir estos comandos en cualquier momento:
 | :------------------- | :----------------------------------- | :------------------------------------------------------------------------- | :----------------------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
 | 1 — Project Manager  | Product Manager (Alex)               | `.agents/temp_agency_agents/product/product-manager.md`                    | Sprint Prioritizer       | Activar cuando hay ≥2 tareas en competencia dentro del mismo sprint → aplicar scoring RICE para ordenar prioridad | —                                                                                                                          |
 | 2 — Planner          | Senior Project Manager               | `.agents/temp_agency_agents/project-management/project-manager-senior.md`  | —                        | —                                                                                                                 | `typescript-advanced-types`, `zod`                                                                                         |
-| 3 — Técnico Frontend | Frontend Developer                   | `.agents/temp_agency_agents/engineering/engineering-frontend-developer.md` | —                        | —                                                                                                                 | `react-best-practices`, `tailwind-css-patterns`, `composition-patterns`, `frontend-design`, `accessibility`, `seo`, `vite` |
+| 3 — Técnico Frontend | Frontend Developer                   | `.agents/temp_agency_agents/engineering/engineering-frontend-developer.md` | Impeccable UI Craft      | Previo a codificar cualquier componente UI o layout → ejecutar análisis visual y seguir craft-floor | `react-best-practices`, `tailwind-css-patterns`, `composition-patterns`, `frontend-design`, `impeccable`, `accessibility`, `seo`, `vite` |
 | 3 — Técnico Backend  | Backend Architect                    | `.agents/temp_agency_agents/engineering/engineering-backend-architect.md`  | —                        | —                                                                                                                 | `nodejs-best-practices`, `nodejs-backend-patterns`, `zod`, `firebase`                                                      |
-| 4 — QA Gate          | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md`            | —                        | —                                                                                                                 | `accessibility`, `venestay-validation`, `firebase`, `testsprite-verify`                                                    |
+| 4 — QA Gate          | Reality Checker + Evidence Collector | `.agents/temp_agency_agents/testing/testing-reality-checker.md`            | Impeccable Detector      | En cada verificación visual de UI → correr `node .agents/skills/impeccable/scripts/detect.mjs`                     | `accessibility`, `impeccable`, `venestay-validation`, `firebase`, `testsprite-verify`                                     |
 
 **Regla de activación:** El agente anuncia el cambio de rol antes de operar: `"[Activando Nodo N — Nombre del Rol]"`. No cambia de rol sin anunciarlo.
 
@@ -427,6 +427,7 @@ El usuario puede emitir estos comandos en cualquier momento:
 | ♿ Accessibility Auditor | `.agents/temp_agency_agents/testing/testing-accessibility-auditor.md` | Componente interactivo nuevo completado — auditoría WCAG 2.2 AA    |
 | 📸 Evidence Collector    | `.agents/temp_agency_agents/testing/testing-evidence-collector.md`    | QA FALLO — capturar evidencia visual del error                     |
 | 🔍 Code Reviewer         | `.agents/temp_agency_agents/engineering/engineering-code-reviewer.md` | Antes de merge a `qa` — revisión FSD-lite                          |
+| 🎨 Impeccable Detector   | `.agents/skills/impeccable/SKILL.md`                                  | Verificación de calidad visual frontend en el QA Gate              |
 
 #### Sub-agentes del Nodo 3
 
@@ -434,6 +435,7 @@ El usuario puede emitir estos comandos en cualquier momento:
 | :------------------------- | :------------------------------------------------------------------------------ | :----------------------------------------------------- |
 | 🔧 Minimal Change Engineer | `.agents/temp_agency_agents/engineering/engineering-minimal-change-engineer.md` | Correcciones P0/P1 con riesgo alto de regresión        |
 | 📷 Image Prompt Engineer   | `.agents/temp_agency_agents/design/design-image-prompt-engineer.md`             | Generación o edición de fotografías de propiedades     |
+| 🎨 Impeccable UI Craft     | `.agents/skills/impeccable/SKILL.md`                                            | Antes de implementar/modificar UI, verificar patrones  |
 
 ---
 

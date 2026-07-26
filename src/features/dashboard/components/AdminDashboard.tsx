@@ -17,7 +17,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, functions } from '@/lib/firebase';
 import { ENVIRONMENTS } from '../constants/dashboard.constants';
-import { Search, ShieldCheck, Clock, Download } from 'lucide-react';
+import { Search, ShieldCheck, Clock, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -542,7 +542,7 @@ const AdminDashboard: React.FC = () => {
                 className="flex shrink-0 items-center gap-2 rounded-2xl bg-brand-navy px-5 py-2.5 text-xs font-black tracking-widest uppercase text-white shadow-md transition-all hover:bg-brand-500 hover:text-brand-navy disabled:opacity-50"
               >
                 {isExporting
-                  ? <span className="h-4 w-4 animate-spin rounded-full border-b-2 border-current" />
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
                   : <Download className="h-4 w-4" />}
                 <span className="hidden sm:inline">Exportar Usuarios CSV</span>
                 <span className="sm:hidden">CSV</span>
@@ -657,7 +657,7 @@ const AdminDashboard: React.FC = () => {
                 <Suspense fallback={
                   <div className="flex justify-center items-center py-20">
                     <div className="text-center space-y-4">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500 mx-auto"></div>
+                      <Loader2 className="h-8 w-8 animate-spin text-brand-500 mx-auto" />
                       <p className="text-xs text-gray-500 font-bold">Cargando panel de auditoría...</p>
                     </div>
                   </div>

@@ -412,7 +412,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         return {
           label: 'Esperando Aprobación',
           icon: <Clock className="h-3 w-3 animate-pulse" />,
-          color: 'text-[#b08f23] bg-brand-gold/[0.05] border-brand-gold/20',
+          color: 'text-amber-600 bg-amber-50 border-amber-200',
         };
       case 'EXPIRED':
         return {
@@ -441,8 +441,8 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
       case 'COMPLETED':
         return {
           label: 'Estadía Finalizada',
-          icon: <CheckCircle2 className="h-3 w-3 text-brand-gold" />,
-          color: 'text-[#b08f23] bg-brand-gold/[0.08] border-brand-gold/30',
+          icon: <CheckCircle2 className="h-3 w-3 text-[#8a6d29]" />,
+          color: 'text-[#8a6d29] bg-[#c5a059]/15 border-[#c5a059]/40 font-black',
         };
       case 'REJECTED':
         return {
@@ -496,8 +496,10 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
           <button
+            type="button"
             onClick={handleClose}
-            className="rounded-2xl bg-white/10 px-4 py-2.5 text-white transition-all duration-300 hover:bg-white/20 flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+            aria-label="Volver a la página principal"
+            className="rounded-2xl bg-white/10 px-4 py-2.5 text-white transition-all duration-300 hover:bg-white/20 flex items-center gap-2 text-[10px] font-black tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-brand-navy min-h-[44px] cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver
@@ -507,26 +509,29 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
         {/* Mobile Tab Switcher */}
         <div className="flex lg:hidden border-b border-gray-100 bg-white px-4 shrink-0">
           <button
+            type="button"
             onClick={() => setMobileTab('reservas')}
             className={cn(
-              "grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all",
+              "grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer select-none",
               mobileTab === 'reservas'
                 ? "border-brand-navy text-brand-navy font-black"
-                : "border-transparent text-gray-400"
+                : "border-transparent text-slate-400 hover:text-brand-navy"
             )}
           >
-            Reservas
+            <span>Reservas</span>
           </button>
           <button
+            type="button"
             onClick={() => setMobileTab('chat')}
             className={cn(
-              "grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all relative flex items-center justify-center gap-1.5",
+              "group/mobilechat grow text-center py-3.5 text-xs font-black tracking-widest uppercase border-b-2 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer select-none relative",
               mobileTab === 'chat'
                 ? "border-brand-navy text-brand-navy font-black"
-                : "border-transparent text-gray-400"
+                : "border-transparent text-slate-400 hover:text-brand-navy"
             )}
           >
-            Chat
+            <MessageSquare className="h-3.5 w-3.5 transition-transform duration-200 group-hover/mobilechat:rotate-[-6deg] group-hover/mobilechat:scale-110" />
+            <span>Chat</span>
             {activeChatBooking && (
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
             )}
@@ -623,7 +628,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                   {statusInfo.icon}
                                   <span>{statusInfo.label}</span>
                                 </div>
-                                <span className="text-[10px] font-mono font-black text-gray-300">
+                                <span className="text-[10px] font-mono font-bold text-slate-600">
                                   REF: {booking.id.toUpperCase().slice(0, 8)}
                                 </span>
                               </div>
@@ -652,34 +657,34 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                               )}
 
                               {/* Dates & Guests (single line) */}
-                              <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-gray-500 mb-4 border-y border-gray-50 py-3">
+                              <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-700 mb-4 border-y border-gray-100 py-3">
                                 <span className="flex items-center gap-1.5">
-                                  <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                                  <Calendar className="h-3.5 w-3.5 text-slate-500" />
                                   {booking.startDate && booking.endDate
                                     ? `${format(new Date(booking.startDate), 'dd MMM', { locale: es })} → ${format(new Date(booking.endDate), 'dd MMM yyyy', { locale: es })}`
                                     : 'Fechas por definir'}
                                 </span>
-                                <span className="text-gray-300 font-normal">·</span>
+                                <span className="text-slate-400 font-normal">·</span>
                                 <span className="flex items-center gap-1.5">
-                                  <Users className="h-3.5 w-3.5 text-gray-400" />
+                                  <Users className="h-3.5 w-3.5 text-slate-500" />
                                   {booking.guests} {booking.guests === 1 ? 'Viajero' : 'Viajeros'}
                                 </span>
                               </div>
 
                               {/* Financial Details (single line horizontal) */}
-                              <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between text-[11px] font-bold text-gray-500 gap-2">
+                              <div className="bg-gray-50/80 border border-gray-200/60 rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between text-[11px] font-bold text-gray-500 gap-2">
                                 <div>
-                                  <span className="text-[8px] text-gray-400 uppercase block leading-none mb-0.5">Total</span>
+                                  <span className="text-[9px] text-slate-600 font-extrabold uppercase block leading-none mb-0.5">Total</span>
                                   <span className="text-brand-navy font-black text-xs">${booking.totalAmount}</span>
                                 </div>
                                 <div className="h-6 w-px bg-gray-200/80" />
                                 <div>
-                                  <span className="text-[8px] text-brand-gold uppercase block leading-none mb-0.5">Garantía (20%)</span>
-                                  <span className="text-brand-gold font-black text-xs">${(booking.totalAmount * 0.2).toFixed(2)}</span>
+                                  <span className="text-[9px] text-[#8a6d29] font-extrabold uppercase block leading-none mb-0.5">Garantía (20%)</span>
+                                  <span className="text-[#8a6d29] font-black text-xs">${(booking.totalAmount * 0.2).toFixed(2)}</span>
                                 </div>
                                 <div className="h-6 w-px bg-gray-200/80" />
                                 <div>
-                                  <span className="text-[8px] text-gray-400 uppercase block leading-none mb-0.5">Saldo en Check-In (80%)</span>
+                                  <span className="text-[9px] text-slate-600 font-extrabold uppercase block leading-none mb-0.5">Saldo en Check-In (80%)</span>
                                   <span className="text-brand-navy font-black text-xs">${(booking.totalAmount * 0.8).toFixed(2)}</span>
                                 </div>
                               </div>
@@ -765,7 +770,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                       </div>
                                     )
                                   ) : (
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                                       <button
                                         onClick={() => {
                                           if (booking.status === 'PENDING_PAYMENT') {
@@ -774,30 +779,31 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                             setSummaryBooking(booking);
                                           }
                                         }}
-                                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
+                                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-brand-navy rounded-xl py-2.5 min-h-[44px] text-[9px] font-black tracking-widest uppercase transition-all flex items-center justify-center"
                                       >
                                         Ver Resumen
                                       </button>
                                       {booking.status === 'CONFIRMED' && booking.cancellationPolicySnapshot === 'non_refundable_reschedulable' && (
                                         <button
                                           onClick={() => setRescheduleBookingId(booking.id)}
-                                          className="flex-1 border border-[#C5A059] hover:bg-[#C5A059]/10 text-[#C5A059] rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all"
+                                          className="flex-1 border border-brand-gold hover:bg-brand-gold/10 text-brand-gold rounded-xl py-2.5 min-h-[44px] text-[9px] font-black tracking-widest uppercase transition-all flex items-center justify-center"
                                         >
                                           Reprogramar
                                         </button>
                                       )}
                                       {booking.status === 'COMPLETED' && (
                                         <button
+                                          type="button"
                                           onClick={() => handleReviewClick(booking)}
                                           disabled={isNavigatingReview}
-                                          className="flex-1 bg-brand-gold hover:opacity-80 text-brand-navy rounded-xl py-2 text-[9px] font-black tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
+                                          className="group/review flex-1 border border-gray-200 hover:border-brand-gold/60 bg-white hover:bg-brand-gold/5 text-brand-navy rounded-xl py-2.5 min-h-[44px] text-[9px] font-black tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50 cursor-pointer"
                                         >
                                           {isNavigatingReview ? (
-                                            <Loader2 className="h-3 w-3 animate-spin text-brand-navy" />
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-gold" />
                                           ) : (
-                                            <Star className="h-3 w-3 fill-current text-brand-navy" />
+                                            <Star className="h-3.5 w-3.5 text-slate-400 group-hover/review:text-brand-500 group-hover/review:fill-brand-500 transition-colors duration-200" />
                                           )}
-                                          {isNavigatingReview ? 'Cargando...' : 'Dejar Reseña'}
+                                          <span>{isNavigatingReview ? 'Cargando...' : 'Dejar Reseña'}</span>
                                         </button>
                                       )}
                                     </div>
@@ -805,6 +811,7 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                 </div>
 
                                 <button
+                                  type="button"
                                   onClick={() => {
                                     setActiveChatId(booking.id);
                                     setActiveChatBooking(booking);
@@ -813,15 +820,15 @@ const MyTrips: React.FC<MyTripsProps> = ({ isOpen, onClose }) => {
                                     }
                                   }}
                                   className={cn(
-                                    "relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-[9px] font-black tracking-wider uppercase border transition-all",
+                                    "group/chat relative flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl text-[9px] font-black tracking-wider uppercase border transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer select-none",
                                     activeChatId === booking.id
-                                      ? "bg-brand-navy text-white border-brand-navy"
+                                      ? "bg-brand-navy text-white border-brand-navy shadow-sm"
                                       : unreadPerBooking[booking.id] > 0
-                                      ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100 shadow-sm shadow-red-100"
-                                      : "bg-white text-gray-500 border-gray-200 hover:bg-gray-100"
+                                      ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100 shadow-sm shadow-red-100"
+                                      : "bg-white text-slate-600 border-gray-200 hover:border-brand-navy hover:text-brand-navy hover:bg-slate-50"
                                   )}
                                 >
-                                  <MessageSquare className="h-3 w-3 shrink-0" />
+                                  <MessageSquare className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover/chat:rotate-[-6deg] group-hover/chat:scale-110" />
                                   <span>Chat</span>
                                   {unreadPerBooking[booking.id] > 0 && (
                                     <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white shadow-sm animate-pulse">

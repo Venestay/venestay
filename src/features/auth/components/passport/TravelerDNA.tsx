@@ -42,7 +42,7 @@ export const TravelerDNA: React.FC<TravelerDNAProps> = ({
     <div className="py-12 md:py-16 space-y-10">
       <div>
         <h3 className="text-2xl font-black tracking-tight text-brand-navy">ADN de Viajero</h3>
-        <p className="text-xs text-gray-600 mt-1 font-medium">Filtra el ecosistema según tu estilo de vida.</p>
+        <p className="text-xs text-slate-500 mt-1 font-medium">Personaliza tus preferencias para que el sistema te muestre el alojamiento ideal.</p>
       </div>
 
       <div className="space-y-8">

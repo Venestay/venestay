@@ -52,3 +52,12 @@ debug.html
 
 # Local npm config
 .npmrc
+
+# Impeccable Design Tooling
+.impeccable/
+.claude/
+.codex/
+.github/hooks/
+.github/skills/
+PRODUCT.md
+DESIGN.md

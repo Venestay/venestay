@@ -12,7 +12,6 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2, Sparkles } from 'lucide-react';
 import { usePassportForm, ALL_INTERESTS } from '../hooks/usePassportForm';
 import VerificationModal from './VerificationModal';
-import PaymentMethodModal from './PaymentMethodModal';
 import ConfirmExitModal from './ConfirmExitModal';
 import Navbar from '@/components/ui/Navbar';
 import { motion } from 'motion/react';
@@ -21,7 +20,6 @@ import { useBookingDraft } from '@/features/bookings/hooks/useBookingDraft';
 
 // Sub-componentes
 import { PassportHeader } from './passport/PassportHeader';
-import { TransactionalEngine } from './passport/TransactionalEngine';
 import { SecuritySection } from './passport/SecuritySection';
 import { PublicProfile } from './passport/PublicProfile';
 import { TravelerDNA } from './passport/TravelerDNA';
@@ -38,7 +36,6 @@ const ProfileSettings: React.FC = () => {
 
   // Estados de UI locales (apertura de modales)
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isConfirmExitOpen, setIsConfirmExitOpen] = useState(false);
   const [isGeneratingQA, setIsGeneratingQA] = useState(false);
   const [pendingBookingsCount, setPendingBookingsCount] = useState<number>(0);
@@ -56,8 +53,6 @@ const ProfileSettings: React.FC = () => {
     setBio,
     birthDate,
     setBirthDate,
-    currency,
-    setCurrency,
     selectedInterests,
     toggleInterest,
     languages,
@@ -71,19 +66,10 @@ const ProfileSettings: React.FC = () => {
     handleSubmit,
     handleAvatarChange,
     handleRemoveAvatar,
-    handleAddPaymentMethod,
-    handleRemovePaymentMethod,
     updateProfile,
   } = usePassportForm();
 
   const draft = React.useMemo(() => restoreDraft(), [restoreDraft]);
-  const isKycVerified = React.useMemo(() => {
-    return profile?.kycStatus === 'VERIFIED' || profile?.isIdentityVerified === true;
-  }, [profile]);
-
-  // RBAC: Motor Transaccional solo visible para Anfitriones y Admins
-  // spec: spec_passport_rbac_payment_methods.md — Opción B (MVP Simple)
-  const isHostOrAdmin = profile?.role === 'host' || profile?.role === 'admin';
 
   // Consultar reservas pendientes
   React.useEffect(() => {
@@ -275,21 +261,7 @@ const ProfileSettings: React.FC = () => {
         */}
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Sección 1 — Motor Transaccional (solo Anfitriones / Admins) */}
-          {/* spec: passport-rbac-payment-methods — Opción B MVP */}
-          {isHostOrAdmin && (
-            <div className="passport-section passport-section--d1">
-              <TransactionalEngine
-                profile={profile}
-                currency={currency}
-                setCurrency={setCurrency}
-                onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-                onRemovePaymentMethod={handleRemovePaymentMethod}
-              />
-            </div>
-          )}
-
-          {/* Sección 2 — Seguridad y Respaldo */}
+          {/* Sección 1 — Seguridad y Respaldo */}
           <div className="passport-section passport-section--d2">
             <SecuritySection
               profile={profile}
@@ -360,12 +332,6 @@ const ProfileSettings: React.FC = () => {
           onClose={() => setIsVerificationModalOpen(false)}
           userId={profile?.uid || ''}
           onVerified={updateProfile}
-        />
-
-        <PaymentMethodModal
-          isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
-          onAdd={handleAddPaymentMethod}
         />
 
         <ConfirmExitModal

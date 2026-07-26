@@ -78,6 +78,7 @@ Cualquier cambio de código o refactorización debe consultar explícitamente la
 - `tailwind-css-patterns`
 - `composition-patterns`
 - `accessibility` (WCAG 2.2)
+- `impeccable` (Calidad Visual UI / Craft Floor / Anti-slop)
 - `nodejs-best-practices` (Seguridad y Secrets)
 
 ## 2) Objetivo de trabajo (SDD)

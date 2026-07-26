@@ -210,13 +210,6 @@ const Home: React.FC = () => {
       {!isLoadingListings ? (
         <div className="animate-fade-in">
           <main className="mx-auto max-w-7xl px-4 pt-6 pb-20 sm:px-6 lg:px-8">
-            {/* Gatillo de Autoridad 
-            <div className="mb-6 flex items-center justify-center gap-2 text-sm font-medium tracking-wide text-gray-600">
-              <span>🛡️</span> Más de 500 estancias verificadas en toda la
-              región.
-            </div>
-            */}
-
             {/* Hero Section */}
             {!isPropertyView &&
               !isLoadingListings &&
@@ -226,7 +219,7 @@ const Home: React.FC = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, ease: 'easeOut' }}
-                  className="group relative mb-16 flex min-h-[85vh] items-center overflow-hidden rounded-[40px] border-8 border-gray-50 shadow-2xl"
+                  className="group relative mb-16 flex min-h-[65vh] sm:min-h-[85vh] items-center overflow-hidden rounded-[40px] border-8 border-gray-50 shadow-2xl"
                 >
                   <div className="absolute inset-0 bg-[#0B1120]">
                     <img
@@ -255,7 +248,7 @@ const Home: React.FC = () => {
                           const grid = document.getElementById('listings-grid');
                           grid?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="flex w-full items-center justify-center rounded-full bg-amber-500 px-8 py-4 font-bold text-gray-900 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-amber-600 sm:w-auto"
+                        className="flex w-full items-center justify-center rounded-full bg-amber-500 px-8 py-4 font-black text-[#0b1120] shadow-lg transition-all duration-300 hover:scale-105 hover:bg-amber-600 sm:w-auto"
                       >
                         Explorar alojamientos
                         <ChevronRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />

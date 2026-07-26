@@ -23,6 +23,7 @@ import {
   AlertCircle,
   FileText,
   ExternalLink,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -346,7 +347,7 @@ const KYCAuditPanel: React.FC = () => {
             <div className="flex-1 overflow-y-auto bg-gray-50 p-6 flex items-center justify-center min-h-[300px]">
               {loadingUrl ? (
                 <div className="text-center space-y-3">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500 mx-auto"></div>
+                  <Loader2 className="h-8 w-8 animate-spin text-brand-500 mx-auto" />
                   <p className="text-xs text-gray-500 font-bold">Generando enlace seguro...</p>
                 </div>
               ) : signedUrl ? (

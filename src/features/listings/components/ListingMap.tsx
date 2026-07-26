@@ -77,7 +77,7 @@ export const ListingMap: React.FC<ListingMapProps> = ({
 
           <div className="relative z-10 flex max-w-md flex-col items-center">
             <div className="bg-brand-500/10 border-brand-500/20 mb-8 flex h-24 w-24 items-center justify-center rounded-[32px] border shadow-2xl backdrop-blur-xl transition-transform duration-700 group-hover/map-error:scale-110">
-              <MapPin className="text-brand-500 h-12 w-12 animate-bounce" />
+              <MapPin className="text-brand-500 h-12 w-12 animate-pulse" />
             </div>
 
             <h4 className="mb-4 text-2xl font-black tracking-tight text-white">

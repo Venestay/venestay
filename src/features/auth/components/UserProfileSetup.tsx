@@ -213,10 +213,12 @@ const UserProfileSetup: React.FC = () => {
               </div>
 
               <div className="flex flex-wrap justify-center gap-3 pt-2 md:justify-start">
-                <span className="bg-brand-500/10 text-brand-500 border-brand-500/10 flex items-center gap-2 rounded-2xl border px-5 py-2 text-[10px] font-black tracking-widest uppercase">
-                  <BadgeCheck className="h-4 w-4" />
-                  Anfitrión Verificado
-                </span>
+                {profileData?.role === 'host' && (
+                  <span className="bg-brand-500/10 text-brand-500 border-brand-500/10 flex items-center gap-2 rounded-2xl border px-5 py-2 text-[10px] font-black tracking-widest uppercase">
+                    <BadgeCheck className="h-4 w-4" />
+                    Anfitrión Verificado
+                  </span>
+                )}
                 <span className="flex items-center gap-2 rounded-2xl border border-gray-100 bg-gray-50 px-5 py-2 text-[10px] font-black tracking-widest text-gray-400 uppercase">
                   <Calendar className="h-4 w-4" />
                   Miembro desde{' '}
@@ -489,7 +491,7 @@ const UserProfileSetup: React.FC = () => {
             {isSaving ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Save className="h-5 w-5 group-hover:animate-bounce" />
+              <Save className="h-5 w-5 transition-transform duration-200 group-hover:rotate-[-8deg] group-hover:scale-110" />
             )}
             Guardar Cambios de Perfil
           </motion.button>
