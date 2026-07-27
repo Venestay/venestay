@@ -12,7 +12,7 @@
 
 ### Objetivo
 
-Como huésped de VeneStay en la sección *Mis Viajes*, quiero que los estados de las reservas (especialmente "Estadía Finalizada"), las referencias `REF:` y los textos secundarios tengan un contraste alto y legible conforme a WCAG AA (≥ 4.5:1), y que al pasar el mouse sobre el botón **"Dejar Reseña"**, el icono de la estrella cambie al dorado distintivo de la marca (`#C5A059`), ofreciendo una interfaz pulida y de fácil lectura.
+Como huésped de VeneStay en la sección _Mis Viajes_, quiero que los estados de las reservas (especialmente "Estadía Finalizada"), las referencias `REF:` y los textos secundarios tengan un contraste alto y legible conforme a WCAG AA (≥ 4.5:1), y que al pasar el mouse sobre el botón **"Dejar Reseña"**, el icono de la estrella cambie al dorado distintivo de la marca (`#C5A059`), ofreciendo una interfaz pulida y de fácil lectura.
 
 ---
 
@@ -30,7 +30,7 @@ Como huésped de VeneStay en la sección *Mis Viajes*, quiero que los estados de
    - **Etiquetas Financieras**: Cambiar `text-[8px] text-gray-400` a `text-[9px] text-slate-600 font-extrabold uppercase`.
 
 3. **Micro-interacción Hover en Botón "Dejar Reseña" (`MyTrips.tsx`)**:
-   - Al pasar el cursor (`hover`) sobre el botón *Dejar Reseña*, el icono `<Star>` debe transformarse/iluminarse en dorado distintivo (`text-brand-500 fill-brand-500 transition-colors duration-200`).
+   - Al pasar el cursor (`hover`) sobre el botón _Dejar Reseña_, el icono `<Star>` debe transformarse/iluminarse en dorado distintivo (`text-brand-500 fill-brand-500 transition-colors duration-200`).
 
 **No incluye:**
 
@@ -40,8 +40,8 @@ Como huésped de VeneStay en la sección *Mis Viajes*, quiero que los estados de
 
 ### Archivos Afectados
 
-| Archivo | Capa FSD | Tipo de cambio |
-| :--- | :--- | :--- |
+| Archivo                                        | Capa FSD                       | Tipo de cambio                                                              |
+| :--------------------------------------------- | :----------------------------- | :-------------------------------------------------------------------------- |
 | `src/features/bookings/components/MyTrips.tsx` | `features/bookings/components` | **MODIFICAR** (Contraste de textos, badge de estado, hover en botón reseña) |
 
 ---
